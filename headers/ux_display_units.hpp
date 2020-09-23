@@ -1,9 +1,7 @@
 /*
  * This file is part of the PLATFORM_OBJ distribution
- *
- * (https://github.com/amatarazzo777/platform_obj)
- *
- * Copyright (c) 2020 Anthony Matarazzo.
+ * {https://github.com/amatarazzo777/platform_obj). Copyright (c) 2020 Anthony
+ * Matarazzo.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,20 +15,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
+#pragma once
 /**
-\author Anthony Matarazzo
-\file uxdisplayunits.hpp
-\date 9/7/20
-\version 1.0
-\brief The file encapsulates the objects that may be created,
-controlled, and rendered by the system. The system provides for std::shared
-pointers to these object to be shared within the rendering cycle. Each object
-has a hash function which is queried to detect changes within the underlying
-data. Only on screen related objects are included within the set. The
-intersection test is included as part of a base hierarchy of classes for objects
-that are declared as such. The class objects are separated into two distinct
-entity names. One that is the API name and a data storage class.
+ \author Anthony Matarazzo
+ \file uxdisplayunits.hpp
+ \date 9/7/20
+ \version 1.0
+ \brief
+
+The file encapsulates the objects that may be created, controlled, and rendered
+by the system. The system provides for std::shared pointers to these object to
+be shared within the rendering cycle. Each object has a hash function which is
+queried to detect changes within the underlying data. Only on screen related
+objects are included within the set. The intersection test is included as part
+of a base hierarchy of classes for objects that are declared as such. The class
+objects are separated into two distinct entity names. One that is the API name
+and a data storage class.
 
 
 painter_brush_emitter_t
@@ -41,17 +41,16 @@ storage_drawing_function_t
 class_storage_drawing_function_t
 
 
-*/
-
-#pragma once
+ */
 
 /**
 
-\class coordinate_storage_t
-\brief storage class used by the coordinate_t object.
+ \class coordinate_storage_t
+ \brief storage class used by
+ the coordinate_t object.
 
-\details The constructor interface is inherited by objects
-that are display units.
+ \details The constructor interface is inherited by objects that are display
+ units.
 
 
  */
@@ -80,11 +79,11 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::coordinate_storage_t);
 
 /**
-\internal
-\class arc_storage_t
-\brief
+ \internal
+ \class arc_storage_t
+ \brief
 
-\details
+ \details
 
 
  */
@@ -114,11 +113,11 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::arc_storage_t);
 
 /**
-\internal
-\class negative_arc_storage_t
-\brief
+ \internal
+ \class negative_arc_storage_t
+ \brief
 
-\details
+ \details
 
 
  */
@@ -149,11 +148,11 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::negative_arc_storage_t);
 
 /**
-\internal
-\class rectangle_storage_t
-\brief
+ \internal
+ \class rectangle_storage_t
+ \brief
 
-\details
+ \details
 
 
  */
@@ -181,11 +180,11 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::rectangle_storage_t);
 
 /**
-\internal
-\class curve_storage_t
-\brief
+ \internal
+ \class curve_storage_t
+ \brief
 
-\details
+ \details
 
 
  */
@@ -216,11 +215,11 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::curve_storage_t);
 
 /**
-\internal
-\class line_storage_t
-\brief
+ \internal
+ \class line_storage_t
+ \brief
 
-\details
+ \details
 
 
  */
@@ -244,11 +243,12 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_storage_t);
 
 /**
-\internal
-\class stroke_fill_path_storage_t
-\brief
+ \internal
+ \class
+ stroke_fill_path_storage_t
+ \brief
 
-\details
+ \details
 
 
  */
@@ -276,11 +276,13 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::stroke_fill_path_storage_t);
 
 /**
 
-\typedef line_dash_storage_t
-\brief storage alias for the line dashes array. needed for registering the
-hashing function.
+ \typedef line_dash_storage_t
+ \brief storage alias for the
+ line dashes array. needed for
+ registering the hashing
+ function.
 
-\details
+ \details
 
 
  */
@@ -312,12 +314,15 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_dash_storage_t);
 
 /**
 
-\class image_block_storage_t
-\brief storage class used by the image_block_t object. The oject is
-responsible for encapsulating and dynamically allocating, and releasing
-memory.
+ \class image_block_storage_t
+ \brief storage class used by
+ the image_block_t object. The
+ oject is responsible for
+ encapsulating and dynamically
+ allocating, and releasing
+ memory.
 
-\details
+ \details
 
 
  */
@@ -325,9 +330,10 @@ namespace uxdevice {
 class image_block_storage_t
     : virtual public hash_members_t,
       virtual public system_error_t,
-      public unit_memory_storage_t<attribute_unit_memory_image_block_t> {
+      public unit_memory_storage_t<visitor_unit_memory_image_block_t> {
 public:
-  /// @brief default constructor
+  /// @brief default
+  /// constructor
   image_block_storage_t()
       : description{}, image_block_ptr{}, is_loaded{}, coordinate{} {}
 
@@ -343,7 +349,8 @@ public:
     return *this;
   }
 
-  /// @brief copy assignment operator
+  /// @brief copy assignment
+  /// operator
   image_block_storage_t &operator=(const image_block_storage_t &other) {
     description = other.description;
     image_block_ptr = other.image_block_ptr;
@@ -376,9 +383,8 @@ public:
     return __value;
   }
 
-  typedef std::function<void()> image_pipeline_function_t;
-  std::list<image_pipeline_function_t> image_render_pipeline = {};
-  image_pipeline_function_t pipeline_fn = {};
+  std::list<pipeline_t> image_render_pipeline = {};
+  pipeline_t pipeline_fn = {};
   void pipeline(cairo_t *cr, coordinate_t &a);
 
   std::string description = {};
@@ -392,11 +398,11 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::image_block_storage_t);
 
 /**
-\internal
-\class text_font_data_storage
-\brief storage for fonts.
+ \internal
+ \class text_font_data_storage
+ \brief storage for fonts.
 
-\details
+ \details
 
 
  */
@@ -404,7 +410,9 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::image_block_storage_t);
 namespace uxdevice {
 class text_font_storage_t : virtual public hash_members_t {
 public:
-  // these become public members of the base class.
+  // these become public
+  // members of the base
+  // class.
   text_font_storage_t() : description{}, font_ptr(nullptr) {}
   text_font_storage_t(const std::string &_description)
       : description(_description), font_ptr(nullptr) {}
@@ -458,14 +466,26 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_font_storage_t);
 
 /**
 
-\class textual_render_storage_t
-\brief class used to store parameters and options for a textual render. The
-object is created as the side effect of inserting text, char *, std string or
-a std::shared_ptr<std::string>. The clas inherits from drawing_output_t
-which notes the ink rectangle of the object. The drawing_output_class_t class
-also exposes intersection method for the render system to decide which function
-to invoke, a standard draw or a clipped draw.
-*/
+ \class
+ textual_render_storage_t
+ \brief class used to store
+ parameters and options for a
+ textual render. The object is
+ created as the side effect of
+ inserting text, char *, std
+ string or a
+ std::shared_ptr<std::string>.
+ The clas inherits from
+ drawing_output_t which notes
+ the ink rectangle of the
+ object. The
+ drawing_output_class_t class
+ also exposes intersection
+ method for the render system
+ to decide which function to
+ invoke, a standard draw or a
+ clipped draw.
+ */
 namespace uxdevice {
 class textual_render_storage_t
     : virtual public drawing_output_t,
@@ -481,21 +501,19 @@ public:
 
   /// @brief move constructor
   textual_render_storage_t(textual_render_storage_t &&other) noexcept
-      :  layout(other.layout),
-        ink_rect(other.ink_rect), logical_rect(other.logical_rect),
-        matrix(other.matrix) {}
+      : layout(other.layout), ink_rect(other.ink_rect),
+        logical_rect(other.logical_rect), matrix(other.matrix) {}
 
   /// @brief copy constructor
   textual_render_storage_t(const textual_render_storage_t &other)
-      : ink_rect(other.ink_rect),
-        logical_rect(other.logical_rect), matrix(other.matrix) {
+      : ink_rect(other.ink_rect), logical_rect(other.logical_rect),
+        matrix(other.matrix) {
     if (other.layout)
       layout = pango_layout_copy(other.layout);
   }
 
   /// @brief copy assignment
   textual_render_storage_t &operator=(const textual_render_storage_t &other) {
-    shadow_buffer = other.shadow_buffer;
     if (other.layout)
       layout = pango_layout_copy(other.layout);
     ink_rect = other.ink_rect;
@@ -507,7 +525,6 @@ public:
   /// @brief move assignment
   textual_render_storage_t &
   operator=(const textual_render_storage_t &&other) noexcept {
-    shadow_buffer = other.shadow_buffer;
     layout = other.layout;
     ink_rect = other.ink_rect;
     logical_rect = other.logical_rect;
@@ -536,9 +553,11 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::textual_render_storage_t);
 
 /**
 
-\class text_tab_stops_storage_t
-\brief sets the tab stops on the layout
-*/
+ \class
+ text_tab_stops_storage_t
+ \brief sets the tab stops on
+ the layout
+ */
 
 namespace uxdevice {
 class text_tab_stops_storage_t : virtual public hash_members_t {
@@ -562,62 +581,82 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_tab_stops_storage_t);
 
 /********************************************************************************
 
-                      API objects
+ API objects
 
-*********************************************************************************
+ *********************************************************************************
 
-The following definitions are the exact name that appears within the API. These
-class templates provide factories that create objects compatible with the
-system. These objects might have invoke and emit methods depending upon the emit
-abstract interfaces named for inheritance. The base services for
-these objects to be functional for the display are provided. These objects
-have all of the move and copy operators implemented for ease and efficiency of
-use. There are several types of objects that may be created and inserted by
-using the template parameters. Please refer to the class template for a more
-detailed explanation. The following templates are provided for use:
+ The following definitions are
+ the exact name that appears
+ within the API. These class
+ templates provide factories
+ that create objects
+ compatible with the system.
+ These objects might have
+ invoke and emit methods
+ depending upon the emit
+ abstract interfaces named for
+ inheritance. The base
+ services for these objects to
+ be functional for the display
+ are provided. These objects
+ have all of the move and copy
+ operators implemented for
+ ease and efficiency of use.
+ There are several types of
+ objects that may be created
+ and inserted by using the
+ template parameters. Please
+ refer to the class template
+ for a more detailed
+ explanation. The following
+ templates are provided for
+ use:
 
 
-marker_emitter_t
-painter_brush_emitter_t
-storage_emitter_t
-class_storage_emitter_t
-storage_drawing_function_t
-class_storage_drawing_function_t
+ marker_emitter_t
+ painter_brush_emitter_t
+ storage_emitter_t
+ class_storage_emitter_t
+ storage_drawing_function_t
+ class_storage_drawing_function_t
 
 
-*********************************************************************************/
+ *********************************************************************************/
 
 /**
-\class surface_area_brush_t
-\brief stores and emits the background of the surface. The class inherits from
-  painter_brush_emitter_t.
+ \class surface_area_brush_t
+ \brief stores and emits the
+ background of the surface.
+ The class inherits from
+ painter_brush_emitter_t.
 
-*/
+ */
 namespace uxdevice {
 using surface_area_brush_t = class surface_area_brush_t
-    : public painter_brush_emitter_t<surface_area_brush_t,
-                                     emit_display_context_abstract_t,
-                                     visitor_unit_memory_display_context_t> {
+    : public painter_brush_emitter_t<
+          surface_area_brush_t, emit_display_context_abstract_t,
+          visitor_unit_memory_display_context_t,
+          pipeline_sort_order_t<order_render_option>> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
 
-  void emit(display_context_t &context);
+  void emit(display_context_t *context);
 };
 } // namespace uxdevice
 
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::surface_area_brush_t);
 
 /**
-\class text_font_t
-\brief
-*/
+ \class text_font_t
+ \brief
+ */
 namespace uxdevice {
 using text_font_t = class text_font_t
     : public class_storage_emitter_t<
           text_font_t, text_font_storage_t, emit_pango_abstract_t,
-          visitor_display_context_memory_t,
+          visitor_unit_memory_display_context_t,
           visitor_unit_memory_textual_render_t,
-          pipeline_sort_order_t<order_render_options>> {
+          pipeline_sort_order_t<order_render_option>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
   void emit(PangoLayout *layout);
@@ -626,67 +665,87 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_font_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using surface_area_title_t = class surface_area_title_t
     : public storage_emitter_t<surface_area_title_t, std::string,
                                emit_display_context_abstract_t,
-                               visitor_display_context_memory_t> {
+                               visitor_unit_memory_display_context_t,
+                               pipeline_sort_order_t<order_render_option>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
-  void emit(display_context_t &context);
+  void emit(display_context_t *context);
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::surface_area_title_t);
 
 /**
-\class
-\brief
-*/
+ \class text_render_normal_t
+ \brief
+
+ The inclusion emit_display_context_abstract_t is used to
+ allow the exclusion of the counterpart attribute class
+ text_render_path_t within the emit function.
+
+ The emit_cairo_coordinate_abstract_t provides for the inclusion
+ of delegation during visitation by attached objects.
+
+ Objects may attach themselves by different interfaces named by the
+ visitor pattern.
+
+ The pipeline sort order informs the queue order.
+
+ */
 namespace uxdevice {
 using text_render_normal_t = class text_render_normal_t
     : public marker_emitter_t<text_render_normal_t,
-                              visitor_display_context_memory_t,
+                              emit_display_context_abstract_t,
+                              emit_cairo_coordinate_abstract_t,
+                              visitor_unit_memory_display_context_t,
                               visitor_unit_memory_textual_render_t,
                               pipeline_sort_order_t<order_render>> {
 public:
   using marker_emitter_t::marker_emitter_t;
+
+  void emit(display_context_t *context);
+  void emit(cairo_t *cr);
+  void emit(cairo_t *cr, coordinate_t *a);
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_render_normal_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using text_render_path_t = class text_render_path_t
     : public marker_emitter_t<text_render_path_t,
-                              visitor_display_context_memory_t,
+                              visitor_unit_memory_display_context_t,
                               visitor_unit_memory_textual_render_t,
                               pipeline_sort_order_t<order_render>> {
 public:
   using marker_emitter_t::marker_emitter_t;
 
-  void emit(display_context_t &context);
+  void emit(display_context_t *context);
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_render_path_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using text_color_t =
     class text_color_t : public painter_brush_emitter_t<
                              text_color_t, emit_cairo_coordinate_abstract_t,
-                             visitor_display_context_memory_t,
+                             visitor_unit_memory_display_context_t,
                              visitor_unit_memory_textual_render_t,
-                             pipeline_sort_order_t<order_render_options>> {
+                             pipeline_sort_order_t<order_render_option>> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
 };
@@ -694,23 +753,26 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_color_t);
 
 /**
-\class text_outline_t
-\brief
+ \class text_outline_t
+ \brief
 
 
-*/
+ */
 namespace uxdevice {
 using text_outline_t = class text_outline_t
     : public painter_brush_emitter_t<text_outline_t,
                                      emit_cairo_coordinate_abstract_t,
-                                     visitor_display_context_memory_t,
+                                     visitor_unit_memory_display_context_t,
                                      visitor_unit_memory_textual_render_t,
                                      pipeline_sort_order_t<order_render>> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
 
-  // since class implements the painter_brush_emitter_t , specializations
-  // may call the base constructor,
+  // since class implements
+  // the
+  // painter_brush_emitter_t ,
+  // specializations may call
+  // the base constructor,
   void emit(cairo_t *cr) {
     double dwidth = cairo_get_line_width(cr);
     cairo_set_line_width(cr, _width);
@@ -719,7 +781,7 @@ public:
     cairo_set_line_width(cr, dwidth);
   }
 
-  void emit(cairo_t *cr, coordinate_t &a) {
+  void emit(cairo_t *cr, coordinate_t *a) {
     double dwidth = cairo_get_line_width(cr);
     cairo_set_line_width(cr, _width);
     painter_brush_emitter_t::emit(cr, a);
@@ -737,14 +799,14 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_outline_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using text_fill_t = class text_fill_t
     : public painter_brush_emitter_t<text_fill_t,
                                      emit_cairo_coordinate_abstract_t,
-                                     visitor_display_context_memory_t,
+                                     visitor_unit_memory_display_context_t,
                                      visitor_unit_memory_textual_render_t,
                                      pipeline_sort_order_t<order_render>> {
 public:
@@ -755,7 +817,7 @@ public:
     cairo_fill_preserve(cr);
   }
 
-  void emit(cairo_t *cr, coordinate_t &a) {
+  void emit(cairo_t *cr, coordinate_t *a) {
     painter_brush_emitter_t::emit(cr, a);
     cairo_fill_preserve(cr);
   }
@@ -764,53 +826,55 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_fill_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using text_shadow_t =
     class text_shadow_t : public painter_brush_emitter_t<
                               text_shadow_t, emit_cairo_coordinate_abstract_t,
-                              visitor_display_context_memory_t,
+                              visitor_unit_memory_display_context_t,
                               visitor_unit_memory_textual_render_t,
                               pipeline_sort_order_t<order_before_render>> {
-
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
 
-  draw_buffer_t shadow_buffer = {};
-  void accept(void) { handle_text_shadow(tocr, a); };
+  // interface for visitors
+  void emit(cairo_t *cr);
+  void emit(cairo_t *cr, coordinate_t *a);
 
-  void handle_text_shadow(cairo_t *tocr, coordinate_t &a);
-
+  // specialization of hash
   std::size_t hash_code(void) const noexcept;
+
+  // private functions
+  void set_layout_options(cairo_t *cr);
+  void handle_text_shadow(cairo_t *tocr, coordinate_t &a);
+  void pipeline(cairo_t *cr, coordinate_t &a);
+
+  std::list<pipeline_function_t> shadow_render_pipeline = {};
+  pipeline_function_t pipeline_fn = {};
+
+  draw_buffer_t shadow_buffer = {};
 
   PangoLayout *layout = nullptr;
   PangoRectangle ink_rect = PangoRectangle();
   PangoRectangle logical_rect = PangoRectangle();
   matrix_t matrix = {};
-
-  std::list<text_pipeline_function_t> text_render_pipeline = {};
-  text_pipeline_function_t pipeline_fn = {};
-
-  void set_layout_options(cairo_t *cr);
-
-  void pipeline(cairo_t *cr, coordinate_t &a);
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_shadow_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using text_alignment_t = class text_alignment_t
     : public storage_emitter_t<text_alignment_t, text_alignment_options_t,
                                emit_pango_abstract_t,
-                               visitor_display_context_memory_t,
+                               visitor_unit_memory_display_context_t,
                                visitor_unit_memory_textual_render_t,
-                               pipeline_sort_order_t<order_render_options>> {
+                               pipeline_sort_order_t<order_render_option>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -820,15 +884,15 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_alignment_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using text_indent_t = class text_indent_t
     : public storage_emitter_t<text_indent_t, double, emit_pango_abstract_t,
-                               visitor_display_context_memory_t,
+                               visitor_unit_memory_display_context_t,
                                visitor_unit_memory_textual_render_t,
-                               pipeline_sort_order_t<order_render_options>> {
+                               pipeline_sort_order_t<order_render_option>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -838,16 +902,16 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_indent_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using text_ellipsize_t = class text_ellipsize_t
     : public storage_emitter_t<text_ellipsize_t, text_ellipsize_options_t,
                                emit_pango_abstract_t,
-                               visitor_display_context_memory_t,
+                               visitor_unit_memory_display_context_t,
                                visitor_unit_memory_textual_render_t,
-                               pipeline_sort_order_t<order_render_options>> {
+                               pipeline_sort_order_t<order_render_option>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -857,15 +921,15 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_ellipsize_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using text_line_space_t = class text_line_space_t
     : public storage_emitter_t<text_line_space_t, double, emit_pango_abstract_t,
-                               visitor_display_context_memory_t,
+                               visitor_unit_memory_display_context_t,
                                visitor_unit_memory_textual_render_t,
-                               pipeline_sort_order_t<order_render_options>> {
+                               pipeline_sort_order_t<order_render_option>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -875,16 +939,16 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_line_space_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using text_tab_stops_t = class text_tab_stops_t
     : public class_storage_emitter_t<
           text_tab_stops_t, text_tab_stops_storage_t, emit_pango_abstract_t,
-          visitor_display_context_memory_t,
+          visitor_unit_memory_display_context_t,
           visitor_unit_memory_textual_render_t,
-          pipeline_sort_order_t<order_render_options>> {
+          pipeline_sort_order_t<order_render_option>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -894,9 +958,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_tab_stops_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 typedef std::variant<std::string, std::shared_ptr<std::string>,
                      std::string_view, std::shared_ptr<std::string_view>,
@@ -906,9 +970,9 @@ typedef std::variant<std::string, std::shared_ptr<std::string>,
 using text_data_t = class text_data_t
     : public storage_emitter_t<text_data_t, text_data_storage_t,
                                emit_pango_abstract_t,
-                               visitor_display_context_memory_t,
+                               visitor_unit_memory_display_context_t,
                                visitor_unit_memory_textual_render_t,
-                               pipeline_sort_order_t<order_render_options>> {
+                               pipeline_sort_order_t<order_render_option>> {
 public:
   using storage_emitter_t::storage_emitter_t;
   std::size_t hash_code(void) const noexcept;
@@ -917,20 +981,21 @@ public:
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_data_t);
 
-// image drawing and other block operations
+// image drawing and other
+// block operations
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using coordinate_t = class coordinate_t
     : public class_storage_emitter_t<
           coordinate_t, coordinate_storage_t, emit_cairo_abstract_t,
           emit_cairo_relative_coordinate_abstract_t, emit_pango_abstract_t,
-          visitor_display_context_memory_t,
+          visitor_unit_memory_display_context_t,
           visitor_unit_memory_textual_render_t,
           visitor_unit_memory_image_block_t,
-          pipeline_sort_order_t<order_render_options>> {
+          pipeline_sort_order_t<order_render_option>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
   void emit(cairo_t *cr) { emit_absolute(cr); }
@@ -942,16 +1007,17 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::coordinate_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using antialias_t = class antialias_t
-    : public storage_emitter_t<
-          antialias_t, antialias_options_t, emit_cairo_abstract_t,
-          visitor_display_context_memory_t, visitor_unit_memory_image_block_t,
-          visitor_unit_memory_textual_render_t,
-          pipeline_sort_order_t<order_render_options>> {
+    : public storage_emitter_t<antialias_t, antialias_options_t,
+                               emit_cairo_abstract_t,
+                               visitor_unit_memory_display_context_t,
+                               visitor_unit_memory_image_block_t,
+                               visitor_unit_memory_textual_render_t,
+                               pipeline_sort_order_t<order_render_option>> {
 public:
   using storage_emitter_t::storage_emitter_t;
   void emit(cairo_t *cr);
@@ -960,16 +1026,16 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::antialias_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using line_width_t = class line_width_t
     : public storage_emitter_t<line_width_t, double, emit_cairo_abstract_t,
-                               visitor_display_context_memory_t,
+                               visitor_unit_memory_display_context_t,
                                visitor_unit_memory_image_block_t,
                                visitor_unit_memory_textual_render_t,
-                               pipeline_sort_order_t<order_render_options>> {
+                               pipeline_sort_order_t<order_render_option>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -979,15 +1045,17 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_width_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
-using line_cap_t = class line_cap_t : public storage_emitter_t < line_cap_t,
-      line_cap_options_t, emit_cairo_abstract_t,
-      visitor_display_context_memory_t, visitor_unit_memory_image_block_t,
-      visitor_unit_memory_textual_render_t,
-      pipeline_sort_order_t<order_render_options> {
+using line_cap_t = class line_cap_t
+    : public storage_emitter_t<line_cap_t, line_cap_options_t,
+                               emit_cairo_abstract_t,
+                               visitor_unit_memory_display_context_t,
+                               visitor_unit_memory_image_block_t,
+                               visitor_unit_memory_textual_render_t,
+                               pipeline_sort_order_t<order_render_option>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -997,15 +1065,17 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_cap_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
-using line_join_t = class line_join_t : public storage_emitter_t < line_join_t,
-      line_join_options_t, emit_cairo_abstract_t,
-      visitor_display_context_memory_t, visitor_unit_memory_image_block_t,
-      visitor_unit_memory_textual_render_t,
-      pipeline_sort_order_t<order_render_options> {
+using line_join_t = class line_join_t
+    : public storage_emitter_t<line_join_t, line_join_options_t,
+                               emit_cairo_abstract_t,
+                               visitor_unit_memory_display_context_t,
+                               visitor_unit_memory_image_block_t,
+                               visitor_unit_memory_textual_render_t,
+                               pipeline_sort_order_t<order_render_option>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -1015,15 +1085,16 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_join_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
-using miter_limit_t =
-    class miter_limit_t : public storage_emitter_t < miter_limit_t,
-      double, emit_cairo_abstract_t, visitor_display_context_memory_t,
-      visitor_unit_memory_image_block_t, visitor_unit_memory_textual_render_t,
-      pipeline_sort_order_t<order_render_options> {
+using miter_limit_t = class miter_limit_t
+    : public storage_emitter_t<miter_limit_t, double, emit_cairo_abstract_t,
+                               visitor_unit_memory_display_context_t,
+                               visitor_unit_memory_image_block_t,
+                               visitor_unit_memory_textual_render_t,
+                               pipeline_sort_order_t<order_render_option>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -1033,16 +1104,17 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::miter_limit_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
-using line_dashes_t =
-    class line_dashes_t : public class_storage_emitter_t < line_dashes_t,
-      line_dash_storage_t, emit_cairo_abstract_t,
-      visitor_display_context_memory_t, visitor_unit_memory_image_block_t,
-      visitor_unit_memory_textual_render_t,
-      pipeline_sort_order_t<order_render_options> {
+using line_dashes_t = class line_dashes_t
+    : public class_storage_emitter_t<
+          line_dashes_t, line_dash_storage_t, emit_cairo_abstract_t,
+          visitor_unit_memory_display_context_t,
+          visitor_unit_memory_image_block_t,
+          visitor_unit_memory_textual_render_t,
+          pipeline_sort_order_t<order_render_option>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -1052,15 +1124,16 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_dashes_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
-using tollerance_t =
-    class tollerance_t : public storage_emitter_t < tollerance_t,
-      double, emit_cairo_abstract_t, visitor_display_context_memory_t,
-      visitor_unit_memory_image_block_t, visitor_unit_memory_textual_render_t,
-      pipeline_sort_order_t<order_render_options> {
+using tollerance_t = class tollerance_t
+    : public storage_emitter_t<tollerance_t, double, emit_cairo_abstract_t,
+                               visitor_unit_memory_display_context_t,
+                               visitor_unit_memory_image_block_t,
+                               visitor_unit_memory_textual_render_t,
+                               pipeline_sort_order_t<order_render_option>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -1070,15 +1143,17 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::tollerance_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using graphic_operator_t = class graphic_operator_t
-    : public storage_emitter_t<
-          graphic_operator_t, graphic_operator_options_t, emit_cairo_abstract_t,
-          visitor_display_context_memory_t, visitor_unit_memory_image_block_t,
-          visitor_unit_memory_textual_render_t> {
+    : public storage_emitter_t<graphic_operator_t, graphic_operator_options_t,
+                               emit_cairo_abstract_t,
+                               visitor_unit_memory_display_context_t,
+                               visitor_unit_memory_image_block_t,
+                               visitor_unit_memory_textual_render_t,
+                               pipeline_sort_order_t<order_render_option>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -1088,49 +1163,54 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::graphic_operator_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using relative_coordinate_t = class relative_coordinate_t
-    : public marker_emitter_t<
-          relative_coordinate_t, emit_display_context_abstract_t,
-          visitor_display_context_memory_t, visitor_unit_memory_image_block_t,
-          visitor_unit_memory_textual_render_t> {
+    : public marker_emitter_t<relative_coordinate_t,
+                              emit_display_context_abstract_t,
+                              visitor_unit_memory_display_context_t,
+                              visitor_unit_memory_image_block_t,
+                              visitor_unit_memory_textual_render_t,
+                              pipeline_sort_order_t<order_render_option>> {
 public:
   using marker_emitter_t::marker_emitter_t;
 
-  void emit(display_context_t &context);
+  void emit(display_context_t *context);
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::relative_coordinate_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using absolute_coordinate_t = class absolute_coordinate_t
-    : public marker_emitter_t<
-          absolute_coordinate_t, emit_display_context_abstract_t,
-          visitor_display_context_memory_t, visitor_unit_memory_image_block_t,
-          visitor_unit_memory_textual_render_t> {
+    : public marker_emitter_t<absolute_coordinate_t,
+                              emit_display_context_abstract_t,
+                              visitor_unit_memory_display_context_t,
+                              visitor_unit_memory_image_block_t,
+                              visitor_unit_memory_textual_render_t,
+                              pipeline_sort_order_t<order_render_option>> {
 public:
   using marker_emitter_t::marker_emitter_t;
 
-  void emit(display_context_t &context);
+  void emit(display_context_t *context);
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::absolute_coordinate_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using function_object_t = class function_object_t
     : public storage_emitter_t<function_object_t, cairo_function_t,
-                               emit_cairo_abstract_t> {
+                               emit_cairo_abstract_t,
+                               pipeline_sort_order_t<order_render_option>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -1140,30 +1220,33 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::function_object_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using draw_function_object_t = class draw_function_object_t
     : public storage_drawing_function_t<draw_function_object_t,
                                         cairo_function_t,
-                                        emit_display_context_abstract_t> {
+                                        emit_display_context_abstract_t,
+                                        pipeline_sort_order_t<order_render>> {
 public:
   using storage_drawing_function_t::storage_drawing_function_t;
 
-  void emit(display_context_t &context);
+  void emit(display_context_t *context);
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::draw_function_object_t);
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using option_function_object_t = class option_function_object_t
     : public class_storage_emitter_t<
           option_function_object_t, cairo_option_function_t,
-          attribute_unit_memory_textual_render_t, emit_cairo_abstract_t> {
+          emit_cairo_abstract_t, visitor_unit_memory_display_context_t,
+          visitor_unit_memory_textual_render_t,
+          pipeline_sort_order_t<order_render_option>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -1173,9 +1256,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::option_function_object_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using textual_render_t = class textual_render_t
     : public class_storage_drawing_function_t<textual_render_t,
@@ -1184,15 +1267,15 @@ using textual_render_t = class textual_render_t
 public:
   using class_storage_drawing_function_t::class_storage_drawing_function_t;
 
-  void emit(display_context_t &context);
+  void emit(display_context_t *context);
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::textual_render_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using image_block_t = class image_block_t
     : public class_storage_drawing_function_t<image_block_t,
@@ -1201,16 +1284,17 @@ using image_block_t = class image_block_t
 public:
   using class_storage_drawing_function_t::class_storage_drawing_function_t;
 
-  void emit(display_context_t &context);
+  void emit(display_context_t *context);
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::image_block_t);
 
 /**
-\class
-\brief
-*/
-// primitives - drawing functions
+ \class
+ \brief
+ */
+// primitives - drawing
+// functions
 namespace uxdevice {
 using arc_t = class arc_t
     : public class_storage_drawing_function_t<arc_t, arc_storage_t,
@@ -1224,9 +1308,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::arc_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using negative_arc_t = class negative_arc_t
     : public class_storage_drawing_function_t<
@@ -1240,9 +1324,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::negative_arc_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using curve_t = class curve_t
     : public class_storage_drawing_function_t<
@@ -1257,9 +1341,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::curve_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using line_t = class line_t
     : public class_storage_drawing_function_t<
@@ -1274,9 +1358,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using vline_t = class vline_t
     : public storage_drawing_function_t<
@@ -1291,9 +1375,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::vline_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using hline_t = class hline_t
     : public storage_drawing_function_t<
@@ -1308,9 +1392,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::hline_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using rectangle_t = class rectangle_t
     : public class_storage_drawing_function_t<rectangle_t, rectangle_storage_t,
@@ -1324,9 +1408,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::rectangle_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using stroke_path_t = class stroke_path_t
     : public class_storage_drawing_function_t<stroke_path_t, painter_brush_t,
@@ -1340,9 +1424,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::stroke_path_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using fill_path_t = class fill_path_t
     : public class_storage_drawing_function_t<fill_path_t, painter_brush_t,
@@ -1356,9 +1440,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::fill_path_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using stroke_fill_path_t = class stroke_fill_path_t
     : public class_storage_drawing_function_t<stroke_fill_path_t,
@@ -1373,9 +1457,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::stroke_fill_path_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using mask_t = class mask_t
     : public class_storage_drawing_function_t<mask_t, painter_brush_t,
@@ -1389,9 +1473,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::mask_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using paint_t =
     class paint_t : public storage_drawing_function_t<paint_t, double,
@@ -1405,9 +1489,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::paint_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using close_path_t = class close_path_t
     : public marker_emitter_t<close_path_t, emit_cairo_abstract_t> {
@@ -1421,9 +1505,9 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::close_path_t);
 
 // event listeners
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using listen_paint_t =
     class listen_paint_t : public listener_t<listen_paint_t> {};
@@ -1431,9 +1515,9 @@ using listen_paint_t =
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_paint_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using listen_focus_t =
     class listen_focus_t : public listener_t<listen_focus_t> {};
@@ -1441,18 +1525,18 @@ using listen_focus_t =
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_focus_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using listen_blur_t = class listen_blur_t : public listener_t<listen_blur_t> {};
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_blur_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using listen_resize_t =
     class listen_resize_t : public listener_t<listen_resize_t> {};
@@ -1461,9 +1545,9 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_resize_t);
 
 /**
 
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using listen_keydown_t =
     class listen_keydown_t : public listener_t<listen_keydown_t> {};
@@ -1471,9 +1555,9 @@ using listen_keydown_t =
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_keydown_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using listen_keyup_t =
     class listen_keyup_t : public listener_t<listen_keyup_t> {
@@ -1484,9 +1568,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_keyup_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using listen_keypress_t =
     class listen_keypress_t : public listener_t<listen_keypress_t> {
@@ -1497,9 +1581,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_keypress_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using listen_mouseenter_t =
     class listen_mouseenter_t : public listener_t<listen_mouseenter_t> {
@@ -1510,9 +1594,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_mouseenter_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using listen_mousemove_t =
     class listen_mousemove_t : public listener_t<listen_mousemove_t> {
@@ -1523,9 +1607,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_mousemove_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using listen_mousedown_t =
     class listen_mousedown_t : public listener_t<listen_mousedown_t> {
@@ -1536,9 +1620,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_mousedown_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using listen_mouseup_t =
     class listen_mouseup_t : public listener_t<listen_mouseup_t> {
@@ -1549,9 +1633,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_mouseup_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using listen_click_t =
     class listen_click_t : public listener_t<listen_click_t> {
@@ -1562,9 +1646,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_click_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using listen_dblclick_t =
     class listen_dblclick_t : public listener_t<listen_dblclick_t> {
@@ -1575,9 +1659,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_dblclick_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using listen_contextmenu_t =
     class listen_contextmenu_t : public listener_t<listen_contextmenu_t> {
@@ -1588,9 +1672,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_contextmenu_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using listen_wheel_t =
     class listen_wheel_t : public listener_t<listen_wheel_t> {
@@ -1601,9 +1685,9 @@ public:
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_wheel_t);
 
 /**
-\class
-\brief
-*/
+ \class
+ \brief
+ */
 namespace uxdevice {
 using listen_mouseleave_t =
     class listen_mouseleave_t : public listener_t<listen_mouseleave_t> {
