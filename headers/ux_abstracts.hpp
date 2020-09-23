@@ -46,7 +46,7 @@ class coordinate_t;
 class emit_display_context_abstract_t {
 public:
   virtual ~emit_display_context_abstract_t(){};
-  virtual void emit(display_context_t &context) = 0;
+  virtual void emit(display_context_t *context) = 0;
 };
 
 } // namespace uxdevice
@@ -75,7 +75,7 @@ class emit_cairo_coordinate_abstract_t {
 public:
   virtual ~emit_cairo_coordinate_abstract_t(){};
   virtual void emit(cairo_t *cr) = 0;
-  virtual void emit(cairo_t *cr, coordinate_t &a) = 0;
+  virtual void emit(cairo_t *cr, coordinate_t *a) = 0;
 };
 
 } // namespace uxdevice

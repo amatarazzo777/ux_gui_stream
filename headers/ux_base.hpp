@@ -59,6 +59,7 @@ and base operating system windowing and event system. disk access, etc.
 #include <memory>
 #include <numeric>
 #include <optional>
+#include <queue>
 #include <random>
 #include <regex>
 #include <sstream>

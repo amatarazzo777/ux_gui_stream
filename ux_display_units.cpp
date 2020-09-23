@@ -333,7 +333,6 @@ std::size_t uxdevice::textual_render_storage_t::hash_code(void) const noexcept {
 
  */
 void uxdevice::textual_render_storage_t::set_layout_options(cairo_t *cr) {
-
   // create layout
   if (!layout)
     layout = pango_cairo_create_layout(cr);
@@ -407,7 +406,6 @@ and then calls function. The static
  */
 void uxdevice::textual_render_storage_t::pipeline(cairo_t *cr,
                                                   coordinate_t &a) {
-
   /// @brief call cached function if set.
   if (pipeline_fn) {
     pipeline_fn();
@@ -629,7 +627,6 @@ void uxdevice::textual_render_t::emit(display_context_t &context) {
 
  */
 void uxdevice::image_block_storage_t::pipeline(cairo_t *cr, coordinate_t &a) {
-
   /// @brief call cached function if set.
   if (pipeline_fn) {
     pipeline_fn();
@@ -716,7 +713,6 @@ void uxdevice::image_block_t::emit(display_context_t &context) {
       error_report(description);
 
     } else {
-
       ink_rectangle = {(int)a.x, (int)a.y, (int)a.w, (int)a.h};
       ink_rectangle_double = {(double)ink_rectangle.x, (double)ink_rectangle.y,
                               (double)ink_rectangle.width,

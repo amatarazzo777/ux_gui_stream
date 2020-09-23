@@ -28,9 +28,6 @@
 
 namespace uxdevice {
 
-
-
-
 class pango_visitor_t : public emit_pango_abstract_t {
 public:
   pango_visitor_t() = delete;
@@ -54,7 +51,7 @@ public:
 class cairo_coordinate_visitor_t : public emit_cairo_coordinate_abstract_t {
 public:
   cairo_coordinate_visitor_t() = delete;
-  cairo_coordinate_visitor_t(cairo_t *_cr, coordinate_t &_coord)
+  cairo_coordinate_visitor_t(cairo_t *_cr, coordinate_t *_coord)
       : cr(_cr), coord(_coord) {}
 
   void accept(void);
@@ -62,12 +59,10 @@ public:
   void emit(cairo_t *_cr, coordinate_t &a);
 
   cairo_t *cr = {};
-  coordinate_t coord;
+  coordinate_t *coord = {};
 
-  std::function<void(cairo_t *_cr)> fn_v1={};
-  std::function<void(cairo_t *_cr, coordinate_t &a)> fn_v2={};
-
+  std::function<void(cairo_t *_cr)> fn_v1 = {};
+  std::function<void(cairo_t *_cr, coordinate_t &a)> fn_v2 = {};
 };
 
-
-}
+} // namespace uxdevice

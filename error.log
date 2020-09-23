@@ -1,0 +1,1 @@
+g++ -std=c++17 -Os  -g -Iheaders/ `pkg-config --cflags cairo pango pangocairo  librsvg-2.0` -fexceptions -c main.cpp -o main.o

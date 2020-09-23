@@ -80,7 +80,7 @@ typedef std::function<void(display_context_t &context)> draw_logic_t;
 
 class display_context_t
     : virtual public hash_members_t,
-      public unit_memory_storage_t<attribute_unit_memory_display_context_t>,
+      public unit_memory_storage_t<visitor_unit_memory_display_context_t>,
       virtual system_error_t {
 public:
   class context_cairo_region_t {

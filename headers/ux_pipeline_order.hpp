@@ -18,33 +18,31 @@
 #pragma once
 
 /**
-\author Anthony Matarazzo
-\file ux_pipeline_order.hpp
-\date 9/7/20
-\version 1.0
-\brief The file sets the sort order for the priority queue. These
-values are set inside the ux_display_unit.hpp file within the
-template parameters. One of the order_NNN values is within the
-parameter. When objects within the linkages unit memory are
-queried for interface match of visitor and it is true,
-the push back to the priority queue receives these values.
-This makes the items appear in order.
+ \author Anthony Matarazzo
+ \file ux_pipeline_order.hpp
+ \date 9/7/20
+ \version 1.0
+ \brief The file sets the sort order for the priority queue. These
+ values are set inside the ux_display_unit.hpp file within the
+ template parameters. One of the order_NNN values is within the
+ parameter. When objects within the linkages unit memory are
+ queried for interface match of visitor and it is true,
+ the push back to the priority queue receives these values.
+ This makes the items appear in order.
 
-*/
-
+ */
+namespace uxdevice {
 const int order_init = 1;
-const int order_render_options = 2;
+const int order_render_option = 2;
 
 const int order_before_render = 3;
 const int order_render = 4;
 const int order_after_render = 5;
 const int order_terminate = 6;
 
-template <int T> class pipeline_sort_order_t {
+template <std::size_t T> class pipeline_sort_order_t {
 public:
-  const int pipeline_stage = T;
-
-
-  pipeline_sort_order_t() stage(0) {}
-  int stage = 0;
+  static const size_t pipeline_stage = T;
 };
+
+} // namespace uxdevice

@@ -1,7 +1,7 @@
-CC=clang-9
-#CC=g++
+#CC=clang
+CC=g++
 CFLAGS=-std=c++17 -Os 
-INCLUDES=-I/projects/guidom `pkg-config --cflags cairo pango pangocairo  librsvg-2.0` -fexceptions
+INCLUDES=-Iheaders/ `pkg-config --cflags cairo pango pangocairo  librsvg-2.0` -fexceptions
 
 LFLAGS=`pkg-config --libs cairo pango pangocairo  librsvg-2.0` 
 
@@ -11,28 +11,44 @@ debug: vis.out
 release: LFLAGS += -s
 release: vis.out
 
+
 all: vis.out
 
-vis.out: main.o uxdevice.o uxdisplaycontext.o uxdisplayunits.o uxpaint.o uxcairoimage.o
-	$(CC) -o vis.out main.o uxdevice.o uxdisplaycontext.o uxdisplayunits.o uxpaint.o uxcairoimage.o -lpthread -lm -lX11-xcb -lX11 -lxcb -lxcb-image -lxcb-keysyms -lstdc++ $(LFLAGS) 
-	
-main.o: main.cpp uxdevice.hpp
+
+vis.out: main.o ux_device.o ux_display_context.o ux_display_unit_base.o \
+	ux_display_units.o ux_draw_buffer.o ux_painter_brush.o ux_unit_memory.o \
+	ux_unit_memory_visitors.o
+	$(CC) -o vis.out main.o ux_device.o ux_display_context.o ux_display_unit_base.o \
+	ux_display_units.o ux_draw_buffer.o ux_painter_brush.o ux_unit_memory.o \
+	ux_unit_memory_visitors.o
+
+main.o: main.cpp
 	$(CC) $(CFLAGS) $(INCLUDES) -c main.cpp -o main.o
 
-uxdevice.o: uxdevice.cpp uxdevice.hpp
-	$(CC) $(CFLAGS) $(INCLUDES) -c uxdevice.cpp -o uxdevice.o
+
+ux_device.o: ux_device.cpp
+	$(CC) $(CFLAGS) $(INCLUDES) -c ux_device.cpp -o ux_device.o
 	
-uxdisplaycontext.o: uxdisplaycontext.cpp uxdisplaycontext.hpp
-	$(CC) $(CFLAGS) $(INCLUDES) -c uxdisplaycontext.cpp -o uxdisplaycontext.o
-	
-uxdisplayunits.o: uxdisplayunits.cpp uxdisplayunits.hpp
-	$(CC) $(CFLAGS) $(INCLUDES) -c uxdisplayunits.cpp -o uxdisplayunits.o
-	
-uxpaint.o: uxpaint.cpp uxpaint.hpp
-	$(CC) $(CFLAGS) $(INCLUDES) -c uxpaint.cpp -o uxpaint.o
-	
-uxcairoimage.o: uxcairoimage.cpp uxcairoimage.hpp
-	$(CC) $(CFLAGS) $(INCLUDES) -c uxcairoimage.cpp -o uxcairoimage.o
+ux_display_context.o: ux_display_context.cpp 
+	$(CC) $(CFLAGS) $(INCLUDES) -c ux_display_context.cpp -o ux_display_context.o
+
+ux_display_unit_base.o: ux_display_unit_base.cpp 
+	$(CC) $(CFLAGS) $(INCLUDES) -c ux_display_unit_base.cpp -o ux_display_unit_base.o
+
+ux_display_units.o: ux_display_units.cpp
+	$(CC) $(CFLAGS) $(INCLUDES) -c ux_display_units.cpp -o ux_display_units.o
+
+ux_draw_buffer.o: ux_draw_buffer.cpp
+	$(CC) $(CFLAGS) $(INCLUDES) -c ux_draw_buffer.cpp -o ux_draw_buffer.o
+
+ux_painter_brush.o: ux_painter_brush.cpp 
+	$(CC) $(CFLAGS) $(INCLUDES) -c ux_painter_brush.cpp -o ux_painter_brush.o
+
+ux_unit_memory.o: ux_unit_memory.cpp
+	$(CC) $(CFLAGS) $(INCLUDES) -c ux_unit_memory.cpp -o ux_unit_memory.o
+
+ux_unit_memory_visitors.o: ux_unit_memory_visitors.cpp
+	$(CC) $(CFLAGS) $(INCLUDES) -c ux_unit_memory_visitors.cpp -o ux_unit_memory_visitors.o
 
 clean:
 	rm *.o *.out

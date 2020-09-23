@@ -22,8 +22,8 @@
 \date 9/7/20
 \version 1.0
 \brief
-*/
 
+*/
 
 /**
 \internal
