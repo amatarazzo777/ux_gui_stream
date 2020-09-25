@@ -20,7 +20,7 @@
 
 /**
 \author Anthony Matarazzo
-\file ux_options.hpp
+\file ux_compile_options.hpp
 \date 9/19/20
 \version 1.0
 \brief Library Build Options

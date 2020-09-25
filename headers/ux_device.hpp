@@ -29,7 +29,7 @@
 #define PI (3.14159265358979323846264338327f)
 
 #include "ux_base.hpp"
-#include "ux_options.hpp"
+#include "ux_compile_options.hpp"
 
 #include "ux_error.hpp"
 #include "ux_hash.hpp"
@@ -38,21 +38,29 @@
 #include "ux_variant_visitor.hpp"
 
 #include "ux_event.hpp"
+#include "ux_event_listeners.hpp"
 #include "ux_matrix.hpp"
 
 #include "ux_abstracts.hpp"
 #include "ux_pipeline_order.hpp"
 
-#include "ux_unit_memory_visitors.hpp"
-#include "ux_unit_memory.hpp"
-
+#include "ux_pipeline_memory_visitors.hpp"
+#include "ux_pipeline_memory.hpp"
 
 #include "ux_draw_buffer.hpp"
 #include "ux_painter_brush.hpp"
 
+#include "ux_display_visual.hpp"
 #include "ux_display_context.hpp"
+
 #include "ux_display_unit_base.hpp"
 #include "ux_display_units.hpp"
+
+#include "ux_textual_render.hpp"
+#include "ux_text_units.hpp"
+
+#include "ux_drawing_unit_primitives.hpp"
+#include "ux_image_block_unit.hpp"
 
 namespace uxdevice {
 
@@ -193,7 +201,7 @@ public:
       std::shared_ptr<T> obj = display_list<T>(data);
       maintain_index(std::dynamic_pointer_cast<display_unit_t>(obj));
 
-      if constexpr (std::is_base_of<visitor_unit_memory_display_context_t,
+      if constexpr (std::is_base_of<visitor_pipeline_memory_display_context_t,
                                     T>::value)
         context.unit_memory<T>(obj);
 
@@ -220,8 +228,8 @@ public:
       }
 
       // if the item is a drawing output object, inform the context of it.
-      if constexpr (std::is_base_of<drawing_output_t, T>::value)
-        context.add_drawable(obj);
+      if constexpr (std::is_base_of<display_visual_t, T>::value)
+        context.add_visual(obj);
 
       // otherwise the input is another type. Try
       // the default string stream.
@@ -251,7 +259,7 @@ public:
       display_list<T>(data);
       maintain_index(std::dynamic_pointer_cast<display_unit_t>(data));
 
-      if constexpr (std::is_base_of<visitor_unit_memory_display_context_t,
+      if constexpr (std::is_base_of<visitor_pipeline_memory_display_context_t,
                                     T>::value)
         context.unit_memory<T>(data);
 
@@ -344,13 +352,13 @@ public:
   }
 
   display_unit_t &operator[](const std::string &_val) noexcept {
-    auto n = mapped_objects.find(indirect_index_display_unit_t{_val});
+    auto n = mapped_objects.find(indirect_index_storage_t{_val});
     if (n != mapped_objects.end())
       n->second->changed();
     return *n->second;
   }
   template <typename T> T &get(const std::string &key) {
-    auto n = mapped_objects.find(indirect_index_display_unit_t{key});
+    auto n = mapped_objects.find(indirect_index_storage_t{key});
     if (n != mapped_objects.end())
       n->second->changed();
     return *std::dynamic_pointer_cast<T>(n->second);
@@ -459,8 +467,7 @@ private:
     UX_DISPLAY_LIST_CLEAR;
   }
 
-  std::unordered_map<indirect_index_display_unit_t,
-                     std::shared_ptr<display_unit_t>>
+  std::unordered_map<indirect_index_storage_t, std::shared_ptr<display_unit_t>>
       mapped_objects = {};
 
   std::list<event_handler_t> onfocus = {};

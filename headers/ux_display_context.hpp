@@ -28,7 +28,6 @@
 \file uxdisplaycontext.hpp
 \date 5/12/20
 \version 1.0
-\version 1.0
  \details CLass holds the display window context, gui drawing, cairo
  context, and provides an interface for threads running to
  invalidate part of the surface, resize the surface. The
@@ -38,45 +37,17 @@
 */
 #pragma once
 
+/**
+ *
+ * \typedef visual_list_t
+ * \brief used by the system to hold a list of items that draw.
+ *
+ */
 namespace uxdevice {
-class index_by_t;
-
-class display_unit_t;
-class drawing_output_t;
-
-class coordinate_t;
-
-class antialias_t;
-class line_width_t;
-
-class text_font_t;
-class text_color_t;
-class text_fill_t;
-class text_outline_t;
-class text_shadow_t;
-class text_alignment_t;
-class text_indent_t;
-class text_ellipsize_t;
-class text_line_space_t;
-class text_tab_stops_t;
-class textual_render;
-class text_data_t;
-class image_block_t;
-
-class function_object_t;
-class option_function_object_t;
-class draw_function_object_t;
-
-typedef std::list<std::shared_ptr<display_unit_t>> display_unit_collection_t;
-typedef std::list<std::shared_ptr<display_unit_t>>::iterator
-    display_unit_collection_iter_t;
-typedef std::list<std::shared_ptr<drawing_output_t>>
-    drawing_output_collection_t;
-typedef std::list<std::shared_ptr<drawing_output_t>>::iterator
-    drawing_output_collection_iter_t;
-
-class display_context_t;
-typedef std::function<void(display_context_t &context)> draw_logic_t;
+typedef std::list<std::shared_ptr<display_visual_t>> visual_list_t;
+typedef std::list<std::shared_ptr<display_visual_t>>::iterator
+    visual_list_iter_t;
+} // namespace uxdevice
 
 class display_context_t
     : virtual public hash_members_t,
@@ -156,18 +127,18 @@ public:
     return *this;
   }
 
-  drawing_output_collection_t viewport_off = {};
+  visual_list_t viewport_off = {};
   std::atomic_flag drawables_off_readwrite = ATOMIC_FLAG_INIT;
-#define DRAWABLES_OFF_SPIN                                                     \
+#define VIEWPORT_OFF_SPIN                                                      \
   while (drawables_off_readwrite.test_and_set(std::memory_order_acquire))
-#define DRAWABLES_OFF_CLEAR                                                    \
+#define VIEWPORT_OFF_CLEAR                                                     \
   drawables_off_readwrite.clear(std::memory_order_release)
 
-  drawing_output_collection_t viewport_on = {};
+  visual_list_t viewport_on = {};
   std::atomic_flag drawables_on_readwrite = ATOMIC_FLAG_INIT;
-#define DRAWABLES_ON_SPIN                                                      \
+#define VIEWPORT_ON_SPIN                                                       \
   while (drawables_on_readwrite.test_and_set(std::memory_order_acquire))
-#define DRAWABLES_ON_CLEAR                                                     \
+#define VIEWPORT_ON_CLEAR                                                      \
   drawables_on_readwrite.clear(std::memory_order_release)
 
   bool surface_prime(void);
@@ -182,9 +153,9 @@ public:
   void surface_brush(painter_brush_t &b);
 
   void render(void);
-  void add_drawable(std::shared_ptr<drawing_output_t> _obj);
+  void add_visual(std::shared_ptr<display_visual_t> _obj);
   void partition_visibility(void);
-  void state(std::shared_ptr<drawing_output_t> obj);
+  void state(std::shared_ptr<display_visual_t> obj);
   void state(int x, int y, int w, int h);
   bool state(void);
   void state_surface(int x, int y, int w, int h);
@@ -274,3 +245,8 @@ public:
   bool preclear = false;
 }; // namespace uxdevice
 } // namespace uxdevice
+
+namespace {
+typedef std::function<void(display_context_t &context)> draw_logic_t;
+
+}

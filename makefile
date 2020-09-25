@@ -1,5 +1,5 @@
-#CC=clang
-CC=g++
+CC=clang
+#CC=g++
 CFLAGS=-std=c++17 -Os 
 INCLUDES=-Iheaders/ `pkg-config --cflags cairo pango pangocairo  librsvg-2.0` -fexceptions
 
@@ -24,7 +24,6 @@ vis.out: main.o ux_device.o ux_display_context.o ux_display_unit_base.o \
 
 main.o: main.cpp
 	$(CC) $(CFLAGS) $(INCLUDES) -c main.cpp -o main.o
-
 
 ux_device.o: ux_device.cpp
 	$(CC) $(CFLAGS) $(INCLUDES) -c ux_device.cpp -o ux_device.o

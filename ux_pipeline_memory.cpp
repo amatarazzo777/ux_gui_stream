@@ -30,7 +30,7 @@
 
 */
 template <typename ATTR>
-void uxdevice::unit_memory_storage_t<ATTR>::unit_memory_linkages(
+void uxdevice::pipeline_memory_t<ATTR>::unit_memory_linkages(
     display_context_t &other) {
   for (auto n : other.storage)
     if (n.first == std::type_index(typeid(ATTR)))

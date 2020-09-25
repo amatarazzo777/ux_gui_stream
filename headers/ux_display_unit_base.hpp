@@ -42,7 +42,7 @@ The [] operator exposes searching for objects.
  */
 namespace uxdevice {
 typedef std::variant<std::monostate, std::string, std::size_t>
-    indirect_index_display_unit_t;
+    indirect_index_storage_t;
 }
 
 /**
@@ -50,9 +50,9 @@ typedef std::variant<std::monostate, std::string, std::size_t>
 \template specializes the std::hash<uxdevice::indirect_index_display_unit_t>
  * std structure for () operator hashing.
  */
-template <> struct std::hash<uxdevice::indirect_index_display_unit_t> {
+template <> struct std::hash<uxdevice::indirect_index_storage_t> {
   std::size_t
-  operator()(uxdevice::indirect_index_display_unit_t const &o) const noexcept {
+  operator()(uxdevice::indirect_index_storage_t const &o) const noexcept {
     size_t value = o.index();
     uxdevice::hash_combine(value, std::type_index(typeid(o)).hash_code());
     if (auto pval = std::get_if<std::string>(&o))
@@ -76,38 +76,6 @@ template <> struct std::hash<uxdevice::cairo_function_t> {
     return reinterpret_cast<std::size_t>(std::addressof(o));
   }
 };
-
-namespace uxdevice {
-using cairo_option_function_t = class cairo_option_function_t {
-public:
-  cairo_option_function_t() {}
-  cairo_option_function_t(const cairo_function_t &val) { value.push_back(val); }
-
-  cairo_option_function_t &operator=(const cairo_option_function_t &other) {
-    value = other.value;
-    return *this;
-  }
-  /// @brief move assignment
-  cairo_option_function_t &operator=(cairo_option_function_t &&other) noexcept {
-    value = std::move(other.value);
-    return *this;
-  }
-
-  cairo_option_function_t(cairo_option_function_t &other) noexcept
-      : value(other.value) {}
-
-  cairo_option_function_t(cairo_option_function_t &&other) noexcept
-      : value(std::move(other.value)) {}
-  virtual ~cairo_option_function_t() {}
-  virtual void invoke(display_context_t &context);
-  virtual void emit(cairo_t *cr);
-
-  std::size_t hash_code(void) const noexcept;
-
-  std::list<cairo_function_t> value = {};
-};
-} // namespace uxdevice
-  // namespace uxdevice
 
 /**
 \internal
@@ -170,145 +138,6 @@ public:
 
 /**
 \internal
-\class drawing_output_t
-\brief base class for objects that produce image drawing commands
-The is_output is overridden to return true. As well the object uses
-the intersection to determine if a particular derrived drawing object
-is on screen.
-
-\details
-
-
- */
-namespace uxdevice {
-class drawing_output_t : public display_unit_t {
-public:
-  typedef display_context_t::context_cairo_region_t context_cairo_region_t;
-
-  /// @brief default constructor
-  drawing_output_t() : display_unit_t() {}
-
-  /// @brief move assignment
-  drawing_output_t &operator=(drawing_output_t &&other) noexcept {
-    display_unit_t::operator=(other);
-
-    internal_buffer = std::move(other.internal_buffer);
-
-    fn_draw = std::move(other.fn_draw);
-    fn_draw_clipped = std::move(other.fn_draw_clipped);
-    fn_cache_surface = std::move(other.fn_cache_surface);
-    fn_base_surface = std::move(other.fn_base_surface);
-
-    options = std::move(other.options);
-    ink_rectangle = std::move(other.ink_rectangle);
-    intersection_int = std::move(other.intersection_int);
-    intersection_double = std::move(other.intersection_double);
-    return *this;
-  }
-
-  /// @brief copy assignment operator
-  drawing_output_t &operator=(const drawing_output_t &other) {
-    display_unit_t::operator=(other);
-
-    if (other.internal_buffer.rendered)
-      internal_buffer.rendered =
-          cairo_surface_reference(other.internal_buffer.rendered);
-
-    if (other.internal_buffer.cr)
-      internal_buffer.cr = cairo_reference(other.internal_buffer.cr);
-
-    fn_draw = other.fn_draw;
-    fn_draw_clipped = other.fn_draw_clipped;
-    fn_cache_surface = other.fn_cache_surface;
-    fn_base_surface = other.fn_base_surface;
-
-    std::copy(other.options.value.begin(), other.options.value.end(),
-              std::back_inserter(options.value));
-
-    ink_rectangle = other.ink_rectangle;
-    intersection_int = other.intersection_int;
-    intersection_double = other.intersection_double;
-
-    return *this;
-  }
-
-  /// @brief move constructor
-  drawing_output_t(drawing_output_t &&other) noexcept
-      : display_unit_t(other),
-        internal_buffer(std::move(other.internal_buffer)),
-
-        fn_cache_surface(std::move(other.fn_cache_surface)),
-        fn_base_surface(std::move(other.fn_base_surface)),
-        fn_draw(std::move(other.fn_draw)),
-        fn_draw_clipped(std::move(other.fn_draw_clipped)),
-
-        options(std::move(other.options)),
-        ink_rectangle(std::move(other.ink_rectangle)),
-        intersection_int(std::move(other.intersection_int)),
-        intersection_double(std::move(other.intersection_double)) {}
-
-  /// @brief copy constructor
-  drawing_output_t(const drawing_output_t &other) {
-    // invoke copy operator
-    *this = other;
-  }
-
-  virtual ~drawing_output_t() {}
-  void emit(cairo_t *cr);
-  void intersect(cairo_rectangle_t &r);
-  void intersect(context_cairo_region_t &r);
-
-  bool is_output(void) { return true; }
-
-  // These functions switch the rendering apparatus from off
-  // screen threaded to on screen. all rendering is serialize to the main
-  // surface
-  //
-  std::atomic_flag lockFunctors = ATOMIC_FLAG_INIT;
-#define LOCK_FUNCTORS_SPIN                                                     \
-  while (lockFunctors.test_and_set(std::memory_order_acquire))
-
-#define LOCK_FUNCTORS_CLEAR lockFunctors.clear(std::memory_order_release)
-
-  void functors_lock(bool b) {
-    if (b)
-      LOCK_FUNCTORS_SPIN;
-    else
-      LOCK_FUNCTORS_CLEAR;
-  }
-  std::size_t hash_code(void) const noexcept {
-    std::size_t __value = {};
-    hash_combine(__value, std::type_index(typeid(drawing_output_t)),
-                 has_ink_extents, overlap);
-    return __value;
-  }
-
-  bool has_ink_extents = false;
-  cairo_rectangle_int_t c = cairo_rectangle_int_t();
-  cairo_region_overlap_t overlap = CAIRO_REGION_OVERLAP_OUT;
-
-  std::atomic<bool> bRenderBufferCached = false;
-  draw_buffer_t internal_buffer = {};
-
-  draw_logic_t fn_cache_surface = draw_logic_t();
-  draw_logic_t fn_base_surface = draw_logic_t();
-  draw_logic_t fn_draw = draw_logic_t();
-  draw_logic_t fn_draw_clipped = draw_logic_t();
-
-  // measure processing time
-  std::chrono::system_clock::time_point last_render_time = {};
-  void evaluate_cache(display_context_t &context);
-  bool first_time_rendered = true;
-  cairo_option_function_t options = {};
-  cairo_rectangle_int_t ink_rectangle = cairo_rectangle_int_t();
-  cairo_rectangle_t ink_rectangle_double = cairo_rectangle_t();
-  cairo_rectangle_int_t intersection_int = cairo_rectangle_int_t();
-  cairo_rectangle_t intersection_double = cairo_rectangle_t();
-};
-} // namespace uxdevice
-
-/**
-\internal
 
 \class typed_index_t
 
@@ -326,7 +155,7 @@ class key_storage_t {
 public:
   key_storage_t() {}
   virtual ~key_storage_t() {}
-  key_storage_t(const indirect_index_display_unit_t &_key) : key(_key) {}
+  key_storage_t(const indirect_index_storage_t &_key) : key(_key) {}
   /// @brief copy assignment operator
   key_storage_t &operator=(const key_storage_t &other) {
     key = other.key;
@@ -343,7 +172,7 @@ public:
   /// @brief copy constructor
   key_storage_t(const key_storage_t &other) { *this = other; }
 
-  indirect_index_display_unit_t key = {};
+  indirect_index_storage_t key = {};
 };
 
 template <typename T>
@@ -369,16 +198,16 @@ public:
   typed_index_t(const typed_index_t &other) : key_storage_t(other) {}
 
   T &index(const std::string &_k) {
-    key_storage_t::operator=(indirect_index_display_unit_t(_k));
+    key_storage_t::operator=(indirect_index_storage_t(_k));
     return *static_cast<T *>(this);
   }
   T &index(const std::size_t &_k) {
-    key_storage_t::operator=(indirect_index_display_unit_t(_k));
+    key_storage_t::operator=(indirect_index_storage_t(_k));
     return *static_cast<T *>(this);
   }
   std::size_t hash_code(void) const noexcept {
     std::size_t __value = {};
-    hash_combine(__value, std::type_index(typeid(drawing_output_t)), key);
+    hash_combine(__value, std::type_index(typeid(display_visual_t)), key);
     return __value;
   }
   virtual ~typed_index_t() {}
@@ -479,9 +308,9 @@ public:
 
   virtual ~painter_brush_emitter_t() {}
 
-  void emit(display_context_t &context) { painter_brush_t::emit(context.cr); }
+  void emit(display_context_t *context) { painter_brush_t::emit(context->cr); }
   void emit(cairo_t *cr) { painter_brush_t::emit(cr); }
-  void emit(cairo_t *cr, coordinate_t &a) { painter_brush_t::emit(cr, a); }
+  void emit(cairo_t *cr, coordinate_t *a) { painter_brush_t::emit(cr, a); }
 
   std::size_t hash_code(void) const noexcept {
     std::size_t __value = {};
@@ -692,145 +521,3 @@ public:
 };
 } // namespace uxdevice
 
-/**
-\internal
-\class storage_drawing_function_t
-
-\tparam T - the name the display unit should assume.
-\tparam TS - the storage trivial type.
-\tparam Args.. - this names the applicable invoke and emit functions.
- Depending on the particular display unit type, pango or cairo
-emit functions may be useful. The parameter is intended for abstract call
-classes to be listed. However user defined classes may also be listed.
-
-\brief provides the flexibility to store associated trivial data in the class.
-The class names the the item 'value' which can be accessed from class member
-functions such as emit and invoke.
-
-*/
-namespace uxdevice {
-template <typename T, typename TS, typename... Args>
-class storage_drawing_function_t : virtual public drawing_output_t,
-                                   virtual public hash_members_t,
-                                   public typed_index_t<T>,
-                                   std::enable_shared_from_this<T>,
-                                   public Args... {
-public:
-  storage_drawing_function_t() : value(TS{}) {}
-
-  // copy constructor
-  storage_drawing_function_t(const storage_drawing_function_t &other)
-      : value(other), drawing_output_t(other), typed_index_t<T>(other),
-        hash_members_t(other) {}
-
-  // move constructor
-  storage_drawing_function_t(storage_drawing_function_t &&other) noexcept
-      : value(other), drawing_output_t(other), typed_index_t<T>(other),
-        hash_members_t(other) {}
-
-  // copy assignment operator
-  storage_drawing_function_t &
-  operator=(const storage_drawing_function_t &other) {
-    value = other.value;
-    drawing_output_t::operator=(other);
-    typed_index_t<T>::operator=(other);
-    hash_members_t::operator=(other);
-    return *this;
-  }
-  // move assignment operator
-  storage_drawing_function_t &
-  operator=(storage_drawing_function_t &&other) noexcept {
-    value = other.value;
-    drawing_output_t::operator=(other);
-    typed_index_t<T>::operator=(other);
-    hash_members_t::operator=(other);
-    return *this;
-  }
-
-  virtual ~storage_drawing_function_t() {}
-
-  std::size_t hash_code(void) const noexcept {
-    std::size_t __value = {};
-    hash_combine(__value, typed_index_t<T>::hash_code(),
-                 std::type_index(typeid(T)).hash_code(),
-                 drawing_output_t::hash_code(), value);
-
-    return __value;
-  }
-  TS value;
-};
-} // namespace uxdevice
-
-/**
-\internal
-\class class_storage_drawing_function_t
-
-\tparam T - the name the display unit should assume.
-\tparam TC - the storage class. The class must implement the hash_members_t
-object and hash_code function. \tparam Args... - a list of interfaces to
-inheirit. The system uses the spot for abstract classes. However, other user
-defined classes can be placed here as well.
-
-\brief Provides the ability to store an object accepting a specific parameter
-API. These objects are called for render functions and also have a dimension
-(ink rectangle). They occupy a bounds as defined by ink_rectangle. They can be
-established as on or off view_port by intersection test with the view_port
-rectangle. The class must include the hash_members_t interface. That is,
-implement the hash_code()  member function.
-
-
-*/
-namespace uxdevice {
-template <typename T, typename TC, typename... Args>
-class class_storage_drawing_function_t : public TC,
-                                         public typed_index_t<T>,
-                                         virtual public drawing_output_t,
-                                         virtual public hash_members_t,
-                                         std::enable_shared_from_this<T>,
-                                         public Args... {
-public:
-  using TC::TC;
-  class_storage_drawing_function_t() {}
-
-  // copy constructor
-  class_storage_drawing_function_t(
-      const class_storage_drawing_function_t &other)
-      : hash_members_t(other), drawing_output_t(other),
-        TC(other), typed_index_t<T>(other) {}
-
-  // move constructor
-  class_storage_drawing_function_t(
-      class_storage_drawing_function_t &&other) noexcept
-      : hash_members_t(other), drawing_output_t(other),
-        TC(other), typed_index_t<T>(other) {}
-
-  // copy assignment operator
-  class_storage_drawing_function_t &
-  operator=(const class_storage_drawing_function_t &other) {
-    drawing_output_t::operator=(other);
-    typed_index_t<T>::operator=(other);
-    hash_members_t::operator=(other);
-    TC::operator=(other);
-    return *this;
-  }
-  // move assignment operator
-  class_storage_drawing_function_t &
-  operator=(class_storage_drawing_function_t &&other) noexcept {
-    drawing_output_t::operator=(other);
-    typed_index_t<T>::operator=(other);
-    hash_members_t::operator=(other);
-    TC::operator=(other);
-    return *this;
-  }
-
-  std::size_t hash_code(void) const noexcept {
-    std::size_t __value = {};
-    hash_combine(__value, typed_index_t<T>::hash_code(),
-                 std::type_index(typeid(T)).hash_code(),
-                 drawing_output_t::hash_code(), TC::hash_code());
-
-    return __value;
-  }
-  virtual ~class_storage_drawing_function_t() {}
-};
-} // namespace uxdevice

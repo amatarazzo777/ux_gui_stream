@@ -118,7 +118,7 @@ public:
 
     virtual ~paint_definition_base_t() {}
     virtual void emit(cairo_t *cr) {}
-    virtual void emit(cairo_t *cr, coordinate_t &a) {}
+    virtual void emit(cairo_t *cr, coordinate_t *a) {}
 
     bool is_color_description(void) {
       bool bret = false;
@@ -226,7 +226,7 @@ public:
 
     virtual ~color_definition_t() {}
     virtual void emit(cairo_t *cr) { cairo_set_source_rgba(cr, r, g, b, a); }
-    virtual void emit(cairo_t *cr, coordinate_t &coord) {
+    virtual void emit(cairo_t *cr, coordinate_t *coord) {
       cairo_set_source_rgba(cr, r, g, b, a);
     }
     std::size_t hash_code(void) const noexcept {
@@ -276,7 +276,7 @@ public:
       cairo_pattern_set_matrix(pattern, &matrix._matrix);
       cairo_set_source(cr, pattern);
     }
-    virtual void emit(cairo_t *cr, coordinate_t &a) {
+    virtual void emit(cairo_t *cr, coordinate_t *a) {
       cairo_pattern_set_matrix(pattern, &matrix._matrix);
       cairo_set_source(cr, pattern);
     }
@@ -415,7 +415,7 @@ public:
       cairo_pattern_set_matrix(pattern, &matrix._matrix);
       cairo_set_source(cr, pattern);
     }
-    virtual void emit(cairo_t *cr, coordinate_t &coord) {
+    virtual void emit(cairo_t *cr, coordinate_t *coord) {
       cairo_pattern_set_matrix(pattern, &matrix._matrix);
       cairo_set_source(cr, pattern);
     }
@@ -511,7 +511,7 @@ public:
   }
 
   virtual void emit(cairo_t *cr);
-  virtual void emit(cairo_t *cr, coordinate_t &coord);
+  virtual void emit(cairo_t *cr, coordinate_t *coord);
   bool is_valid(void) { return data_storage != nullptr; }
 
 private:

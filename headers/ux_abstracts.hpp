@@ -97,23 +97,23 @@ public:
 
 // abstract labels class as copy and emit local unit memory
 namespace uxdevice {
-class visitor_unit_memory_display_context_t {
+class visitor_pipeline_memory_display_context_t {
 public:
-  virtual ~visitor_unit_memory_display_context_t() {}
+  virtual ~visitor_pipeline_memory_display_context_t() {}
 };
 } // namespace uxdevice
 
 // abstract labels class as copy and emit local unit memory
 namespace uxdevice {
-class visitor_unit_memory_textual_render_t {
+class visitor_pipeline_memory_textual_render_t {
 public:
-  virtual ~visitor_unit_memory_textual_render_t() {}
+  virtual ~visitor_pipeline_memory_textual_render_t() {}
 };
 } // namespace uxdevice
 
 namespace uxdevice {
-class visitor_unit_memory_image_block_t {
+class visitor_pipeline_memory_image_block_t {
 public:
-  virtual ~visitor_unit_memory_image_block_t() {}
+  virtual ~visitor_pipeline_memory_image_block_t() {}
 };
 } // namespace uxdevice

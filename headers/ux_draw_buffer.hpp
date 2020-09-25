@@ -109,8 +109,8 @@ public:
     return __value;
   }
 
-  virtual void emit(cairo_t *cr);
-  virtual void emit(cairo_t *cr, coordinate_t &a);
+  void emit(cairo_t *cr);
+  void emit(cairo_t *cr, coordinate_t *a);
   void flush(void) { cairo_surface_flush(rendered); }
 
   cairo_t *cr = {};

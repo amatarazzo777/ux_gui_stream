@@ -18,32 +18,14 @@
 
 /**
 \author Anthony Matarazzo
-\file uxdisplayunitbase.hpp
+\file ux_display_visual.cpp
 \date 9/7/20
 \version 1.0
-\version 1.0
-
-\brief The modules extends the uxdevice namespace. The objects
-provided are the base objects for which the caller may instantiate to
-draw. While most of these objects are parameters to drawing functions,
-the implementation with in this file provides the functional logic.
-All objects derive from the display_unit_t class which contains the
-virtual invoke method. Objects that provide drawing operations
-can inherit from the drawing_output_t base class which enables visibility
-query. As well, a particular note is that parameters that describe colors,
-shading or texturing derive and publish the painter_brush_t class interface.
-
+\brief
 */
-
 #include "ux_device.hpp"
 
-void uxdevice::drawing_output_t::emit(cairo_t *cr) {
-  for (auto &fn : options.value)
-    fn(cr);
-  is_processed = true;
-}
-
-void uxdevice::drawing_output_t::intersect(cairo_rectangle_t &r) {
+void uxdevice::display_visual_t::intersect(cairo_rectangle_t &r) {
   if (!has_ink_extents)
     return;
   cairo_rectangle_int_t rInt = {(int)r.x, (int)r.y, (int)r.width,
@@ -67,7 +49,7 @@ void uxdevice::drawing_output_t::intersect(cairo_rectangle_t &r) {
   cairo_region_destroy(rectregion);
 }
 
-void uxdevice::drawing_output_t::intersect(context_cairo_region_t &rectregion) {
+void uxdevice::display_visual_t::intersect(context_cairo_region_t &rectregion) {
   if (!has_ink_extents)
     return;
 
@@ -80,7 +62,7 @@ void uxdevice::drawing_output_t::intersect(context_cairo_region_t &rectregion) {
   cairo_region_destroy(dst);
 }
 
-void uxdevice::drawing_output_t::evaluate_cache(display_context_t &context) {
+void uxdevice::display_visual_t::evaluate_cache(display_context_t &context) {
   return;
   if (bRenderBufferCached) {
     last_render_time = std::chrono::high_resolution_clock::now();
@@ -92,25 +74,4 @@ void uxdevice::drawing_output_t::evaluate_cache(display_context_t &context) {
     first_time_rendered = false;
   }
   last_render_time = std::chrono::high_resolution_clock::now();
-}
-
-std::size_t uxdevice::cairo_option_function_t::hash_code(void) const noexcept {
-  std::size_t __value = {};
-  for (auto n : value)
-    hash_combine(__value, n.target_type().hash_code());
-  hash_combine(__value, std::type_index(typeid(cairo_option_function_t)),
-               value.size());
-  return __value;
-}
-
-void uxdevice::cairo_option_function_t::invoke(display_context_t &context) {
-#if 0
-    auto &func = value;
-    auto optType = func.target_type().hash_code();
-    context.unit_memory<cairo_option_function_t>().remove_if([=](auto &n) {
-      auto &funcTarget = n->value;
-      return funcTarget.target_type().hash_code() == optType;
-    });
-    context.unit_memory<drawing_options_fn>(shared_from_this());
-#endif // 0
 }

@@ -18,7 +18,7 @@
 
 /**
 \author Anthony Matarazzo
-\file uxdisplayunits.hpp
+\file ux_display_context.cpp
 \date 9/7/20
 \version 1.0
 \brief
@@ -64,7 +64,7 @@ bool uxdevice::display_context_t::surface_prime() {
 }
 /**
 \internal
-\brief The routine provides the syncronization of the xcb cairo surface
+\brief The routine provides the synchronization of the xcb cairo surface
 and the video system of xcb.
 */
 void uxdevice::display_context_t::flush() {
@@ -230,20 +230,20 @@ appropriate list, on or offscreen. If the item is on screen,
 a region area paint is requested for the object's area.
 
 */
-void uxdevice::display_context_t::add_drawable(
-    std::shared_ptr<drawing_output_t> _obj) {
+void uxdevice::display_context_t::add_visual(
+    std::shared_ptr<display_visual_t> _obj) {
   viewport_rectangle = {(double)offsetx, (double)offsety,
                         (double)offsetx + (double)window_width,
                         (double)offsety + (double)window_height};
   _obj->intersect(viewport_rectangle);
   if (_obj->overlap == CAIRO_REGION_OVERLAP_OUT) {
-    DRAWABLES_OFF_SPIN;
+    VIEWPORT_OFF_SPIN;
     viewport_off.emplace_back(_obj);
-    DRAWABLES_OFF_CLEAR;
+    VIEWPORT_OFF_CLEAR;
   } else {
-    DRAWABLES_ON_SPIN;
+    VIEWPORT_ON_SPIN;
     viewport_on.emplace_back(_obj);
-    DRAWABLES_ON_CLEAR;
+    VIEWPORT_ON_CLEAR;
     state(_obj);
   }
   _obj->viewport_inked = true;
@@ -254,20 +254,20 @@ void uxdevice::display_context_t::add_drawable(
 */
 void uxdevice::display_context_t::partition_visibility(void) {
   // determine if any off screen elements are visible
-  DRAWABLES_OFF_SPIN;
+  VIEWPORT_OFF_SPIN;
 
   viewport_rectangle = {(double)offsetx, (double)offsety,
                         (double)offsetx + (double)window_width,
                         (double)offsety + (double)window_height};
   if (viewport_off.empty()) {
-    DRAWABLES_OFF_CLEAR;
+    VIEWPORT_OFF_CLEAR;
     return;
   }
 
   drawing_output_collection_t::iterator obj = viewport_off.begin();
   while (obj != viewport_off.end()) {
-    std::shared_ptr<drawing_output_t> n = *obj;
-    DRAWABLES_OFF_CLEAR;
+    std::shared_ptr<display_visual_t> n = *obj;
+    VIEWPORT_OFF_CLEAR;
 
     n->intersect(viewport_rectangle);
     if (clearing_frame) {
@@ -278,19 +278,19 @@ void uxdevice::display_context_t::partition_visibility(void) {
     if (n->overlap != CAIRO_REGION_OVERLAP_OUT) {
       drawing_output_collection_t::iterator next = obj;
       next++;
-      DRAWABLES_ON_SPIN;
+      VIEWPORT_ON_SPIN;
       viewport_on.emplace_back(n);
-      DRAWABLES_ON_CLEAR;
+      VIEWPORT_ON_CLEAR;
 
-      DRAWABLES_OFF_SPIN;
+      VIEWPORT_OFF_SPIN;
       if (clearing_frame || viewport_off.empty()) {
         clearing_frame = false;
-        DRAWABLES_OFF_CLEAR;
+        VIEWPORT_OFF_CLEAR;
         break;
       }
 
       viewport_off.erase(obj);
-      DRAWABLES_OFF_CLEAR;
+      VIEWPORT_OFF_CLEAR;
       obj = next;
     } else {
       obj++;
@@ -301,9 +301,9 @@ void uxdevice::display_context_t::partition_visibility(void) {
       break;
     }
 
-    DRAWABLES_OFF_SPIN;
+    VIEWPORT_OFF_SPIN;
   }
-  DRAWABLES_OFF_CLEAR;
+  VIEWPORT_OFF_CLEAR;
 }
 /**
 \internal
@@ -321,13 +321,13 @@ void uxdevice::display_context_t::clear(void) {
 
   REGIONS_CLEAR;
 
-  DRAWABLES_ON_SPIN;
+  VIEWPORT_ON_SPIN;
   viewport_on.clear();
-  DRAWABLES_ON_CLEAR;
+  VIEWPORT_ON_CLEAR;
 
-  DRAWABLES_OFF_SPIN;
+  VIEWPORT_OFF_SPIN;
   viewport_off.clear();
-  DRAWABLES_OFF_CLEAR;
+  VIEWPORT_OFF_CLEAR;
 
   state(0, 0, window_width, window_height);
 }
@@ -348,7 +348,7 @@ associated render work with the object's coordinate_t.
 note stateNotifyComplete must be called after this to inform the renderer
 there is work.
 */
-void uxdevice::display_context_t::state(std::shared_ptr<drawing_output_t> obj) {
+void uxdevice::display_context_t::state(std::shared_ptr<display_visual_t> obj) {
   REGIONS_SPIN;
   std::size_t onum = reinterpret_cast<std::size_t>(obj.get());
 
@@ -435,9 +435,9 @@ void uxdevice::display_context_t::plot(context_cairo_region_t &plotArea) {
   // if an object is named as what should be updated.
   // setting the flag informs that the contents
   // has been evaluated and ma be removed
-  DRAWABLES_ON_SPIN;
+  VIEWPORT_ON_SPIN;
   if (viewport_on.empty()) {
-    DRAWABLES_ON_CLEAR;
+    VIEWPORT_ON_CLEAR;
     return;
   }
 
@@ -445,8 +445,8 @@ void uxdevice::display_context_t::plot(context_cairo_region_t &plotArea) {
   bool bDone = false;
   while (!bDone) {
 
-    std::shared_ptr<drawing_output_t> n = *itUnit;
-    DRAWABLES_ON_CLEAR;
+    std::shared_ptr<display_visual_t> n = *itUnit;
+    VIEWPORT_ON_CLEAR;
     n->intersect(plotArea._rect);
 
     switch (n->overlap) {
@@ -473,18 +473,11 @@ void uxdevice::display_context_t::plot(context_cairo_region_t &plotArea) {
     if (clearing_frame)
       bDone = true;
 
-    DRAWABLES_ON_SPIN;
+    VIEWPORT_ON_SPIN;
     if (!bDone) {
       itUnit++;
       bDone = itUnit == viewport_on.end();
     }
   }
-  DRAWABLES_ON_CLEAR;
-}
-
-void uxdevice::draw_buffer_t::emit(cairo_t *tocr, coordinate_t &coord) {
-  cairo_set_source_surface(tocr, rendered, coord.x, coord.y);
-
-  cairo_rectangle(tocr, coord.x, coord.y, coord.w, coord.h);
-  cairo_fill(tocr);
+  VIEWPORT_ON_CLEAR;
 }

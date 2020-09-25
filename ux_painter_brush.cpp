@@ -1,6 +1,6 @@
 /*
  * This file is part of the PLATFORM_OBJ distribution
- * {https://github.com/amatarazzo777/platform_obj). Copyright (c) 2020 Anthony
+ * {https://github.com/amatarazzo777/platform_obj}. Copyright (c) 2020 Anthony
  * Matarazzo.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,13 +16,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
-\author Anthony Matarazzo
-\file uxdisplayunits.hpp
-\date 9/7/20
-\version 1.0
-\brief
-*/
 /**
 \author Anthony Matarazzo
 \file uxpaint.hpp
@@ -108,7 +101,7 @@ stored. SVG inline or a base64 data set.
 bool uxdevice::painter_brush_t::create(void) {
 
   // already created,
-  if (data_storage->is_loaded)
+  if (data_storage->is_processed)
     return true;
   if (!is_valid())
     return false;
@@ -147,8 +140,8 @@ bool uxdevice::painter_brush_t::create(void) {
   }
 
   // early exit
-  if (data_storage->is_loaded)
-    return data_storage->is_loaded;
+  if (data_storage->is_processed)
+    return data_storage->is_processed;
 
   // still more processing to do, -- create gradients
   // the parsing above for gradients populates this data.
@@ -160,36 +153,26 @@ bool uxdevice::painter_brush_t::create(void) {
 
   color_stops_t *ptr_cs = {};
   cairo_pattern_t *ptr_cp = {};
-  switch (data_storage->class_type) {
-  case paint_definition_class_t::linear_gradient: {
+  if (data_storage->class_type == paint_definition_class_t::linear_gradient) {
     auto p =
         std::dynamic_pointer_cast<linear_gradient_definition_t>(data_storage);
     p->pattern = cairo_pattern_create_linear(p->x0, p->y0, p->x1, p->y1);
     ptr_cp = p->pattern;
     ptr_cs = &p->color_stops;
-  } break;
-  case paint_definition_class_t::radial_gradient: {
+  } else if (data_storage->class_type ==
+             paint_definition_class_t::radial_gradient) {
     auto p =
         std::dynamic_pointer_cast<radial_gradient_definition_t>(data_storage);
     p->pattern = cairo_pattern_create_radial(p->cx0, p->cy0, p->radius0, p->cx1,
                                              p->cy1, p->radius1);
     ptr_cp = p->pattern;
     ptr_cs = &p->color_stops;
-  } break;
-  case paint_definition_class_t::none: {
-  } break;
-  case paint_definition_class_t::descriptive: {
-  } break;
-  case paint_definition_class_t::color: {
-  } break;
-  case paint_definition_class_t::image_block_pattern: {
-  } break;
   }
 
   // early exit
   if (!ptr_cs) {
-    data_storage->is_loaded = false;
-    return data_storage->is_loaded;
+    data_storage->is_processed = false;
+    return data_storage->is_processed;
   }
 
   color_stops_t &stops = *ptr_cs;
@@ -257,10 +240,10 @@ bool uxdevice::painter_brush_t::create(void) {
     });
 
     cairo_pattern_set_extend(ptr_cp, CAIRO_EXTEND_REPEAT);
-    data_storage->is_loaded = true;
+    data_storage->is_processed = true;
   }
 
-  return data_storage->is_loaded;
+  return data_storage->is_processed;
 }
 
 /**
@@ -272,16 +255,15 @@ the color name string.
 */
 
 void uxdevice::painter_brush_t::emit(cairo_t *cr) {
-  if (!data_storage->is_loaded)
+  if (!data_storage->is_processed)
     create();
 
-  if (data_storage->is_loaded) {
+  if (data_storage->is_processed)
     data_storage->emit(cr);
-  }
 }
 
 void uxdevice::painter_brush_t::emit(cairo_t *cr, coordinate_t &a) {
-  if (!data_storage->is_loaded) {
+  if (!data_storage->is_processed) {
     create();
 
     // adjust to user space
@@ -292,7 +274,6 @@ void uxdevice::painter_brush_t::emit(cairo_t *cr, coordinate_t &a) {
       translate(-a.x, -a.y);
   }
 
-  if (data_storage->is_loaded) {
+  if (data_storage->is_processed)
     data_storage->emit(cr, a);
-  }
 }

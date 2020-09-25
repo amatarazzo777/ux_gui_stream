@@ -51,18 +51,18 @@ public:
 class cairo_coordinate_visitor_t : public emit_cairo_coordinate_abstract_t {
 public:
   cairo_coordinate_visitor_t() = delete;
-  cairo_coordinate_visitor_t(cairo_t *_cr, coordinate_t *_coord)
-      : cr(_cr), coord(_coord) {}
+  cairo_coordinate_visitor_t(cairo_t *_cr, coordinate_t *_a)
+      : cr(_cr), a(_a) {}
 
-  void accept(void);
-  void emit(cairo_t *_cr);
-  void emit(cairo_t *_cr, coordinate_t &a);
+  void accept(void) { fn_v2(cr,a); }
+  void emit(cairo_t *_cr) { fn_v1(_cr); }
+  void emit(cairo_t *_cr, coordinate_t *_a) { fn_v2(_cr,_a); }
 
   cairo_t *cr = {};
-  coordinate_t *coord = {};
+  coordinate_t *a = {};
 
   std::function<void(cairo_t *_cr)> fn_v1 = {};
-  std::function<void(cairo_t *_cr, coordinate_t &a)> fn_v2 = {};
+  std::function<void(cairo_t *_cr, coordinate_t *_a)> fn_v2 = {};
 };
 
 } // namespace uxdevice
