@@ -26,41 +26,72 @@
 
  */
 
-#define PI (3.14159265358979323846264338327f)
+/**
+ * Do not let clang format change the order of includes as order of dependency
+ * is established in this serialized list that each of the modules includes. The
+ * namespace uxdevice is used.
+ */
+// clang-format off
 
-#include "ux_base.hpp"
 #include "ux_compile_options.hpp"
-
+#include "ux_base.hpp"
 #include "ux_error.hpp"
+#include "ux_variant_visitor.hpp"
+#include "ux_abstracts.hpp"
 #include "ux_hash.hpp"
 
 #include "ux_enums.hpp"
-#include "ux_variant_visitor.hpp"
 
-#include "ux_event.hpp"
-#include "ux_event_listeners.hpp"
-#include "ux_matrix.hpp"
-
-#include "ux_abstracts.hpp"
+// these are the literals which are noted within the abstracts such as emit(...);
+// they are informative of the order in which the published interfaces appear within the
+// rendering pipeline.
 #include "ux_pipeline_order.hpp"
 
-#include "ux_pipeline_memory_visitors.hpp"
-#include "ux_pipeline_memory.hpp"
-
+#include "ux_matrix.hpp"
 #include "ux_draw_buffer.hpp"
 #include "ux_painter_brush.hpp"
 
+/* Pipeline operations occur in staged order.
+ * The system provides the flexibility of design by using a
+ * std::sort. Most objects have multiple meanings based upon the
+ * type of operations requested. This is accomplished with
+ * overloading visitor functionality. A visitor will emit
+ * multiple distinct functional call points for the object
+ * within the pipeline along with a numeric representing the stage
+ * which the operation belongs.
+ *
+ *
+ */
+#include "ux_pipeline_memory.hpp"
+
+/**
+ * The display_context_visual_t object provides interoperability
+ * between the display context and a display render object. The object
+ * which derives this interface should do it publicly. As it must implement
+ * the abstract virtual functions pipeline_acquire() and
+ * pipeline_has_required_linkages(). see ux_pipeline_memory.hpp.
+ *
+ */
 #include "ux_display_visual.hpp"
 #include "ux_display_context.hpp"
-
 #include "ux_display_unit_base.hpp"
-#include "ux_display_units.hpp"
 
+#include "ux_coordinate.hpp"
+
+#include "ux_event.hpp"
+#include "ux_event_listeners.hpp"
+
+// textual object may be reused to show text.
 #include "ux_textual_render.hpp"
-#include "ux_text_units.hpp"
 
-#include "ux_drawing_unit_primitives.hpp"
+// these files encompass the display unit objects which
+// is published
+#include "ux_text_units.hpp"
 #include "ux_image_block_unit.hpp"
+#include "ux_surface_area_units.hpp"
+#include "ux_drawing_unit_primitives.hpp"
+
+// clang-format on
 
 namespace uxdevice {
 
@@ -85,10 +116,10 @@ public:
  \brief the macro creates the stream interface for both constant references
  and shared pointers as well as establishes the prototype for the insertion
  function. The implementation is not standard and will need definition.
- This is the route for formatting objects that accept numerical data and process
- to human readable values. Modern implementations include the processing of size
- information. Yet within the c++ implementation, the data structures that report
- and hold information is elaborate.
+ This is the route for formatting objects that accept numerical data and
+ process to human readable values. Modern implementations include the
+ processing of size information. Yet within the c++ implementation, the data
+ structures that report and hold information is elaborate.
 
  */
 
@@ -199,33 +230,12 @@ public:
 
     } else if constexpr (std::is_base_of<display_unit_t, T>::value) {
       std::shared_ptr<T> obj = display_list<T>(data);
-      maintain_index(std::dynamic_pointer_cast<display_unit_t>(obj));
 
-      if constexpr (std::is_base_of<visitor_pipeline_memory_display_context_t,
-                                    T>::value)
-        context.unit_memory<T>(obj);
+      if constexpr (std::is_base_of<typed_index_t<T>, T>::value)
+        maintain_index(std::dynamic_pointer_cast<display_unit_t>(obj));
 
-      if constexpr (std::is_base_of<emit_display_context_abstract_t, T>::value)
-        obj->emit(context);
-
-      if constexpr (std::is_base_of<emit_cairo_abstract_t, T>::value)
-        obj->emit(context.cr);
-
-      if constexpr (std::is_base_of<emit_cairo_relative_coordinate_abstract_t,
-                                    T>::value) {
-        if (context.unit_memory<relative_coordinate_t>())
-          obj->emit_relative(context.cr);
-        else
-          obj->emit_absolute(context.cr);
-      }
-
-      if constexpr (std::is_base_of<emit_cairo_coordinate_abstract_t,
-                                    T>::value) {
-      }
-      // virtual void emit(cairo_t *cr) = 0;
-      // virtual void emit(cairo_t *cr, const coordinate_t &a) = 0;
-      if constexpr (std::is_base_of<emit_pango_abstract_t, T>::value) {
-      }
+      if constexpr (std::is_base_of<visitor_base_t, T>::value)
+        context.pipeline_memory_store<T>(obj);
 
       // if the item is a drawing output object, inform the context of it.
       if constexpr (std::is_base_of<display_visual_t, T>::value)
@@ -249,46 +259,28 @@ public:
 
    */
   template <typename T>
-  surface_area_t &operator<<(const std::shared_ptr<T> data) {
+  surface_area_t &operator<<(const std::shared_ptr<T> obj) {
 
     // if the item is an event listener it is placed into a separate area.
     if constexpr (std::is_base_of<listener_t<T>, T>::value) {
 
       // display units are handled distinctly
     } else if constexpr (std::is_base_of<display_unit_t, T>::value) {
-      display_list<T>(data);
-      maintain_index(std::dynamic_pointer_cast<display_unit_t>(data));
+      display_list<T>(obj);
+      if constexpr (std::is_base_of<typed_index_t<T>, T>::value)
+        maintain_index(std::dynamic_pointer_cast<display_unit_t>(obj));
 
-      if constexpr (std::is_base_of<visitor_pipeline_memory_display_context_t,
-                                    T>::value)
-        context.unit_memory<T>(data);
+      // all objects that are tracked as visitors inherit from this base
+      // the display context holds the entire list for all types of visitors.
+      if constexpr (std::is_base_of<visitor_base_t, T>::value)
+        context.pipeline_memory_store<T>(obj);
 
-      if constexpr (std::is_base_of<emit_display_context_abstract_t, T>::value)
-        T::emit(context);
+      // if the item is a drawing output object, inform the context of it.
+      if constexpr (std::is_base_of<display_visual_t, T>::value)
+        context.add_visual(obj);
 
-      if constexpr (std::is_base_of<emit_cairo_abstract_t, T>::value)
-        T::emit(context.cr);
-
-      if constexpr (std::is_base_of<emit_cairo_relative_coordinate_abstract_t,
-                                    T>::value) {
-        if (context.unit_memory<relative_coordinate_t>())
-          T::emit_relative(context.cr);
-        else
-          T::emit_absolute(context.cr);
-      }
-
-      if constexpr (std::is_base_of<emit_cairo_coordinate_abstract_t,
-                                    T>::value) {
-      }
-      // virtual void emit(cairo_t *cr) = 0;
-      // virtual void emit(cairo_t *cr, const coordinate_t &a) = 0;
-      if constexpr (std::is_base_of<emit_pango_abstract_t, T>::value) {
-      }
-
-      // otherwise the input is another type. Try
-      // the default string stream.
     } else {
-      stream_input(data);
+      stream_input(obj);
     }
 
     return *this;
@@ -310,7 +302,7 @@ public:
 
   /* declares the interface and implementation for these
    objects
-   when these are invoked, the unit_memory class is also updated.
+   when these are invoked, the pipeline_memory class is also updated.
    When rendering objects are created, text, image or other, these
    these shared pointers are used as a reference local member initialized
    at invoke() public member. The parameters and options are validated as
