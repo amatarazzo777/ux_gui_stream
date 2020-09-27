@@ -33,16 +33,12 @@
  */
 namespace uxdevice {
 const int order_init = 1;
-const int order_render_option = 2;
+const int order_layout_option = 2;
+const int order_render_option = 3;
 
-const int order_before_render = 3;
-const int order_render = 4;
-const int order_after_render = 5;
-const int order_terminate = 6;
-
-template <std::size_t T> class pipeline_sort_order_t {
-public:
-  static const size_t pipeline_stage = T;
-};
+const int order_before_render = 4;
+const int order_render = 5;
+const int order_after_render = 6;
+const int order_terminate = 7;
 
 } // namespace uxdevice

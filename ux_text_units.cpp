@@ -57,7 +57,7 @@ using bitmap font cache data.
 void uxdevice::text_render_normal_t::emit(display_context_t *context) {
   // the emit function removes the text_render_path_t from the display memory
   // as they are exclusive
-  context->unit_memory_erase<text_render_path_t>();
+  context->pipeline_memory_reset<text_render_path_t>();
 }
 
 /**

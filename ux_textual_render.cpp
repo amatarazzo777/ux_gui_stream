@@ -24,6 +24,8 @@
 \brief
 */
 
+#include "ux_device.hpp"
+
 /**
 
 \fn textual_render_storage_t::hash_code(void)
@@ -52,8 +54,7 @@ std::size_t uxdevice::textual_render_storage_t::hash_code(void) const noexcept {
 and then calls function. The static
 
  */
-void uxdevice::textual_render_storage_t::pipeline_acquire(cairo_t *cr,
-                                                          coordinate_t *a) {
+void uxdevice::textual_render_storage_t::pipeline_acquire(void) {
   /**
     @details The cached rendering function has not been established,
     create the text rendering pipeline consisting of individualized lambda
@@ -65,60 +66,64 @@ void uxdevice::textual_render_storage_t::pipeline_acquire(cairo_t *cr,
    * these steps are common in the first part of the textual rendering  The
    visitor of the pango, and cairo operate in a sorted fashion to execute
    themselves within a rule based set of order. refinements within the stream
-   can occur as successive execution happens. Initialization for example, and
+   can occur as successive execution happens but his is not facilitated
+   by current code (pipeline_optimize is suffice). Initialization for example, and
    build up of graphics composite layers.
 
    */
-  pipeline_push([&]() {
-    if (!layout)
-      layout = pango_cairo_create_layout(cr);
-
-    matrix.emit(cr);
-
-    // get the serial number of all the current attributes.
-    // if any of the emitter functions change the layout
-    // the serial number changes. the push visit below
-    // accomplishes this
-    layout_serial = pango_layout_get_serial(layout);
+  pipeline_push<order_init>(fn_emit_cr_t{[](auto cr) {
+      if (!layout)
+        layout = pango_cairo_create_layout(cr);
   });
 
-  /**
-   * @brief
-   *   emit all items that effect pango objects as labeled with attribute
-   * settings. Notice that the appropriate ones are visited here based upon the
-   * visitor name, and its parameters. this visits all items that effect the
-   * pango layout but does not function as a drawing operator.
-   *
-   */
-  pipeline_push_visit(pango_visitor_t{layout});
-
-  /**
-   * @brief check the pango serial. set the ink area according to the pixel
-   * metrics and update the layout.
-   */
-  pipeline_push<order_render_options>([&]() {
-    // any changes
-    if (layoutSerial != pango_layout_get_serial(layout)) {
-      auto coordinate = unit_memory<coordinate_t>();
-      pango_layout_get_pixel_extents(layout, &ink_rect, &logical_rect);
-      int tw = std::min((double)logical_rect.width, coordinate->w);
-      int th = std::min((double)logical_rect.height, coordinate->h);
-      ink_rectangle = {(int)coordinate->x, (int)coordinate->y, tw, th};
-      ink_rectangle_double = {(double)ink_rectangle.x, (double)ink_rectangle.y,
-                              (double)ink_rectangle.width,
-                              (double)ink_rectangle.height};
-
-      has_ink_extents = true;
-      pango_cairo_update_layout(cr, layout);
-    }
+  pipeline_push<order_render_options>(fn_emit_cr_t{[](auto cr) {
+        // get the serial number of all the current attributes.
+        // if any of the emitter functions change the layout
+        // the serial number changes. the push visit below
+        // accomplishes this
+        layout_serial = pango_layout_get_serial(layout);
   });
 
-  // compute pipeline that includes rendering commands. The rendering commands
-  // are sequenced and appropriate fill, preserve order is maintained.
-  pipeline_push_visit(cairo_coordinate_visitor_t{cr, a},
-                      pango_visitor_t{cr, a});
+      /**
+       * @brief
+       *   emit all items that effect pango objects as labeled with attribute
+       * settings. Notice that the appropriate ones are visited here based upon
+       * the visitor name, and its parameters. this visits all items that effect
+       * the pango layout but does not function as a drawing operator.
+       *
+       */
+      pipeline_push_visit<fn_emit_layout_t>();
 
-  return;
+      /**
+       * @brief check the pango serial. set the ink area according to the pixel
+       * metrics and update the layout.
+       */
+      pipeline_push<order_render_options>(fn_emit_cr_t{[&](auto cr) {
+        // any changes
+        if (layoutSerial != pango_layout_get_serial(layout)) {
+          auto coordinate = pipeline_memory_access<coordinate_t>();
+          pango_layout_get_pixel_extents(layout, &ink_rect, &logical_rect);
+          int tw = std::min((double)logical_rect.width, coordinate->w);
+          int th = std::min((double)logical_rect.height, coordinate->h);
+          ink_rectangle = {(int)coordinate->x, (int)coordinate->y, tw, th};
+          ink_rectangle_double = {
+              (double)ink_rectangle.x, (double)ink_rectangle.y,
+              (double)ink_rectangle.width, (double)ink_rectangle.height};
+
+          has_ink_extents = true;
+          pango_cairo_update_layout(cr, layout);
+        }
+      }});
+
+      pipeline_push<order_render>(
+          fn_emit_cr_t{[](auto cr) { matrix.emit(cr); }});
+
+      // compute pipeline that includes rendering commands. The rendering
+      // commands are sequenced and appropriate fill, preserve order is
+      // maintained.
+      pipeline_push_visit<emit_cr_a_fn_t>();
+
+      return;
 }
 
 /**
@@ -129,24 +134,26 @@ void uxdevice::textual_render_storage_t::pipeline_acquire(cairo_t *cr,
 
  */
 bool uxdevice::textual_render_t::pipeline_valid(void) {
-  if (!((pipeline_memory<text_color_t>() || pipeline_memory<text_outline_t>() ||
-         pipeline_memory<text_fill_t>()) &&
-        pipeline_memory<coordinate_t>() && pipeline_memory<text_data_t>() &&
-        pipeline_memory<text_font_t>())) {
-    const char *s =
-        "A textual_render_t object must include the following "
-        "attributes: A text_color_t, text_outline_t or "
-        " text_fill_t. As well, a coordinate_t, text and text_font_t object.";
-    error_report(s);
-    auto fn = [=](display_context_t *context) {};
+      if (!((pipeline_memory_access<text_color_t>() ||
+             pipeline_memory_access<text_outline_t>() ||
+             pipeline_memory_access<text_fill_t>()) &&
+            pipeline_memory_access<coordinate_t>() &&
+            pipeline_memory_access<text_data_t>() &&
+            pipeline_memory_access<text_font_t>())) {
+        const char *s = "A textual_render_t object must include the following "
+                        "attributes: A text_color_t, text_outline_t or "
+                        " text_fill_t. As well, a coordinate_t, text and "
+                        "text_font_t object.";
+        error_report(s);
+        auto fn = [=](display_context_t *context) {};
 
-    fn_base_surface = std::bind(fn, _1);
-    fn_cache_surface = std::bind(fn, _1);
-    fn_draw = std::bind(fn, _1);
-    fn_draw_clipped = std::bind(fn, _1);
-    return;
-  }
-  return false;
+        fn_base_surface = std::bind(fn, _1);
+        fn_cache_surface = std::bind(fn, _1);
+        fn_draw = std::bind(fn, _1);
+        fn_draw_clipped = std::bind(fn, _1);
+        return;
+      }
+      return false;
 }
 
 /**
@@ -161,14 +168,14 @@ bool uxdevice::textual_render_t::pipeline_valid(void) {
 
  */
 void uxdevice::textual_render_t::emit(display_context_t *context) {
-  using namespace std::placeholders;
+      using namespace std::placeholders;
 
-  if (is_processed)
-    return;
+      if (is_processed)
+        return;
 
-  // check the context parameters before operating
-  if (!is_valid())
-    return;
+      // check the context parameters before operating
+      if (!is_valid())
+        return;
 
-  is_processed = true;
+      is_processed = true;
 }

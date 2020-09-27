@@ -50,16 +50,52 @@ is on screen.
 
  */
 namespace uxdevice {
-template <typename T> class display_visual_t : public pipeline_memory_t<T> {
+class context_cairo_region_t {
 public:
-  typedef display_context_t::context_cairo_region_t context_cairo_region_t;
+  context_cairo_region_t() = delete;
+  context_cairo_region_t(bool bOS, int x, int y, int w, int h) {
+    rect = {x, y, w, h};
+    _rect = {(double)x, (double)y, (double)w, (double)h};
+    _ptr = cairo_region_create_rectangle(&rect);
+    bOSsurface = bOS;
+  }
+  context_cairo_region_t(std::size_t _obj, int x, int y, int w, int h)
+      : obj(_obj) {
+    rect = {x, y, w, h};
+    _rect = {(double)x, (double)y, (double)w, (double)h};
+    _ptr = cairo_region_create_rectangle(&rect);
+    bOSsurface = false;
+  }
 
+  context_cairo_region_t(const context_cairo_region_t &other) { *this = other; }
+  context_cairo_region_t &operator=(const context_cairo_region_t &other) {
+    _ptr = cairo_region_reference(other._ptr);
+    rect = other.rect;
+    _rect = other._rect;
+    obj = other.obj;
+    bOSsurface = other.bOSsurface;
+    return *this;
+  }
+  ~context_cairo_region_t() {
+    if (_ptr)
+      cairo_region_destroy(_ptr);
+  }
+  cairo_rectangle_int_t rect = cairo_rectangle_int_t();
+  cairo_rectangle_t _rect = cairo_rectangle_t();
+  cairo_region_t *_ptr = nullptr;
+  std::size_t obj = 0;
+  bool bOSsurface = false;
+};
+
+typedef std::function<void(display_context_t &context)> draw_logic_t;
+
+class display_visual_t {
+public:
   /// @brief default constructor
-  display_visual_t() : display_unit_t() {}
+  display_visual_t() {}
 
   /// @brief move assignment
   display_visual_t &operator=(display_visual_t &&other) noexcept {
-    display_unit_t::operator=(other);
 
     internal_buffer = std::move(other.internal_buffer);
 
@@ -76,22 +112,12 @@ public:
 
   /// @brief copy assignment operator
   display_visual_t &operator=(const display_visual_t &other) {
-    display_unit_t::operator=(other);
 
-    if (other.internal_buffer.rendered)
-      internal_buffer.rendered =
-          cairo_surface_reference(other.internal_buffer.rendered);
-
-    if (other.internal_buffer.cr)
-      internal_buffer.cr = cairo_reference(other.internal_buffer.cr);
-
+    internal_buffer = other.internal_buffer;
     fn_draw = other.fn_draw;
     fn_draw_clipped = other.fn_draw_clipped;
     fn_cache_surface = other.fn_cache_surface;
     fn_base_surface = other.fn_base_surface;
-
-    std::copy(other.options.value.begin(), other.options.value.end(),
-              std::back_inserter(options.value));
 
     ink_rectangle = other.ink_rectangle;
     intersection_int = other.intersection_int;
@@ -102,15 +128,12 @@ public:
 
   /// @brief move constructor
   display_visual_t(display_visual_t &&other) noexcept
-      : display_unit_t(other),
-        internal_buffer(std::move(other.internal_buffer)),
+      : internal_buffer(std::move(other.internal_buffer)),
 
         fn_cache_surface(std::move(other.fn_cache_surface)),
         fn_base_surface(std::move(other.fn_base_surface)),
         fn_draw(std::move(other.fn_draw)),
         fn_draw_clipped(std::move(other.fn_draw_clipped)),
-
-        options(std::move(other.options)),
         ink_rectangle(std::move(other.ink_rectangle)),
         intersection_int(std::move(other.intersection_int)),
         intersection_double(std::move(other.intersection_double)) {}
@@ -132,8 +155,8 @@ public:
            fn_base_surface && fn_draw && fn_draw_clipped;
   }
 
-  void set_ink() {
-    ink_rectangle = {(int)a.x, (int)a.y, (int)a.w, (int)a.h};
+  void set_ink(double x, double y, double w, double h) {
+    ink_rectangle = {(int)x, (int)y, (int)w, (int)h};
     ink_rectangle_double = {(double)ink_rectangle.x, (double)ink_rectangle.y,
                             (double)ink_rectangle.width,
                             (double)ink_rectangle.height};

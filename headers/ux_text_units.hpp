@@ -38,8 +38,7 @@ painter_brush_emitter_t
 marker_emitter_t
 storage_emitter_t
 class_storage_emitter_t
-storage_emitter_t
-class_storage_emitter_t
+
 
 
  */
@@ -65,8 +64,7 @@ class_storage_emitter_t
  painter_brush_emitter_t
  storage_emitter_t
  class_storage_emitter_t
- storage_emitter_t
- class_storage_emitter_t
+
 
 
  *********************************************************************************/
@@ -172,10 +170,9 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_tab_stops_storage_t);
 namespace uxdevice {
 using text_font_t = class text_font_t
     : public class_storage_emitter_t<
-          text_font_t, text_font_storage_t, emit_pango_abstract_t,
-          visitor_unit_memory_display_context_t,
-          visitor_unit_memory_textual_render_t,
-          pipeline_sort_order_t<order_render_option>> {
+          text_font_t, text_font_storage_t,
+          visitor_interfaces_t<abstract_emit_layout_t<order_render_option>>,
+          visitor_textual_render_t> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
   void emit(PangoLayout *layout);
@@ -187,11 +184,11 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_font_t);
  \class text_render_normal_t
  \brief
 
- The inclusion emit_display_context_abstract_t is used to
+ The inclusion abstract_emit_context_t is used to
  allow the exclusion of the counterpart attribute class
  text_render_path_t within the emit function.
 
- The emit_cairo_coordinate_abstract_t provides for the inclusion
+ The abstract_emit_cr_a_t provides for the inclusion
  of delegation during visitation by attached objects.
 
  Objects may attach themselves by different interfaces named by the
@@ -200,19 +197,18 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_font_t);
  The pipeline sort order informs the queue order.
 
  */
+
 namespace uxdevice {
 using text_render_normal_t = class text_render_normal_t
-    : public marker_emitter_t<text_render_normal_t,
-                              emit_display_context_abstract_t,
-                              emit_cairo_coordinate_abstract_t,
-                              visitor_unit_memory_display_context_t,
-                              visitor_unit_memory_textual_render_t,
-                              pipeline_sort_order_t<order_render>> {
+    : public marker_emitter_t<
+          text_render_normal_t,
+          visitor_interfaces_t<abstract_emit_context_t<order_init>,
+                               abstract_emit_cr_a_t<order_render>>,
+          visitor_textual_render_t> {
 public:
   using marker_emitter_t::marker_emitter_t;
 
   void emit(display_context_t *context);
-  void emit(cairo_t *cr);
   void emit(cairo_t *cr, coordinate_t *a);
 };
 } // namespace uxdevice
@@ -224,18 +220,16 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_render_normal_t);
  */
 namespace uxdevice {
 using text_render_path_t = class text_render_path_t
-    : public marker_emitter_t<text_render_path_t,
-                              emit_display_context_abstract_t,
-                              emit_cairo_coordinate_abstract_t,
-                              visitor_unit_memory_display_context_t,
-                              visitor_unit_memory_textual_render_t,
-                              pipeline_sort_order_t<order_render>> {
+    : public marker_emitter_t<
+          text_render_path_t,
+          visitor_interfaces_t<abstract_emit_context_t<order_init>,
+                               abstract_emit_cr_layout_t<order_render>>,
+          visitor_textual_render_t> {
 public:
   using marker_emitter_t::marker_emitter_t;
 
   void emit(display_context_t *context);
-  void emit(cairo_t *cr);
-  void emit(cairo_t *cr, coordinate_t *a);
+  void emit(cairo_t *cr, PangoLayout *layout);
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_render_path_t);
@@ -245,14 +239,16 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_render_path_t);
  \brief
  */
 namespace uxdevice {
-using text_color_t =
-    class text_color_t : public painter_brush_emitter_t<
-                             text_color_t, emit_cairo_coordinate_abstract_t,
-                             visitor_unit_memory_display_context_t,
-                             visitor_unit_memory_textual_render_t,
-                             pipeline_sort_order_t<order_render_option>> {
+using text_color_t = class text_color_t
+    : public painter_brush_emitter_t<
+          text_color_t,
+          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>,
+                               abstract_emit_cr_a_t<order_render_option>>,
+          visitor_textual_render_t> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
+  void emit(cairo_t *cr);
+  void emit(cairo_t *cr, coordinate_t *a);
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_color_t);
@@ -265,19 +261,18 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_color_t);
  */
 namespace uxdevice {
 using text_outline_t = class text_outline_t
-    : public painter_brush_emitter_t<text_outline_t,
-                                     emit_cairo_coordinate_abstract_t,
-                                     visitor_unit_memory_display_context_t,
-                                     visitor_unit_memory_textual_render_t,
-                                     pipeline_sort_order_t<order_render>> {
+    : public painter_brush_emitter_t<
+          text_outline_t,
+          visitor_interfaces_t<abstract_emit_cr_t<order_render>,
+                               abstract_emit_cr_a_t<order_render>>,
+          visitor_textual_render_t> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
 
-  // since class implements
-  // the
-  // painter_brush_emitter_t ,
-  // specializations may call
-  // the base constructor,
+  // since class implements the painter_brush_emitter_t, specializations may
+  // call the base constructor, that supply the painter_brush_emitter interface
+  // that is inherited. The emitter functions should call the
+  // base class members.
   void emit(cairo_t *cr);
 
   void emit(cairo_t *cr, coordinate_t *a);
@@ -297,11 +292,9 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_outline_t);
  */
 namespace uxdevice {
 using text_fill_t = class text_fill_t
-    : public painter_brush_emitter_t<text_fill_t,
-                                     emit_cairo_coordinate_abstract_t,
-                                     visitor_unit_memory_display_context_t,
-                                     visitor_unit_memory_textual_render_t,
-                                     pipeline_sort_order_t<order_render>> {
+    : public painter_brush_emitter_t<
+          text_fill_t, visitor_interfaces_t<abstract_emit_cr_a_t<order_render>>,
+          visitor_textual_render_t> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
 
@@ -324,11 +317,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_fill_t);
  */
 namespace uxdevice {
 using text_alignment_t = class text_alignment_t
-    : public storage_emitter_t<text_alignment_t, text_alignment_options_t,
-                               emit_pango_abstract_t,
-                               visitor_unit_memory_display_context_t,
-                               visitor_unit_memory_textual_render_t,
-                               pipeline_sort_order_t<order_render_option>> {
+    : public storage_emitter_t<
+          text_alignment_t, text_alignment_options_t,
+          visitor_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+          visitor_textual_render_t> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -343,10 +335,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_alignment_t);
  */
 namespace uxdevice {
 using text_indent_t = class text_indent_t
-    : public storage_emitter_t<text_indent_t, double, emit_pango_abstract_t,
-                               visitor_unit_memory_display_context_t,
-                               visitor_unit_memory_textual_render_t,
-                               pipeline_sort_order_t<order_render_option>> {
+    : public storage_emitter_t<
+          text_indent_t, double,
+          visitor_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+          visitor_textual_render_t> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -361,11 +353,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_indent_t);
  */
 namespace uxdevice {
 using text_ellipsize_t = class text_ellipsize_t
-    : public storage_emitter_t<text_ellipsize_t, text_ellipsize_options_t,
-                               emit_pango_abstract_t,
-                               visitor_unit_memory_display_context_t,
-                               visitor_unit_memory_textual_render_t,
-                               pipeline_sort_order_t<order_render_option>> {
+    : public storage_emitter_t<
+          text_ellipsize_t, text_ellipsize_options_t,
+          visitor_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+          visitor_textual_render_t> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -380,10 +371,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_ellipsize_t);
  */
 namespace uxdevice {
 using text_line_space_t = class text_line_space_t
-    : public storage_emitter_t<text_line_space_t, double, emit_pango_abstract_t,
-                               visitor_unit_memory_display_context_t,
-                               visitor_unit_memory_textual_render_t,
-                               pipeline_sort_order_t<order_render_option>> {
+    : public storage_emitter_t<
+          text_line_space_t, double,
+          visitor_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+          visitor_textual_render_t> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -399,10 +390,9 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_line_space_t);
 namespace uxdevice {
 using text_tab_stops_t = class text_tab_stops_t
     : public class_storage_emitter_t<
-          text_tab_stops_t, text_tab_stops_storage_t, emit_pango_abstract_t,
-          visitor_unit_memory_display_context_t,
-          visitor_unit_memory_textual_render_t,
-          pipeline_sort_order_t<order_render_option>> {
+          text_tab_stops_t, text_tab_stops_storage_t,
+          visitor_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+          visitor_textual_render_t> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -422,16 +412,15 @@ typedef std::variant<std::string, std::shared_ptr<std::string>,
     text_data_storage_t;
 
 using text_data_t = class text_data_t
-    : public storage_emitter_t<text_data_t, text_data_storage_t,
-                               emit_pango_abstract_t,
-                               visitor_unit_memory_display_context_t,
-                               visitor_unit_memory_textual_render_t,
-                               pipeline_sort_order_t<order_render_option>> {
-public:
-  using storage_emitter_t::storage_emitter_t;
-  std::size_t hash_code(void) const noexcept;
-  void emit(PangoLayout *layout);
-};
+    : public storage_emitter_t<
+          text_data_t, text_data_storage_t,
+          visitor_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+          visitor_textual_render_t> {
+  public:
+    using storage_emitter_t::storage_emitter_t;
+    std::size_t hash_code(void) const noexcept;
+    void emit(PangoLayout * layout);
+  };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_data_t);
 
@@ -441,14 +430,12 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_data_t);
 
  */
 namespace uxdevice {
-using text_shadow_t =
-    class text_shadow_t : public painter_brush_emitter_t<
-                              text_shadow_t, textual_render_storage_t,
-                              emit_cairo_coordinate_abstract_t,
-                              visitor_unit_memory_display_context_t,
-                              visitor_unit_memory_textual_render_t,
-							  pupeline_memory_t<visitor_unit_memory_text_render_t
-                              pipeline_sort_order_t<order_before_render>> {
+using text_shadow_t = class text_shadow_t
+    : public painter_brush_emitter_t<
+          text_shadow_t, textual_render_storage_t, display_visual_t,
+          visitor_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+          visitor_textual_render_t,
+          pipeline_memory_t<visitor_textual_render_t>> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
 

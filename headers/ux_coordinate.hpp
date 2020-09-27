@@ -67,12 +67,12 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::coordinate_storage_t);
 namespace uxdevice {
 using coordinate_t = class coordinate_t
     : public class_storage_emitter_t<
-          coordinate_t, coordinate_storage_t, emit_cairo_abstract_t,
-          emit_cairo_relative_coordinate_abstract_t, emit_pango_abstract_t,
-          visitor_unit_memory_display_context_t,
-          visitor_unit_memory_textual_render_t,
-          visitor_unit_memory_image_block_t,
-          pipeline_sort_order_t<order_render_option>> {
+          coordinate_t, coordinate_storage_t,
+          visitor_interfaces_t<
+              abstract_emit_cr_t<order_render_option>,
+              abstract_emit_cr_relative_t<order_render_option>,
+              abstract_emit_layout_t<order_render_option>>,
+          visitor_textual_render_t, visitor_image_block_t> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
   void emit(cairo_t *cr) { emit_absolute(cr); }
@@ -89,12 +89,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::coordinate_t);
  */
 namespace uxdevice {
 using relative_coordinate_t = class relative_coordinate_t
-    : public marker_emitter_t<relative_coordinate_t,
-                              emit_display_context_abstract_t,
-                              visitor_unit_memory_display_context_t,
-                              visitor_unit_memory_image_block_t,
-                              visitor_unit_memory_textual_render_t,
-                              pipeline_sort_order_t<order_render_option>> {
+    : public marker_emitter_t<
+          relative_coordinate_t,
+          visitor_interfaces_t<abstract_emit_context_t<order_init>>,
+          visitor_image_block_t, visitor_textual_render_t> {
 public:
   using marker_emitter_t::marker_emitter_t;
 
@@ -109,12 +107,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::relative_coordinate_t);
  */
 namespace uxdevice {
 using absolute_coordinate_t = class absolute_coordinate_t
-    : public marker_emitter_t<absolute_coordinate_t,
-                              emit_display_context_abstract_t,
-                              visitor_unit_memory_display_context_t,
-                              visitor_unit_memory_image_block_t,
-                              visitor_unit_memory_textual_render_t,
-                              pipeline_sort_order_t<order_render_option>> {
+    : public marker_emitter_t<
+          absolute_coordinate_t,
+          visitor_interfaces_t<abstract_emit_context_t<order_init>>,
+          visitor_image_block_t, visitor_textual_render_t> {
 public:
   using marker_emitter_t::marker_emitter_t;
 

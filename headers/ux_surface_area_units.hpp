@@ -81,9 +81,8 @@ class_storage_emitter_t
 namespace uxdevice {
 using surface_area_brush_t = class surface_area_brush_t
     : public painter_brush_emitter_t<
-          surface_area_brush_t, emit_display_context_abstract_t,
-          visitor_unit_memory_display_context_t,
-          pipeline_sort_order_t<order_render_option>> {
+          surface_area_brush_t,
+          visitor_interfaces_t<abstract_emit_context_t<order_init>>> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
 
@@ -99,10 +98,9 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::surface_area_brush_t);
  */
 namespace uxdevice {
 using surface_area_title_t = class surface_area_title_t
-    : public storage_emitter_t<surface_area_title_t, std::string,
-                               emit_display_context_abstract_t,
-                               visitor_unit_memory_display_context_t,
-                               pipeline_sort_order_t<order_render_option>> {
+    : public storage_emitter_t<
+          surface_area_title_t, std::string,
+          visitor_interfaces_t<abstract_emit_context_t<order_init>>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 

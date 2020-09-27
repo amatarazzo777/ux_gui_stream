@@ -214,37 +214,7 @@ public:
 };
 } // namespace uxdevice
 
-/**
-\internal
-\class listener_t
 
-\tparam T - the name the display unit should assume.
-
-\brief
-
-
-*/
-namespace uxdevice {
-template <typename T>
-class listener_t : public typed_index_t<T>,
-                   virtual public hash_members_t,
-                   std::enable_shared_from_this<T> {
-public:
-  listener_t() = delete;
-  listener_t(event_handler_t _dispatch)
-      : ti(std::type_index(typeid(T))), dispatch_event(_dispatch) {}
-
-  std::size_t hash_code(void) const noexcept {
-    std::size_t __value = {};
-    hash_combine(__value, typed_index_t<T>::hash_code(), ti);
-    return __value;
-  }
-
-  std::type_index ti;
-  event_handler_t dispatch_event;
-};
-
-} // namespace uxdevice
 
 /**
 \internal

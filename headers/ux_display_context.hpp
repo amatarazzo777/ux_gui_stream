@@ -47,52 +47,11 @@ namespace uxdevice {
 typedef std::list<std::shared_ptr<display_visual_t>> visual_list_t;
 typedef std::list<std::shared_ptr<display_visual_t>>::iterator
     visual_list_iter_t;
-} // namespace uxdevice
 
-class display_context_t
-    : virtual public hash_members_t,
-      public unit_memory_storage_t<visitor_unit_memory_display_context_t>,
-      virtual system_error_t {
+class display_context_t : virtual public hash_members_t,
+                          public pipeline_memory_t<visitor_base_t>,
+                          virtual system_error_t {
 public:
-  class context_cairo_region_t {
-  public:
-    context_cairo_region_t() = delete;
-    context_cairo_region_t(bool bOS, int x, int y, int w, int h) {
-      rect = {x, y, w, h};
-      _rect = {(double)x, (double)y, (double)w, (double)h};
-      _ptr = cairo_region_create_rectangle(&rect);
-      bOSsurface = bOS;
-    }
-    context_cairo_region_t(std::size_t _obj, int x, int y, int w, int h)
-        : obj(_obj) {
-      rect = {x, y, w, h};
-      _rect = {(double)x, (double)y, (double)w, (double)h};
-      _ptr = cairo_region_create_rectangle(&rect);
-      bOSsurface = false;
-    }
-
-    context_cairo_region_t(const context_cairo_region_t &other) {
-      *this = other;
-    }
-    context_cairo_region_t &operator=(const context_cairo_region_t &other) {
-      _ptr = cairo_region_reference(other._ptr);
-      rect = other.rect;
-      _rect = other._rect;
-      obj = other.obj;
-      bOSsurface = other.bOSsurface;
-      return *this;
-    }
-    ~context_cairo_region_t() {
-      if (_ptr)
-        cairo_region_destroy(_ptr);
-    }
-    cairo_rectangle_int_t rect = cairo_rectangle_int_t();
-    cairo_rectangle_t _rect = cairo_rectangle_t();
-    cairo_region_t *_ptr = nullptr;
-    std::size_t obj = 0;
-    bool bOSsurface = false;
-  };
-
 public:
   display_context_t(void) {}
 
@@ -166,7 +125,7 @@ public:
   std::size_t hash_code(void) const noexcept {
     std::size_t __value = {};
     hash_combine(__value, std::type_index(typeid(this)),
-                 unit_memory_hash_code(), window_x, window_y, window_width,
+                 pipeline_memory_hash_code(), window_x, window_y, window_width,
                  window_height, window_open, brush.hash_code());
 
     return __value;
@@ -245,8 +204,3 @@ public:
   bool preclear = false;
 }; // namespace uxdevice
 } // namespace uxdevice
-
-namespace {
-typedef std::function<void(display_context_t &context)> draw_logic_t;
-
-}

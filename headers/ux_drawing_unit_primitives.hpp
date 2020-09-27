@@ -31,9 +31,9 @@
  */
 namespace uxdevice {
 using function_object_t = class function_object_t
-    : public storage_emitter_t<function_object_t, cairo_function_t,
-                               emit_cairo_abstract_t,
-                               pipeline_sort_order_t<order_render_option>> {
+    : public storage_emitter_t<
+          function_object_t, cairo_function_t,
+          visitor_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -276,20 +276,20 @@ public:
 
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_dash_storage_t);
 
-**
+/**
  \class
- \brief * / namespace uxdevice {
-  using antialias_t = class antialias_t
-      : public storage_emitter_t<antialias_t, antialias_options_t,
-                                 emit_cairo_abstract_t,
-                                 visitor_pipeline_memory_display_context_t,
-                                 visitor_pipeline_memory_image_block_t,
-                                 visitor_pipeline_memory_textual_render_t,
-                                 pipeline_sort_order_t<order_render_option>> {
-  public:
-    using storage_emitter_t::storage_emitter_t;
-    void emit(cairo_t *cr);
-  };
+ \brief */
+
+namespace uxdevice {
+using antialias_t = class antialias_t
+    : public storage_emitter_t<
+          antialias_t, antialias_options_t,
+          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+          visitor_image_block_t, visitor_textual_render_t> {
+public:
+  using storage_emitter_t::storage_emitter_t;
+  void emit(cairo_t *cr);
+};
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::antialias_t);
 
@@ -299,11 +299,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::antialias_t);
  */
 namespace uxdevice {
 using line_width_t = class line_width_t
-    : public storage_emitter_t<line_width_t, double, emit_cairo_abstract_t,
-                               visitor_pipeline_memory_display_context_t,
-                               visitor_pipeline_memory_image_block_t,
-                               visitor_pipeline_memory_textual_render_t,
-                               pipeline_sort_order_t<order_render_option>> {
+    : public storage_emitter_t<
+          line_width_t, double,
+          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+          visitor_image_block_t, visitor_textual_render_t> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -318,12 +317,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_width_t);
  */
 namespace uxdevice {
 using line_cap_t = class line_cap_t
-    : public storage_emitter_t<line_cap_t, line_cap_options_t,
-                               emit_cairo_abstract_t,
-                               visitor_pipeline_memory_display_context_t,
-                               visitor_pipeline_memory_image_block_t,
-                               visitor_pipeline_memory_textual_render_t,
-                               pipeline_sort_order_t<order_render_option>> {
+    : public storage_emitter_t<
+          line_cap_t, line_cap_options_t,
+          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+          visitor_image_block_t, visitor_textual_render_t> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -338,12 +335,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_cap_t);
  */
 namespace uxdevice {
 using line_join_t = class line_join_t
-    : public storage_emitter_t<line_join_t, line_join_options_t,
-                               emit_cairo_abstract_t,
-                               visitor_pipeline_memory_display_context_t,
-                               visitor_pipeline_memory_image_block_t,
-                               visitor_pipeline_memory_textual_render_t,
-                               pipeline_sort_order_t<order_render_option>> {
+    : public storage_emitter_t<
+          line_join_t, line_join_options_t,
+          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+          visitor_image_block_t, visitor_textual_render_t> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -358,11 +353,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_join_t);
  */
 namespace uxdevice {
 using miter_limit_t = class miter_limit_t
-    : public storage_emitter_t<miter_limit_t, double, emit_cairo_abstract_t,
-                               visitor_pipeline_memory_display_context_t,
-                               visitor_pipeline_memory_image_block_t,
-                               visitor_pipeline_memory_textual_render_t,
-                               pipeline_sort_order_t<order_render_option>> {
+    : public storage_emitter_t<
+          miter_limit_t, double,
+          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+          visitor_image_block_t, visitor_textual_render_t> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -378,11 +372,9 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::miter_limit_t);
 namespace uxdevice {
 using line_dashes_t = class line_dashes_t
     : public class_storage_emitter_t<
-          line_dashes_t, line_dash_storage_t, emit_cairo_abstract_t,
-          visitor_pipeline_memory_display_context_t,
-          visitor_pipeline_memory_image_block_t,
-          visitor_pipeline_memory_textual_render_t,
-          pipeline_sort_order_t<order_render_option>> {
+          line_dashes_t, line_dash_storage_t,
+          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+          visitor_image_block_t, visitor_textual_render_t> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -397,11 +389,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_dashes_t);
  */
 namespace uxdevice {
 using tollerance_t = class tollerance_t
-    : public storage_emitter_t<tollerance_t, double, emit_cairo_abstract_t,
-                               visitor_pipeline_memory_display_context_t,
-                               visitor_pipeline_memory_image_block_t,
-                               visitor_pipeline_memory_textual_render_t,
-                               pipeline_sort_order_t<order_render_option>> {
+    : public storage_emitter_t<
+          tollerance_t, double,
+          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+          visitor_image_block_t, visitor_textual_render_t> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -416,12 +407,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::tollerance_t);
  */
 namespace uxdevice {
 using graphic_operator_t = class graphic_operator_t
-    : public storage_emitter_t<graphic_operator_t, graphic_operator_options_t,
-                               emit_cairo_abstract_t,
-                               visitor_pipeline_memory_display_context_t,
-                               visitor_pipeline_memory_image_block_t,
-                               visitor_pipeline_memory_textual_render_t,
-                               pipeline_sort_order_t<order_render_option>> {
+    : public storage_emitter_t<
+          graphic_operator_t, graphic_operator_options_t,
+          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+          visitor_image_block_t, visitor_textual_render_t> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -438,8 +427,9 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::graphic_operator_t);
 // functions
 namespace uxdevice {
 using arc_t =
-    class arc_t : public class_storage_emitter_t<arc_t, arc_storage_t,
-                                                 emit_cairo_abstract_t> {
+    class arc_t : public class_storage_emitter_t<
+                      arc_t, arc_storage_t,
+                      visitor_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -454,8 +444,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::arc_t);
  */
 namespace uxdevice {
 using negative_arc_t = class negative_arc_t
-    : public class_storage_emitter_t<negative_arc_t, negative_arc_storage_t,
-                                     emit_cairo_abstract_t> {
+    : public class_storage_emitter_t<
+          negative_arc_t, negative_arc_storage_t,
+          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                               abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -471,7 +463,9 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::negative_arc_t);
 namespace uxdevice {
 using curve_t = class curve_t
     : public class_storage_emitter_t<
-          curve_t, curve_storage_t, emit_cairo_relative_coordinate_abstract_t> {
+          curve_t, curve_storage_t,
+          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                               abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -488,7 +482,9 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::curve_t);
 namespace uxdevice {
 using line_t = class line_t
     : public class_storage_emitter_t<
-          line_t, line_storage_t, emit_cairo_relative_coordinate_abstract_t> {
+          line_t, line_storage_t,
+          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                               abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -504,8 +500,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_t);
  */
 namespace uxdevice {
 using vline_t = class vline_t
-    : public storage_emitter_t<vline_t, double,
-                               emit_cairo_relative_coordinate_abstract_t> {
+    : public storage_emitter_t<
+          vline_t, double,
+          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                               abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -521,8 +519,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::vline_t);
  */
 namespace uxdevice {
 using hline_t = class hline_t
-    : public storage_emitter_t<hline_t, double,
-                               emit_cairo_relative_coordinate_abstract_t> {
+    : public storage_emitter_t<
+          hline_t, double,
+          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                               abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -538,8 +538,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::hline_t);
  */
 namespace uxdevice {
 using rectangle_t = class rectangle_t
-    : public class_storage_emitter_t<rectangle_t, rectangle_storage_t,
-                                     emit_cairo_abstract_t> {
+    : public class_storage_emitter_t<
+          rectangle_t, rectangle_storage_t,
+          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                               abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -554,8 +556,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::rectangle_t);
  */
 namespace uxdevice {
 using stroke_path_t = class stroke_path_t
-    : public class_storage_emitter_t<stroke_path_t, painter_brush_t,
-                                     emit_cairo_abstract_t> {
+    : public class_storage_emitter_t<
+          stroke_path_t, painter_brush_t,
+          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                               abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -570,8 +574,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::stroke_path_t);
  */
 namespace uxdevice {
 using fill_path_t = class fill_path_t
-    : public class_storage_emitter_t<fill_path_t, painter_brush_t,
-                                     emit_cairo_abstract_t> {
+    : public class_storage_emitter_t<
+          fill_path_t, painter_brush_t,
+          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                               abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -586,9 +592,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::fill_path_t);
  */
 namespace uxdevice {
 using stroke_fill_path_t = class stroke_fill_path_t
-    : public class_storage_emitter_t<stroke_fill_path_t,
-                                     stroke_fill_path_storage_t,
-                                     emit_cairo_abstract_t> {
+    : public class_storage_emitter_t<
+          stroke_fill_path_t, stroke_fill_path_storage_t,
+          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                               abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -602,9 +609,11 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::stroke_fill_path_t);
  \brief
  */
 namespace uxdevice {
-using mask_t =
-    class mask_t : public class_storage_emitter_t<mask_t, painter_brush_t,
-                                                  emit_cairo_abstract_t> {
+using mask_t = class mask_t
+    : public class_storage_emitter_t<
+          mask_t, painter_brush_t,
+          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                               abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -619,7 +628,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::mask_t);
  */
 namespace uxdevice {
 using paint_t = class paint_t
-    : public storage_emitter_t<paint_t, double, emit_cairo_abstract_t> {
+    : public storage_emitter_t<
+          paint_t, double,
+          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                               abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -634,7 +646,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::paint_t);
  */
 namespace uxdevice {
 using close_path_t = class close_path_t
-    : public marker_emitter_t<close_path_t, emit_cairo_abstract_t> {
+    : public marker_emitter_t<
+          close_path_t,
+          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                               abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using marker_emitter_t::marker_emitter_t;
 

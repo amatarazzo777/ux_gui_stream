@@ -46,8 +46,7 @@
  painter_brush_emitter_t
  storage_emitter_t
  class_storage_emitter_t
- storage_emitter_t
- class_storage_emitter_t
+
 
 
  *********************************************************************************/
@@ -55,8 +54,8 @@
 /**
 
  \class image_block_storage_t
- \brief storage class used by the image_block_t object. The oject is responsible
- for encapsulating and dynamically allocating, and releasing memory.
+ \brief storage class used by the image_block_t object. The object is
+ responsible for encapsulating and dynamically allocating, and releasing memory.
 
  \details
 
@@ -65,11 +64,12 @@
 namespace uxdevice {
 class image_block_storage_t : virtual public hash_members_t,
                               virtual public system_error_t,
-    : virtual public display_visual_t<visitor_pipeline_memory_image_block_t> {
+                              public display_visual_t,
+                              public pipeline_memory_t<visitor_image_block_t> {
 public:
   /// @brief default
   /// constructor
-  image_block_storage_t() : description{}, image_block_ptr{} {}
+  image_block_storage_t() : description{}, image_block{} {}
 
   image_block_storage_t(const std::string &_description)
       : description(_description) {}
@@ -102,22 +102,21 @@ public:
 
   virtual ~image_block_storage_t() {}
 
-  bool is_valid(void) { return image_block != nullptr; }
+  bool is_valid(void) { return image_block.is_valid(); }
 
   std::size_t hash_code(void) const noexcept {
     std::size_t __value = {};
     hash_combine(__value, std::type_index(typeid(image_block_storage_t)),
-                 description, is_loaded, unit_memory_hash_code());
+                 description, pipeline_memory_hash_code());
 
     return __value;
   }
 
-  std::list<pipeline_t> image_render_pipeline = {};
-  pipeline_t pipeline_fn = {};
-  void pipeline(cairo_t *cr, coordinate_t *a);
+  void pipeline_acquire(void);
+  bool pipeline_has_required_linkages(void);
 
   std::string description = {};
-  draw_buffer image_block = {};
+  draw_buffer_t image_block = {};
   matrix_t matrix = {};
 };
 } // namespace uxdevice
@@ -130,9 +129,9 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::image_block_storage_t);
  */
 namespace uxdevice {
 using image_block_t = class image_block_t
-    : public class_storage_emitter_t<image_block_t, image_block_storage_t,
-                                     display_visual_t,
-                                     emit_display_context_abstract_t> {
+    : public class_storage_emitter_t<
+          image_block_storage_t,
+          visitor_interfaces_t<abstract_emit_context_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 

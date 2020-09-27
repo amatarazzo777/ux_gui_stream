@@ -42,7 +42,7 @@ enum class draw_buffer_format_t {
 
 };
 
-class draw_buffer_t : public emit_cairo_coordinate_abstract_t,
+class draw_buffer_t : public abstract_emit_cr_a_t<order_render>,
                       virtual public system_error_t,
                       virtual hash_members_t {
 public:
@@ -112,6 +112,7 @@ public:
   void emit(cairo_t *cr);
   void emit(cairo_t *cr, coordinate_t *a);
   void flush(void) { cairo_surface_flush(rendered); }
+  bool is_valid(void) { return rendered != nullptr; }
 
   cairo_t *cr = {};
   cairo_surface_t *rendered = {};

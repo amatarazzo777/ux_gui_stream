@@ -38,9 +38,9 @@
  to invoke, a standard draw or a clipped draw.
  */
 namespace uxdevice {
-class textual_render_storage_t
-    : virtual public display_visual_t<visitor_pipeline_memory_textual_render_t>,
-      virtual public hash_members_t {
+class textual_render_storage_t : public display_visual_t,
+                                 pipeline_memory_t<visitor_textual_render_t>,
+                                 virtual public hash_members_t {
 public:
   textual_render_storage_t() {}
 
@@ -92,9 +92,6 @@ public:
 
   typedef std::function<void()> text_pipeline_function_t;
 
-  std::list<text_pipeline_function_t> text_render_pipeline = {};
-  text_pipeline_function_t pipeline_fn = {};
-
   void pipeline(cairo_t *cr, coordinate_t *a);
 };
 } // namespace uxdevice
@@ -106,8 +103,9 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::textual_render_storage_t);
  */
 namespace uxdevice {
 using textual_render_t = class textual_render_t
-    : public class_storage_emitter_t<textual_render_t, textual_render_storage_t,
-                                     emit_display_context_abstract_t> {
+    : public class_storage_emitter_t<
+          textual_render_t, textual_render_storage_t,
+          visitor_interfaces_t<abstract_emit_context_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 

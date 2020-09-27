@@ -65,9 +65,9 @@ void uxdevice::surface_area_t::render_loop(void) {
     // small lists for the multi-threaded necessity.
     // search these for unready and syncs display context
     // if no work exists  it waits on the cvRenderWork condition variable.
-    if (context.surface_prime()) {
+    if (context.surface_prime())
       context.render();
-    }
+
 
     if (error_check()) {
       std::string errors = error_text();
