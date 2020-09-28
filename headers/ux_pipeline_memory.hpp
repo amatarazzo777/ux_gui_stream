@@ -46,19 +46,33 @@ typedef std::list<std::tuple<std::size_t, fn_emit_overload_t>> pipeline_t;
  */
 class pipeline_memory_object_t {
 public:
-  std::any object;
-  std::unordered_map<std::type_index, visitor_interface_t> visitors;
-  hash_function_t hash_function;
+  std::any object = {};
+  std::unordered_map<std::type_index, visitor_interface_t> *visitors = {};
+  hash_function_t hash_function = {};
 };
 
 typedef std::unordered_map<std::type_index, pipeline_memory_object_t>
     pipeline_memory_unordered_map_t;
 
 class display_unit_t;
+
 /**
  * \class
  */
-template <typename ATTR> class pipeline_memory_t {
+class pipeline_acquisition_t {
+public:
+  pipeline_acquisition_t() {}
+  virtual ~pipeline_acquisition_t() {}
+  virtual void pipeline_acquire(cairo_t *cr, coordinate_t *a) = 0;
+  virtual bool pipeline_has_required_linkages(void) = 0;
+  virtual void pipeline_execute(display_context_t *context)=0;
+};
+
+/**
+ * \class
+ */
+template <typename ATTR>
+class pipeline_memory_t : public pipeline_acquisition_t {
 public:
   pipeline_memory_t() {}
   virtual ~pipeline_memory_t() {}
@@ -101,16 +115,47 @@ public:
   /**
    \fn pipeline_memory_store
    \tparam T
+   \nr
+   storage of a shared pointer with variations on system defined
+   and user input. This provides effective use of std::any
+   and facilitates the storage of visitor parameter data with the
+   ability to expand to other data types. The usefulness of the
+   using for type alias provides effective means of expansion.
    */
   template <typename T>
   void pipeline_memory_store(const std::shared_ptr<T> ptr) {
     auto ti = std::type_index(typeid(T));
 
-    // place into unordered map
-    storage[ti] = pipeline_memory_object_t{ptr, ptr->visitors,
-                                           [&]() { return ptr->hash_code(); }};
+    // place into unordered map as a visitor object shared_ptr
+    if constexpr (std::is_base_of<visitor_interfaces_t<T>, T>::value) {
+      storage[ti] = pipeline_memory_object_t{
+          ptr, &ptr->visitors, [&]() { return ptr->hash_code(); }};
+
+      // place into umap as a hashing visitor parameter shared_ptr
+    } else if constexpr (std::is_base_of<hash_members_t, T>::value) {
+      storage[ti] = pipeline_memory_object_t{
+          ptr, nullptr, [&]() { return ptr->hash_code(); }};
+
+    } else {
+      // just data as a visitor parameter  shared_ptr
+      storage[ti] = pipeline_memory_object_t{ptr, nullptr,
+                                             [&]() { return ti.hash_code(); }};
+    }
+  }
+  // just pointer data
+  template <typename T> void pipeline_memory_store(const T *ptr) {
+    auto ti = std::type_index(typeid(T));
+    storage[ti] = pipeline_memory_object_t{ptr, nullptr,
+                                           [&]() { return ti.hash_code(); }};
+  }
+  // all others
+  template <typename T> void pipeline_memory_store(const T &o) {
+    auto ti = std::type_index(typeid(T));
+    storage[ti] =
+        pipeline_memory_object_t{o, nullptr, [&]() { return ti.hash_code(); }};
   }
 
+#if 0
   /**
    \fn pipeline_memory_store
    \tparam T
@@ -118,10 +163,12 @@ public:
   template <typename T>
   void pipeline_memory_store(const std::shared_ptr<display_unit_t> ptr) {
     auto ti = std::type_index(typeid(T));
+
     storage[ti] = pipeline_memory_object_t{
-        std::dynamic_pointer_cast<T>(ptr),
+        std::dynamic_pointer_cast<T>(ptr),, ptr->visitors,
         [&]() { return std::dynamic_pointer_cast<T>(ptr)->hash_code(); }};
   }
+#endif
 
   /**
    \fn pipeline_memory_access
@@ -195,32 +242,8 @@ public:
 
    \brief
    */
-  void pipeline_execute(void) {
+  void pipeline_execute(display_context_t *context);
 
-    // arrange pipeline if necessary
-    if (!bfinalized)
-      pipeline_finalize();
-
-    // if the pipeline is in a ready state.
-    // providing broad functionality allow for expansion if necessary.
-    if (pipeline_ready()) {
-      // pipeline has already been sorted.
-      for (auto o : pipeline_io) {
-
-        auto overload_function_visitor = overload_visitors_t{
-            [&](fn_emit_cr_t &fn) { fn(cr); },
-            [&](fn_emit_cr_a_t fn) { fn(cr, a); },
-            [&](fn_emit_context_t &fn) { fn(context); },
-            [&](fn_emit_layout_t &fn) { fn(layout); },
-            [&](fn_emit_layout_a_t &fn) { fn(layout, a); },
-            [&](fn_emit_cr_layout_t &fn) { fn(cr, layout); }};
-
-        auto overloaded_function = std::get<fn_emit_overload_t>(o);
-
-        std::visit(overload_function_visitor, overloaded_function);
-      }
-    }
-  }
 
   /**
    \fn unit_memory_to_staged_pipeline
@@ -247,13 +270,16 @@ public:
 
     // for each of the visitors passed.
     for (auto ti : overloaded_visitors) {
-      // go through all of the "accept" objects within pipeline memory storage.
+      // go through all of the "accept" objects within pipeline memory
+      // storage.
       for (auto o : storage) {
         // test if object accepts the visitor interface
-        auto v = o.second.visitors.find(ti);
-        if (v != o.second.visitors.end()) {
-          // place call
-          pipeline_io.push_back({v->second.pipeline_order, v->second.fn});
+        if (o.second.visitors) {
+          auto v = o.second.visitors->find(ti);
+          if (v != o.second.visitors->end()) {
+            // place call
+            pipeline_io.push_back({v->second.pipeline_order, v->second.fn});
+          }
         }
       }
     }

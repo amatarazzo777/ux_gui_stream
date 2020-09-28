@@ -97,24 +97,21 @@ public:
   /// @brief copy assignment operator
   display_unit_t &operator=(const display_unit_t &other) {
     is_processed = other.is_processed;
-    viewport_inked = other.viewport_inked;
     return *this;
   }
   /// @brief move assignment
   display_unit_t &operator=(display_unit_t &&other) noexcept {
     is_processed = std::move(other.is_processed);
-    viewport_inked = std::move(other.viewport_inked);
     return *this;
   }
 
   /// @brief move constructor
   display_unit_t(display_unit_t &&other) noexcept
-      : is_processed(std::move(other.is_processed)),
-        viewport_inked(std::move(other.viewport_inked)) {}
+      : is_processed(std::move(other.is_processed)) {}
 
   /// @brief copy constructor
   display_unit_t(const display_unit_t &other)
-      : is_processed(other.is_processed), viewport_inked(other.viewport_inked) {
+      : is_processed(other.is_processed) {
   }
 
   virtual ~display_unit_t() {}
@@ -126,12 +123,11 @@ public:
   std::size_t hash_code(void) const noexcept {
     std::size_t __value = {};
     hash_combine(__value, std::type_index(typeid(display_unit_t)), is_processed,
-                 viewport_inked, bchanged);
+                  bchanged);
     return __value;
   }
 
   bool is_processed = false;
-  bool viewport_inked = false;
   bool bchanged = false;
 };
 } // namespace uxdevice

@@ -71,12 +71,12 @@ void uxdevice::textual_render_storage_t::pipeline_acquire(void) {
    build up of graphics composite layers.
 
    */
-  pipeline_push<order_init>(fn_emit_cr_t{[](auto cr) {
+  pipeline_push<order_init>(fn_emit_cr_t{[&](auto cr) {
       if (!layout)
         layout = pango_cairo_create_layout(cr);
   });
 
-  pipeline_push<order_render_options>(fn_emit_cr_t{[](auto cr) {
+  pipeline_push<order_layout_option>(fn_emit_cr_t{[&](auto cr) {
         // get the serial number of all the current attributes.
         // if any of the emitter functions change the layout
         // the serial number changes. the push visit below
@@ -116,7 +116,7 @@ void uxdevice::textual_render_storage_t::pipeline_acquire(void) {
       }});
 
       pipeline_push<order_render>(
-          fn_emit_cr_t{[](auto cr) { matrix.emit(cr); }});
+          fn_emit_cr_t{[&](auto cr) { matrix.emit(cr); }});
 
       // compute pipeline that includes rendering commands. The rendering
       // commands are sequenced and appropriate fill, preserve order is
@@ -169,6 +169,13 @@ bool uxdevice::textual_render_t::pipeline_valid(void) {
  */
 void uxdevice::textual_render_t::emit(display_context_t *context) {
       using namespace std::placeholders;
+
+      // this copys the shared pointers from the context
+      // to this one, but only named visitor - visitor_textual_render_t
+      pipeline_memory_linkages(context);
+
+      // this adds a parameter for the specific object
+      pipeline_memory_store<PangoLayout *>(layout);
 
       if (is_processed)
         return;

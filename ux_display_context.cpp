@@ -235,7 +235,31 @@ void uxdevice::display_context_t::add_visual(
   viewport_rectangle = {(double)offsetx, (double)offsety,
                         (double)offsetx + (double)window_width,
                         (double)offsety + (double)window_height};
+
   _obj->intersect(viewport_rectangle);
+
+  // initialize the display_visual_t object to utilize
+  // the drawing pipeline. Both base (fn, clipping) and
+  // cached(fn,clipping) are initialized;
+  auto ptr_pipeline = std::dynamic_pointer_cast<pipeline_acquisition_t>(_obj);
+
+  _obj->fn_base_surface = [&]() {
+    _obj->fn_draw = [&]() { ptr_pipeline->pipeline_execute(this); };
+    _obj->fn_draw_clipped = [&]() {
+      cairo_rectangle(
+          this->cr, _obj->intersection_double.x, _obj->intersection_double.y,
+          _obj->intersection_double.width, _obj->intersection_double.height);
+      cairo_clip(this->cr);
+      ptr_pipeline->pipeline_execute(this);
+      cairo_reset_clip(this->cr);
+    };
+  };
+
+  _obj->fn_cache_surface = _obj->fn_base_surface;
+  // validate object
+  if (!ptr_pipeline->pipeline_has_required_linkages())
+    return; // not adding error objects
+
   if (_obj->overlap == CAIRO_REGION_OVERLAP_OUT) {
     VIEWPORT_OFF_SPIN;
     viewport_off.emplace_back(_obj);
@@ -246,7 +270,6 @@ void uxdevice::display_context_t::add_visual(
     VIEWPORT_ON_CLEAR;
     state(_obj);
   }
-  _obj->viewport_inked = true;
 }
 /**
 \internal
@@ -264,7 +287,7 @@ void uxdevice::display_context_t::partition_visibility(void) {
     return;
   }
 
-  drawing_output_collection_t::iterator obj = viewport_off.begin();
+  auto obj = viewport_off.begin();
   while (obj != viewport_off.end()) {
     std::shared_ptr<display_visual_t> n = *obj;
     VIEWPORT_OFF_CLEAR;
@@ -276,7 +299,7 @@ void uxdevice::display_context_t::partition_visibility(void) {
     }
 
     if (n->overlap != CAIRO_REGION_OVERLAP_OUT) {
-      drawing_output_collection_t::iterator next = obj;
+    	auto next = obj;
       next++;
       VIEWPORT_ON_SPIN;
       viewport_on.emplace_back(n);
@@ -317,7 +340,7 @@ void uxdevice::display_context_t::clear(void) {
 
   offsetx = 0;
   offsety = 0;
-  unit_memory_clear();
+  pipeline_memory_reset();
 
   REGIONS_CLEAR;
 
@@ -402,7 +425,6 @@ void uxdevice::display_context_t::state_notify_complete(void) {
 \brief The routine returns whether work is within the system.
 */
 bool uxdevice::display_context_t::state(void) {
-
   // determine if any on screen elements, or their attribute shared pointers
   // have changed. if so, create a surface state repaint
   for (auto n : viewport_on) {
@@ -453,19 +475,15 @@ void uxdevice::display_context_t::plot(context_cairo_region_t &plotArea) {
     case CAIRO_REGION_OVERLAP_OUT:
       break;
     case CAIRO_REGION_OVERLAP_IN: {
-      n->functors_lock(true);
       XCB_SPIN;
-      n->fn_draw(*this);
+      n->fn_draw();
       XCB_CLEAR;
-      n->functors_lock(false);
       error_check(cr);
     } break;
     case CAIRO_REGION_OVERLAP_PART: {
-      n->functors_lock(true);
       XCB_SPIN;
-      n->fn_draw_clipped(*this);
+      n->fn_draw_clipped();
       XCB_CLEAR;
-      n->functors_lock(false);
       error_check(cr);
     } break;
     }

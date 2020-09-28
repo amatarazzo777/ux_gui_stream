@@ -87,9 +87,9 @@ public:
   bool bOSsurface = false;
 };
 
-typedef std::function<void(display_context_t &context)> draw_logic_t;
+typedef std::function<void(void)> draw_logic_t;
 
-class display_visual_t {
+class display_visual_t : virtual public hash_members_t {
 public:
   /// @brief default constructor
   display_visual_t() {}
@@ -186,6 +186,11 @@ public:
     return __value;
   }
 
+  void changed(void) { bchanged = true; }
+  bool has_changed(void) { return is_different_hash(); }
+
+  bool is_processed = false;
+  bool bchanged = false;
   bool has_ink_extents = false;
   cairo_rectangle_int_t c = cairo_rectangle_int_t();
   cairo_region_overlap_t overlap = CAIRO_REGION_OVERLAP_OUT;
