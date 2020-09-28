@@ -38,11 +38,13 @@
  to invoke, a standard draw or a clipped draw.
  */
 namespace uxdevice {
-class textual_render_storage_t : public display_visual_t,
-                                 pipeline_memory_t<visitor_textual_render_t>,
-                                 virtual public hash_members_t {
+class textual_render_storage_t
+    : virtual public display_visual_t,
+      virtual public pipeline_memory_t<visitor_textual_render_t>,
+      virtual public hash_members_t {
 public:
   textual_render_storage_t() {}
+  friend class pipeline_memory_t<visitor_textual_render_t>;
 
   virtual ~textual_render_storage_t() {
     if (layout)
