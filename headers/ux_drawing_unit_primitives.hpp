@@ -464,11 +464,17 @@ namespace uxdevice {
 using curve_t = class curve_t
     : public class_storage_emitter_t<
           curve_t, curve_storage_t,
-          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+          visitor_interfaces_t<abstract_emit_context_t<order_render>,
+                               abstract_emit_cr_relative_t<order_render>,
                                abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
-
+  void emit(display_context_t *context) {
+    if (context->pipeline_memory_access<relative_coordinate_t>())
+      emit_relative(context->cr);
+    else
+      emit_absolute(context->cr);
+  }
   void emit_relative(cairo_t *cr);
   void emit_absolute(cairo_t *cr);
 };
@@ -487,7 +493,12 @@ using line_t = class line_t
                                abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
-
+  void emit(display_context_t *context) {
+    if (context->pipeline_memory_access<relative_coordinate_t>())
+      emit_relative(context->cr);
+    else
+      emit_absolute(context->cr);
+  }
   void emit_relative(cairo_t *cr);
   void emit_absolute(cairo_t *cr);
 };
@@ -506,7 +517,12 @@ using vline_t = class vline_t
                                abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using storage_emitter_t::storage_emitter_t;
-
+  void emit(display_context_t *context) {
+    if (context->pipeline_memory_access<relative_coordinate_t>())
+      emit_relative(context->cr);
+    else
+      emit_absolute(context->cr);
+  }
   void emit_relative(cairo_t *cr);
   void emit_absolute(cairo_t *cr);
 };
@@ -525,7 +541,12 @@ using hline_t = class hline_t
                                abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using storage_emitter_t::storage_emitter_t;
-
+  void emit(display_context_t *context) {
+    if (context->pipeline_memory_access<relative_coordinate_t>())
+      emit_relative(context->cr);
+    else
+      emit_absolute(context->cr);
+  }
   void emit_relative(cairo_t *cr);
   void emit_absolute(cairo_t *cr);
 };
@@ -540,8 +561,7 @@ namespace uxdevice {
 using rectangle_t = class rectangle_t
     : public class_storage_emitter_t<
           rectangle_t, rectangle_storage_t,
-          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
-                               abstract_emit_cr_absolute_t<order_render>>> {
+          visitor_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -558,8 +578,7 @@ namespace uxdevice {
 using stroke_path_t = class stroke_path_t
     : public class_storage_emitter_t<
           stroke_path_t, painter_brush_t,
-          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
-                               abstract_emit_cr_absolute_t<order_render>>> {
+          visitor_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -576,8 +595,7 @@ namespace uxdevice {
 using fill_path_t = class fill_path_t
     : public class_storage_emitter_t<
           fill_path_t, painter_brush_t,
-          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
-                               abstract_emit_cr_absolute_t<order_render>>> {
+          visitor_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -594,8 +612,7 @@ namespace uxdevice {
 using stroke_fill_path_t = class stroke_fill_path_t
     : public class_storage_emitter_t<
           stroke_fill_path_t, stroke_fill_path_storage_t,
-          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
-                               abstract_emit_cr_absolute_t<order_render>>> {
+          visitor_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -609,11 +626,10 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::stroke_fill_path_t);
  \brief
  */
 namespace uxdevice {
-using mask_t = class mask_t
-    : public class_storage_emitter_t<
-          mask_t, painter_brush_t,
-          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
-                               abstract_emit_cr_absolute_t<order_render>>> {
+using mask_t =
+    class mask_t : public class_storage_emitter_t<
+                       mask_t, painter_brush_t,
+                       visitor_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -630,8 +646,7 @@ namespace uxdevice {
 using paint_t = class paint_t
     : public storage_emitter_t<
           paint_t, double,
-          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
-                               abstract_emit_cr_absolute_t<order_render>>> {
+          visitor_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -648,8 +663,7 @@ namespace uxdevice {
 using close_path_t = class close_path_t
     : public marker_emitter_t<
           close_path_t,
-          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
-                               abstract_emit_cr_absolute_t<order_render>>> {
+          visitor_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using marker_emitter_t::marker_emitter_t;
 

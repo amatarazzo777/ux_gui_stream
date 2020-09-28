@@ -87,18 +87,15 @@ namespace uxdevice {
 class visitor_interface_t {
 public:
   std::type_index type;
-  std::size_t index;
   std::size_t pipeline_order;
   fn_emit_overload_t fn;
 };
 } // namespace uxdevice
 
 namespace uxdevice {
-template <std::size_t ORDER, typename FN>
+template <typename FN, std::size_t ORDER>
 visitor_interface_t make_interface_t(FN fn) {
-  return visitor_interface_t{
-      std::type_index(typeid(FN)),
-      fn_emit_overload_index[std::type_index(typeid(FN))], ORDER, FN{fn}};
+  return visitor_interface_t{std::type_index(typeid(FN)), ORDER, FN{fn}};
 }
 
 } // namespace uxdevice
@@ -106,10 +103,11 @@ visitor_interface_t make_interface_t(FN fn) {
 namespace uxdevice {
 template <std::size_t ORDER> class abstract_emit_context_t {
 public:
-  virtual ~abstract_emit_context_t(){};
+  abstract_emit_context_t() {}
+  virtual ~abstract_emit_context_t() {}
   virtual void emit(display_context_t *context) = 0;
 
-  visitor_interface_t interface = make_interface_t<ORDER, fn_emit_context_t>(
+  visitor_interface_t interface = make_interface_t<fn_emit_context_t, ORDER>(
       std::bind(&abstract_emit_context_t::emit, this, std::placeholders::_1));
 
 }; // namespace uxdevice
@@ -118,10 +116,11 @@ public:
 namespace uxdevice {
 template <std::size_t ORDER> class abstract_emit_cr_t {
 public:
-  virtual ~abstract_emit_cr_t(){};
+  abstract_emit_cr_t() {}
+  virtual ~abstract_emit_cr_t() {}
   virtual void emit(cairo_t *cr) = 0;
 
-  visitor_interface_t fn_interface = make_interface_t<ORDER, fn_emit_cr_t>(
+  visitor_interface_t fn_interface = make_interface_t<fn_emit_cr_t, ORDER>(
       std::bind(&abstract_emit_cr_t::emit, this, std::placeholders::_1));
 };
 
@@ -130,11 +129,12 @@ public:
 namespace uxdevice {
 template <std::size_t ORDER> class abstract_emit_cr_absolute_t {
 public:
-  virtual ~abstract_emit_cr_absolute_t(){};
+  abstract_emit_cr_absolute_t() {}
+  virtual ~abstract_emit_cr_absolute_t() {}
   virtual void emit_absolute(cairo_t *cr) = 0;
 
   visitor_interface_t fn_interface =
-      make_interface_t<ORDER, fn_emit_cr_a_absolute_t>(
+      make_interface_t<fn_emit_cr_a_absolute_t, ORDER>(
           std::bind(&abstract_emit_cr_absolute_t::emit_absolute, this,
                     std::placeholders::_1));
 };
@@ -143,12 +143,13 @@ public:
 namespace uxdevice {
 template <std::size_t ORDER> class abstract_emit_cr_relative_t {
 public:
-  virtual ~abstract_emit_cr_relative_t(){};
+  abstract_emit_cr_relative_t() {}
+  virtual ~abstract_emit_cr_relative_t() {}
   virtual void emit_relative(cairo_t *cr) = 0;
 
   visitor_interface_t fn_interface = {
 
-      make_interface_t<ORDER, fn_emit_cr_a_relative_t>(
+      make_interface_t<fn_emit_cr_a_relative_t, ORDER>(
           std::bind(&abstract_emit_cr_relative_t::emit_relative, this,
                     std::placeholders::_1))};
 };
@@ -157,14 +158,15 @@ public:
 namespace uxdevice {
 template <std::size_t ORDER> class abstract_emit_cr_a_t {
 public:
-  virtual ~abstract_emit_cr_a_t(){};
+  abstract_emit_cr_a_t() {}
+  virtual ~abstract_emit_cr_a_t() {}
   virtual void emit(cairo_t *cr, coordinate_t *a) = 0;
 
   /**
    * note: the parameters have to be explicitly named
    * to select the correct overload.
    */
-  visitor_interface_t fn_interface = make_interface_t<ORDER, fn_emit_cr_a_t>(
+  visitor_interface_t fn_interface = make_interface_t<fn_emit_cr_a_t, ORDER>(
       std::bind((void (abstract_emit_cr_a_t::*)(cairo_t *cr, coordinate_t *a)) &
                     abstract_emit_cr_a_t::emit,
                 this, std::placeholders::_1, std::placeholders::_2));
@@ -174,10 +176,11 @@ public:
 namespace uxdevice {
 template <std::size_t ORDER> class abstract_emit_layout_t {
 public:
-  virtual ~abstract_emit_layout_t(){};
+  abstract_emit_layout_t() {}
+  virtual ~abstract_emit_layout_t() {}
   virtual void emit(PangoLayout *layout) = 0;
 
-  visitor_interface_t fn_interface = make_interface_t<ORDER, fn_emit_layout_t>(
+  visitor_interface_t fn_interface = make_interface_t<fn_emit_layout_t, ORDER>(
       std::bind((void (abstract_emit_layout_t::*)(PangoLayout *layout)) &
                     abstract_emit_layout_t::emit,
                 this, std::placeholders::_1));
@@ -187,25 +190,27 @@ public:
 namespace uxdevice {
 template <std::size_t ORDER> class abstract_emit_layout_a_t {
 public:
+  abstract_emit_layout_a_t() {}
   virtual ~abstract_emit_layout_a_t(){};
   virtual void emit(PangoLayout *layout, coordinate_t *a) = 0;
 
-  visitor_interface_t fn_interface = make_interface_t<fn_emit_cr_a_t>(
-      ORDER, std::bind((void (abstract_emit_layout_a_t::*)(PangoLayout *layout,
-                                                           coordinate_t *a)) &
-                           abstract_emit_layout_a_t::emit,
-                       this, std::placeholders::_1, std::placeholders::_2));
+  visitor_interface_t fn_interface = make_interface_t<fn_emit_cr_a_t, ORDER>(
+      std::bind((void (abstract_emit_layout_a_t::*)(PangoLayout *layout,
+                                                    coordinate_t *a)) &
+                    abstract_emit_layout_a_t::emit,
+                this, std::placeholders::_1, std::placeholders::_2));
 };
 } // namespace uxdevice
 
 namespace uxdevice {
 template <std::size_t ORDER> class abstract_emit_cr_layout_t {
 public:
-  virtual ~abstract_emit_cr_layout_t(){};
+  abstract_emit_cr_layout_t() {}
+  virtual ~abstract_emit_cr_layout_t() {}
   virtual void emit(cairo_t *cr, PangoLayout *layout) = 0;
 
   visitor_interface_t fn_interface =
-      make_interface_t<ORDER, fn_emit_cr_layout_t>(
+      make_interface_t<fn_emit_cr_layout_t, ORDER>(
           std::bind((void (abstract_emit_cr_layout_t::*)(cairo_t *cr,
                                                          PangoLayout *layout)) &
                         abstract_emit_cr_layout_t::emit,
@@ -216,6 +221,7 @@ public:
 namespace uxdevice {
 class visitor_base_t {
 public:
+  visitor_base_t() {}
   virtual ~visitor_base_t() {}
 };
 } // namespace uxdevice
@@ -224,6 +230,7 @@ public:
 namespace uxdevice {
 class visitor_textual_render_t : virtual public visitor_base_t {
 public:
+  visitor_textual_render_t() {}
   virtual ~visitor_textual_render_t() {}
 };
 } // namespace uxdevice
@@ -231,6 +238,7 @@ public:
 namespace uxdevice {
 class visitor_image_block_t : virtual public visitor_base_t {
 public:
+  visitor_image_block_t() {}
   virtual ~visitor_image_block_t() {}
 };
 } // namespace uxdevice
@@ -244,13 +252,13 @@ namespace uxdevice {
 template <typename... Args> class visitor_interfaces_t : public Args... {
 public:
   std::unordered_map<std::type_index, visitor_interface_t> visitors;
-
+  visitor_interfaces_t() {}
   visitor_interfaces_t(Args &... args) {
     ((void)add_visitor_fn(std::forward<Args>(args)), ...);
   }
 
   template <typename T> void add_visitor_fn(T &obj_fn) {
-    visitors[std::type_index(typeid(obj_fn))]=obj_fn.fn_interface;
+    visitors[std::type_index(typeid(T))] = obj_fn.fn_interface;
   }
 };
 } // namespace uxdevice

@@ -129,11 +129,12 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::image_block_storage_t);
  */
 namespace uxdevice {
 using image_block_t = class image_block_t
-    : public class_storage_emitter_t<
+    : public class_storage_emitter_t<image_block_t,
           image_block_storage_t,
           visitor_interfaces_t<abstract_emit_context_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
+
 
   void emit(display_context_t *context);
 };

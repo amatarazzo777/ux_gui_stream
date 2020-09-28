@@ -250,6 +250,8 @@ class painter_brush_emitter_t : public display_unit_t,
 
 public:
   using painter_brush_t::painter_brush_t;
+  painter_brush_emitter_t(){}
+
   // copy constructor
   painter_brush_emitter_t(const painter_brush_emitter_t &other)
       : display_unit_t(other),

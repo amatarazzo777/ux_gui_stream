@@ -49,7 +49,6 @@ public:
   std::any object;
   std::unordered_map<std::type_index, visitor_interface_t> visitors;
   hash_function_t hash_function;
-  std::size_t pipeline_stage;
 };
 
 typedef std::unordered_map<std::type_index, pipeline_memory_object_t>
@@ -109,8 +108,7 @@ public:
 
     // place into unordered map
     storage[ti] = pipeline_memory_object_t{ptr, ptr->visitors,
-                                           [&]() { return ptr->hash_code(); },
-                                           ptr->pipeline_stage};
+                                           [&]() { return ptr->hash_code(); }};
   }
 
   /**

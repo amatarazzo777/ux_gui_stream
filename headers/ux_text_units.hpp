@@ -416,11 +416,11 @@ using text_data_t = class text_data_t
           text_data_t, text_data_storage_t,
           visitor_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
           visitor_textual_render_t> {
-  public:
-    using storage_emitter_t::storage_emitter_t;
-    std::size_t hash_code(void) const noexcept;
-    void emit(PangoLayout * layout);
-  };
+public:
+  using storage_emitter_t::storage_emitter_t;
+  std::size_t hash_code(void) const noexcept;
+  void emit(PangoLayout *layout);
+};
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_data_t);
 
@@ -432,10 +432,12 @@ UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_data_t);
 namespace uxdevice {
 using text_shadow_t = class text_shadow_t
     : public painter_brush_emitter_t<
-          text_shadow_t, textual_render_storage_t, display_visual_t,
-          visitor_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
-          visitor_textual_render_t,
-          pipeline_memory_t<visitor_textual_render_t>> {
+          text_shadow_t, textual_render_storage_t,
+          visitor_interfaces_t<abstract_emit_cr_t<order_render>,
+                               abstract_emit_cr_a_t<order_render>>,
+          visitor_textual_render_t>,
+      virtual public pipeline_memory_t<visitor_textual_render_t>,
+      virtual public display_visual_t {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
 
