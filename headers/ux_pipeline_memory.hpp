@@ -313,11 +313,12 @@ public:
   /**
    \fn pipeline_push
    \param overload_visitors_t &visitors
-   \brief places a lambda expression onto the piple with the order attached.
+   \brief places a lambda expression onto the pipeline with the order attached.
    later the order is used to sort the contents.
    */
-  template <std::size_t N> void pipeline_push(fn_emit_overload_t fn) {
-    pipeline_io.emplace_back(std::make_tuple(N, fn));
+  template <std::size_t N, typename FN> void pipeline_push(FN fn) {
+	  fn_emit_overload_t vfn=fn;
+    pipeline_io.emplace_back(std::make_tuple(N, vfn));
     bfinalized = false;
   }
 
@@ -327,7 +328,6 @@ public:
    \brief traverses the objects related and emits them
    to the overloaded provided.
    */
-  typedef std::pair<int, fn_emit_overload_t> pipeline_stage_object_t;
   template <typename... Args> void pipeline_push_visit(void) {
     std::list<std::type_index> overloaded_visitors = {
         std::type_index(typeid(Args))...};

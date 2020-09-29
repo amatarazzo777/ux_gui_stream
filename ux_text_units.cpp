@@ -295,8 +295,8 @@ std::size_t uxdevice::text_data_t::hash_code(void) const noexcept {
   std::size_t __value = std::type_index(typeid(text_data_t)).hash_code();
 
   auto text_data_visitor = overload_visitors_t{
-      [&](std::string &s) { hash_combine(__value, s); },
-      [&](std::string_view &s) { hash_combine(__value, s); },
+      [&](std::string s) { hash_combine(__value, s); },
+      [&](std::string_view s) { hash_combine(__value, s); },
       [&](std::shared_ptr<std::string> ps) { hash_combine(__value, *ps); },
       [&](std::shared_ptr<std::string_view> ps) { hash_combine(__value, *ps); },
       [&](std::shared_ptr<std::stringstream> ps) {

@@ -53,7 +53,19 @@ void uxdevice::pipeline_acquisition_t::pipeline_execute(
 
   // all types have to be declared here in the visitor
   // The compile errors are very difficult to relate
-  // to this.
+  // to this. Each of the std::functions have to have a unique
+  // prototype signature. This is true even if the
+  // class has a different name. Notice that the
+  // abstract class abstract_emit_cr_relative_t and
+  // abstract_emit_cr_absolute_t use the fn_emit_cr_a_t
+  // function typedef.
+  //
+  // the pipeline_memory_access<> functions reference information
+  // stored within the context. The system objects {ie. coordinate_t}
+  // are returned as a shared pointer, hence the .get() at the end.
+  // this could be simplified to:
+  // pipeline_memory_access<coordinate_t *> but that would
+  // confuse internal design.
   auto fn_visitors = overload_visitors_t{
 
       [&](fn_emit_cr_t fn) { fn(context->cr); },
@@ -61,14 +73,6 @@ void uxdevice::pipeline_acquisition_t::pipeline_execute(
       [&](fn_emit_context_t fn) { fn(context); },
 
       [&](fn_emit_cr_a_t fn) {
-        fn(context->cr, context->pipeline_memory_access<coordinate_t>().get());
-      },
-
-      [&](fn_emit_cr_a_absolute_t fn) {
-        fn(context->cr, context->pipeline_memory_access<coordinate_t>().get());
-      },
-
-      [&](fn_emit_cr_a_relative_t fn) {
         fn(context->cr, context->pipeline_memory_access<coordinate_t>().get());
       },
 

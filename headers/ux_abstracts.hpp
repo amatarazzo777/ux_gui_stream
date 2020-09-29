@@ -56,20 +56,18 @@ class coordinate_t;
  * specific rendering stage within the declaration of the unit.
  */
 namespace uxdevice {
-using fn_emit_cr_t = std::function<void(cairo_t *)>;
-using fn_emit_cr_a_t = std::function<void(cairo_t *, coordinate_t *)>;
-using fn_emit_cr_a_absolute_t = std::function<void(cairo_t *, coordinate_t *)>;
-using fn_emit_cr_a_relative_t = std::function<void(cairo_t *, coordinate_t *)>;
-using fn_emit_context_t = std::function<void(display_context_t *context)>;
-using fn_emit_layout_t = std::function<void(PangoLayout *)>;
-using fn_emit_layout_a_t = std::function<void(PangoLayout *, coordinate_t *)>;
-using fn_emit_cr_layout_t = std::function<void(cairo_t *cr, PangoLayout *)>;
+typedef std::function<void(cairo_t *)> fn_emit_cr_t;
+typedef std::function<void(cairo_t *, coordinate_t *)> fn_emit_cr_a_t;
+typedef std::function<void(display_context_t *context)> fn_emit_context_t;
+typedef std::function<void(PangoLayout *)> fn_emit_layout_t;
+typedef std::function<void(PangoLayout *, coordinate_t *)> fn_emit_layout_a_t;
+typedef std::function<void(cairo_t *cr, PangoLayout *)> fn_emit_cr_layout_t;
 
-using fn_emit_overload_t =
-    std::variant<std::monostate, fn_emit_cr_t, fn_emit_cr_a_t,
-                 fn_emit_cr_a_absolute_t, fn_emit_cr_a_relative_t,
-                 fn_emit_context_t, fn_emit_layout_t, fn_emit_layout_a_t,
-                 fn_emit_cr_layout_t>;
+typedef std::variant<std::monostate, fn_emit_cr_t, fn_emit_cr_a_t,
+                     fn_emit_context_t, fn_emit_layout_t, fn_emit_layout_a_t,
+                     fn_emit_cr_layout_t>
+    fn_emit_overload_t;
+
 } // namespace uxdevice
 
 /**
@@ -79,7 +77,7 @@ using fn_emit_overload_t =
 namespace uxdevice {
 class visitor_interface_t {
 public:
-  std::type_index type=std::type_index(typeid(visitor_interface_t));
+  std::type_index type = std::type_index(typeid(visitor_interface_t));
   std::size_t pipeline_order;
   fn_emit_overload_t fn;
 };
@@ -88,7 +86,8 @@ public:
 namespace uxdevice {
 template <typename FN, std::size_t ORDER>
 visitor_interface_t make_interface_t(FN fn) {
-  return visitor_interface_t{std::type_index(typeid(FN)), ORDER, fn_emit_overload_t{fn}};
+  fn_emit_overload_t vfn = fn;
+  return visitor_interface_t{std::type_index(typeid(FN)), ORDER, vfn};
 }
 
 } // namespace uxdevice
@@ -126,10 +125,9 @@ public:
   virtual ~abstract_emit_cr_absolute_t() {}
   virtual void emit_absolute(cairo_t *cr) = 0;
 
-  visitor_interface_t fn_interface =
-      make_interface_t<fn_emit_cr_a_absolute_t, ORDER>(
-          std::bind(&abstract_emit_cr_absolute_t::emit_absolute, this,
-                    std::placeholders::_1));
+  visitor_interface_t fn_interface = make_interface_t<fn_emit_cr_a_t, ORDER>(
+      std::bind(&abstract_emit_cr_absolute_t::emit_absolute, this,
+                std::placeholders::_1));
 };
 } // namespace uxdevice
 
@@ -138,11 +136,11 @@ template <std::size_t ORDER> class abstract_emit_cr_relative_t {
 public:
   abstract_emit_cr_relative_t() {}
   virtual ~abstract_emit_cr_relative_t() {}
-  virtual void emit_relative(cairo_t *cr) = 0;
+  virtual void emit_relative(cairo_t *cr){};
 
   visitor_interface_t fn_interface = {
 
-      make_interface_t<fn_emit_cr_a_relative_t, ORDER>(
+      make_interface_t<fn_emit_cr_a_t, ORDER>(
           std::bind(&abstract_emit_cr_relative_t::emit_relative, this,
                     std::placeholders::_1))};
 };
@@ -159,7 +157,7 @@ public:
    * note: the parameters have to be explicitly named
    * to select the correct overload.
    */
-  visitor_interface_t fn_interface=visitor_interface_t{};
+  visitor_interface_t fn_interface = visitor_interface_t{};
 #if 0
   visitor_interface_t fn_interface = make_interface_t<fn_emit_cr_a_t, ORDER>(
       std::bind((void (abstract_emit_cr_a_t::*)(cairo_t *cr, coordinate_t *a)) &
