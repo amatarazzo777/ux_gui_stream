@@ -163,22 +163,6 @@ public:
     has_ink_extents = true;
   }
 
-  // These functions switch the rendering apparatus from off
-  // screen threaded to on screen. all rendering is serialize to the main
-  // surface
-  //
-  std::atomic_flag lockFunctors = ATOMIC_FLAG_INIT;
-#define LOCK_FUNCTORS_SPIN                                                     \
-  while (lockFunctors.test_and_set(std::memory_order_acquire))
-
-#define LOCK_FUNCTORS_CLEAR lockFunctors.clear(std::memory_order_release)
-
-  void functors_lock(bool b) {
-    if (b)
-      LOCK_FUNCTORS_SPIN;
-    else
-      LOCK_FUNCTORS_CLEAR;
-  }
   std::size_t hash_code(void) const noexcept {
     std::size_t __value = {};
     hash_combine(__value, std::type_index(typeid(display_visual_t)),
@@ -189,7 +173,6 @@ public:
   void changed(void) { bchanged = true; }
   bool has_changed(void) { return is_different_hash(); }
 
-  bool is_processed = false;
   bool bchanged = false;
   bool has_ink_extents = false;
   cairo_rectangle_int_t c = cairo_rectangle_int_t();
@@ -207,6 +190,7 @@ public:
   draw_logic_t fn_base_surface = draw_logic_t();
   draw_logic_t fn_draw = draw_logic_t();
   draw_logic_t fn_draw_clipped = draw_logic_t();
+  matrix_t matrix = {};
 
   // measure processing time
   std::chrono::system_clock::time_point last_render_time = {};

@@ -62,7 +62,7 @@ void uxdevice::display_visual_t::intersect(context_cairo_region_t &rectregion) {
   cairo_region_destroy(dst);
 }
 
-void uxdevice::display_visual_t::evaluate_cache(display_context_t &context) {
+void uxdevice::display_visual_t::evaluate_cache(display_context_t *context) {
   return;
   if (bRenderBufferCached) {
     last_render_time = std::chrono::high_resolution_clock::now();

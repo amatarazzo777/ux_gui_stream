@@ -54,9 +54,11 @@ public:
                                           (int)height);
   }
 
+  operator bool() const { return rendered != nullptr; }
+
   draw_buffer_t(int _width, int _height)
-      : width((double)_height), height((double)_height) {
-    rendered = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+      : width((double)_width), height((double)_height) {
+    rendered = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, _width, _height);
     cr = cairo_create(rendered);
   }
 
@@ -65,7 +67,7 @@ public:
     read_image(description, width, height);
   }
   draw_buffer_t(std::string &description, int _width, int _height)
-      : width((double)_height), height((double)_height) {
+      : width((double)_width), height((double)_height) {
     read_image(description, width, height);
   }
 

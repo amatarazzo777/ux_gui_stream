@@ -41,7 +41,8 @@ namespace uxdevice {
 class textual_render_storage_t
     : virtual public display_visual_t,
       virtual public pipeline_memory_t<visitor_textual_render_t>,
-      virtual public hash_members_t {
+      virtual public hash_members_t,
+      virtual public system_error_t {
 public:
   textual_render_storage_t() {}
   friend class pipeline_memory_t<visitor_textual_render_t>;
@@ -94,7 +95,8 @@ public:
 
   typedef std::function<void()> text_pipeline_function_t;
 
-  void pipeline(cairo_t *cr, coordinate_t *a);
+  void pipeline_acquire(cairo_t *cr, coordinate_t *a);
+  bool pipeline_has_required_linkages(void);
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::textual_render_storage_t);

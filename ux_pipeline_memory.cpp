@@ -30,43 +30,63 @@
 
 */
 template <typename ATTR>
-void uxdevice::pipeline_memory_t<ATTR>::unit_memory_linkages(
+void uxdevice::pipeline_memory_t<ATTR>::pipeline_memory_linkages(
     display_context_t &other) {
   for (auto n : other.storage)
     if (n.first == std::type_index(typeid(ATTR)))
       storage[n.first] = n.second;
 }
 
-void pipeline_execute(display_context_t *context) {
+/**
+  \fn pipeline_execute
+  \param display_context_t *context
+  \brief function visits the pipeline sequentially
+      executing the pipeline lambda using the context parameter.
+      Parameters for visitors use the pipeline_memory_access
+      routine and pass the type requested.
 
-  auto overload_function_visitor = overload_visitors_t{
-      [&](fn_emit_cr_t &fn) { fn(context->cr); },
-      [&](fn_emit_context_t &fn) { fn(context); },
+*/
+// template <typename ATTR>
+// void uxdevice::pipeline_memory_t<ATTR>::pipeline_execute(
+void uxdevice::pipeline_acquisition_t::pipeline_execute(
+    display_context_t *context) {
+
+  // all types have to be declared here in the visitor
+  // The compile errors are very difficult to relate
+  // to this.
+  auto fn_visitors = overload_visitors_t{
+
+      [&](fn_emit_cr_t fn) { fn(context->cr); },
+
+      [&](fn_emit_context_t fn) { fn(context); },
 
       [&](fn_emit_cr_a_t fn) {
-        fn(context->cr, pipeline_memory_access<coordinate_t>().get());
+        fn(context->cr, context->pipeline_memory_access<coordinate_t>().get());
       },
 
       [&](fn_emit_cr_a_absolute_t fn) {
-        fn(context->cr, pipeline_memory_access<coordinate_t>().get());
+        fn(context->cr, context->pipeline_memory_access<coordinate_t>().get());
       },
 
       [&](fn_emit_cr_a_relative_t fn) {
-        fn(context->cr, pipeline_memory_access<coordinate_t>().get());
+        fn(context->cr, context->pipeline_memory_access<coordinate_t>().get());
       },
 
       [&](fn_emit_layout_t fn) {
-        fn(pipeline_memory_access<PangoLayout *>().get());
+        fn(context->pipeline_memory_access<PangoLayout *>());
       },
 
       [&](fn_emit_layout_a_t fn) {
-        fn(pipeline_memory_access<PangoLayout *>().get(),
-           pipeline_memory_access<coordinate_t>().get());
+        fn(context->pipeline_memory_access<PangoLayout *>(),
+           context->pipeline_memory_access<coordinate_t>().get());
       },
 
       [&](fn_emit_cr_layout_t fn) {
-        fn(context->cr, pipeline_memory_access<PangoLayout *>().get());
-      }};
+        fn(context->cr, context->pipeline_memory_access<PangoLayout *>());
+      },
+
+      [&](std::monostate) {}};
+
   // arrange pipeline if necessary
   if (!bfinalized)
     pipeline_finalize();
@@ -77,7 +97,7 @@ void pipeline_execute(display_context_t *context) {
     // pipeline has already been sorted.
     for (auto o : pipeline_io) {
       auto overloaded_function = std::get<fn_emit_overload_t>(o);
-      std::visit(overload_function_visitor, overloaded_function);
+      std::visit(fn_visitors, overloaded_function);
     }
   }
 }

@@ -24,6 +24,7 @@
 \brief
 
 */
+#include "ux_device.hpp"
 
 /**
 
@@ -330,4 +331,3 @@ void uxdevice::paint_t::emit(cairo_t *cr) {
     cairo_paint_with_alpha(cr, value);
   }
 }
-/**

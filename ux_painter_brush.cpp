@@ -262,7 +262,7 @@ void uxdevice::painter_brush_t::emit(cairo_t *cr) {
     data_storage->emit(cr);
 }
 
-void uxdevice::painter_brush_t::emit(cairo_t *cr, coordinate_t &a) {
+void uxdevice::painter_brush_t::emit(cairo_t *cr, coordinate_t *a) {
   if (!data_storage->is_processed) {
     create();
 
@@ -271,7 +271,7 @@ void uxdevice::painter_brush_t::emit(cairo_t *cr, coordinate_t &a) {
         data_storage->class_type == paint_definition_class_t::radial_gradient ||
         data_storage->class_type ==
             paint_definition_class_t::image_block_pattern)
-      translate(-a.x, -a.y);
+      translate(-a->x, -a->y);
   }
 
   if (data_storage->is_processed)

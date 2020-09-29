@@ -157,6 +157,7 @@ public:
     std::string description = {};
     matrix_t matrix = {};
     PangoColor pango_color = {0, 0, 0};
+    bool is_processed = false;
     bool is_loaded = false;
   };
 
@@ -338,7 +339,7 @@ public:
       cairo_pattern_set_matrix(pattern, &matrix._matrix);
       cairo_set_source(cr, pattern);
     }
-    virtual void emit(cairo_t *cr, coordinate_t &coord) {
+    virtual void emit(cairo_t *cr, coordinate_t *coord) {
       cairo_pattern_set_matrix(pattern, &matrix._matrix);
       cairo_set_source(cr, pattern);
     }

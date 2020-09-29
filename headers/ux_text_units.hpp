@@ -203,13 +203,13 @@ using text_render_normal_t = class text_render_normal_t
     : public marker_emitter_t<
           text_render_normal_t,
           visitor_interfaces_t<abstract_emit_context_t<order_init>,
-                               abstract_emit_cr_a_t<order_render>>,
+                               abstract_emit_cr_layout_t<order_render>>,
           visitor_textual_render_t> {
 public:
   using marker_emitter_t::marker_emitter_t;
 
   void emit(display_context_t *context);
-  void emit(cairo_t *cr, coordinate_t *a);
+  void emit(cairo_t *cr, PangoLayout *layout);
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_render_normal_t);
@@ -450,13 +450,11 @@ public:
   void emit(cairo_t *cr);
   void emit(cairo_t *cr, coordinate_t *a);
 
-  // specialization of hash
-  std::size_t hash_code(void) const noexcept;
 
   // private functions
-  void pipeline(cairo_t *cr, coordinate_t *a);
+  void pipeline_acquire(cairo_t *cr, coordinate_t *a);
+  bool pipeline_has_required_linkages(void);
 
-  matrix_t matrix = {};
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_shadow_t);

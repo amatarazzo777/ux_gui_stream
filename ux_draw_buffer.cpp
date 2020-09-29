@@ -70,8 +70,8 @@ void uxdevice::draw_buffer_t::emit(cairo_t *tocr) {
 
 */
 void uxdevice::draw_buffer_t::emit(cairo_t *tocr, coordinate_t *a) {
-  cairo_set_source_surface(tocr, rendered, a.x, a.y);
-  cairo_rectangle(tocr, a.x, a.y, a.w, a.h);
+  cairo_set_source_surface(tocr, rendered, a->x, a->y);
+  cairo_rectangle(tocr, a->x, a->y, a->w, a->h);
   cairo_fill(tocr);
 }
 

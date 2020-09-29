@@ -52,7 +52,7 @@ the display_visual_t base class which enables visibility query.
  */
 void uxdevice::surface_area_title_t::emit(display_context_t *context) {
   // set window title
-  xcb_change_property(context.connection, XCB_PROP_MODE_REPLACE, context.window,
+  xcb_change_property(context->connection, XCB_PROP_MODE_REPLACE, context->window,
                       XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8, value.size(),
                       value.data());
 }

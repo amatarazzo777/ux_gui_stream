@@ -37,7 +37,7 @@
 \brief create the image rendering pipeline
 
  */
-void uxdevice::image_block_storage_t::pipeline_acquire() {
+void uxdevice::image_block_storage_t::pipeline_acquire(cairo_t *cr, coordinate_t *a) {
 
   /**
     \details The cached rendering function has not been established,
@@ -49,7 +49,7 @@ void uxdevice::image_block_storage_t::pipeline_acquire() {
 
   /// @brief these steps are common in the first part of the image rendering
   pipeline_push<order_render_option>(
-      fn_emit_cr_t{[](auto cr) { matrix.emit(cr); }});
+      fn_emit_cr_t{[&](cairo_t *cr) { matrix.emit(cr); }});
 
   // compute pipeline that includes rendering commands. The rendering commands
   // are sequenced and appropriate fill, preserve order is maintained.
@@ -59,8 +59,8 @@ void uxdevice::image_block_storage_t::pipeline_acquire() {
   /// may be inserted as a new unit_memory emitter accepting a visitor type.
 
   // add result to buffer
-  pipeline_push<order_render>(
-      fn_emit_cr_a_t{[](auto cr, auto a) { image_block.emit(cr, a); }});
+  pipeline_push<order_render>(fn_emit_cr_a_t{
+      [&](cairo_t *cr, coordinate_t *a) { image_block.emit(cr, a); }});
 }
 
 bool uxdevice::image_block_storage_t::pipeline_has_required_linkages() {
@@ -91,13 +91,13 @@ void uxdevice::image_block_t::emit(display_context_t *context) {
     return;
 
   // set the ink area.
-  coordinate_t &a = *access_pipeline_memory<coordinate_t>();
+  coordinate_t &a = *pipeline_memory_access<coordinate_t>();
 
   // this function is geared for a thread of an image loading.
   // however, it is not implemented as a thread currently, just named for
   // future.
   auto fnthread = [&]() {
-    image_block = draw_buffer_t(description, coordinate->w, coordinate->h);
+    image_block = draw_buffer_t(description, a.w, a.h);
 
     if (image_block.format == draw_buffer_format_t::none) {
       const char *s = "The image_block_t could not be processed or loaded. ";

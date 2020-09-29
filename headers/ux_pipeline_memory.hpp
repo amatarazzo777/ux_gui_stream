@@ -37,7 +37,8 @@
 namespace uxdevice {
 typedef std::function<std::size_t(void)> hash_function_t;
 
-typedef std::list<std::tuple<std::size_t, fn_emit_overload_t>> pipeline_t;
+typedef std::tuple<std::size_t, fn_emit_overload_t> pipeline_io_storage_t;
+typedef std::vector<pipeline_io_storage_t> pipeline_t;
 
 /*
  * \class pipeline_memory_object_t
@@ -63,9 +64,69 @@ class pipeline_acquisition_t {
 public:
   pipeline_acquisition_t() {}
   virtual ~pipeline_acquisition_t() {}
+
+  /// @brief copy assignment operator
+  pipeline_acquisition_t &operator=(const pipeline_acquisition_t &other) {
+    bfinalized = other.bfinalized;
+    storage = other.storage;
+    pipeline_io = other.pipeline_io;
+    return *this;
+  }
+  /// @brief move assignment
+  pipeline_acquisition_t &operator=(pipeline_acquisition_t &&other) noexcept {
+    bfinalized = std::move(other.bfinalized);
+    storage = std::move(other.storage);
+    pipeline_io = std::move(other.pipeline_io);
+    return *this;
+  }
+
+  /// @brief move constructor
+  pipeline_acquisition_t(pipeline_acquisition_t &&other) noexcept
+      : bfinalized(std::move(other.bfinalized)),
+        storage(std::move(other.storage)),
+        pipeline_io(std::move(other.pipeline_io)) {}
+
+  /// @brief copy constructor
+  pipeline_acquisition_t(const pipeline_acquisition_t &other)
+      : bfinalized(other.bfinalized), storage(other.storage),
+        pipeline_io(other.pipeline_io) {}
+
   virtual void pipeline_acquire(cairo_t *cr, coordinate_t *a) = 0;
   virtual bool pipeline_has_required_linkages(void) = 0;
-  virtual void pipeline_execute(display_context_t *context)=0;
+  void pipeline_execute(display_context_t *context);
+
+  /**
+   \fn pipeline_push
+   \param overload_visitors_t &visitors
+   \brief determines if the pipeline is ready for traversal.
+   */
+  bool pipeline_ready(void) { return !pipeline_io.empty(); }
+  /**
+   \fn pipeline_finalize
+   \brief prepares the pipeline memory for sequential execution by sorting.
+
+   */
+
+  void pipeline_finalize(void) {
+
+    // Using lambda to compare elements.
+    // this function establishes where in the sort order the items are placed.
+    struct less_than_key {
+      bool operator()(pipeline_io_storage_t const &p1,
+                      pipeline_io_storage_t const &p2) {
+        // return "true" if "p1" is ordered
+        // before "p2", for example:
+        return std::get<std::size_t>(p1) < std::get<std::size_t>(p2);
+      }
+    };
+
+    std::sort(pipeline_io.begin(), pipeline_io.end(), less_than_key());
+    bfinalized = true;
+  }
+
+  bool bfinalized = false;
+  pipeline_memory_unordered_map_t storage = {};
+  pipeline_t pipeline_io = {};
 };
 
 /**
@@ -77,27 +138,32 @@ public:
   pipeline_memory_t() {}
   virtual ~pipeline_memory_t() {}
 
-  // must implement these method for pipeline memory.
-  virtual void pipeline_acquire(cairo_t *cr, coordinate_t *a);
-  virtual bool pipeline_has_required_linkages(void);
+  /**
+   \fn pipeline_execute
+   \param display_context_t *context display context to execute the pipeline on
+   \brief
+   */
+  //virtual void pipeline_execute(display_context_t *context);
+
 
   /// @brief copy assignment operator
   pipeline_memory_t &operator=(const pipeline_memory_t &other) {
-    storage = other.storage;
+    pipeline_acquisition_t::operator=(other);
     return *this;
   }
   /// @brief move assignment
   pipeline_memory_t &operator=(pipeline_memory_t &&other) noexcept {
-    storage = std::move(other.storage);
+    pipeline_acquisition_t::operator=(other);
     return *this;
   }
 
   /// @brief move constructor
   pipeline_memory_t(pipeline_memory_t &&other) noexcept
-      : storage(std::move(other.storage)) {}
+      : pipeline_acquisition_t(other.storage) {}
 
   /// @brief copy constructor
-  pipeline_memory_t(const pipeline_memory_t &other) : storage(other.storage) {}
+  pipeline_memory_t(const pipeline_memory_t &other)
+      : pipeline_acquisition_t(other) {}
 
   /**
    \fn pipeline_memory_linkages
@@ -115,8 +181,8 @@ public:
   /**
    \fn pipeline_memory_store
    \tparam T
-   \nr
-   storage of a shared pointer with variations on system defined
+   \brief
+   Storage of a shared pointer with variations on system defined
    and user input. This provides effective use of std::any
    and facilitates the storage of visitor parameter data with the
    ability to expand to other data types. The usefulness of the
@@ -142,13 +208,17 @@ public:
                                              [&]() { return ti.hash_code(); }};
     }
   }
-  // just pointer data
-  template <typename T> void pipeline_memory_store(const T *ptr) {
-    auto ti = std::type_index(typeid(T));
-    storage[ti] = pipeline_memory_object_t{ptr, nullptr,
-                                           [&]() { return ti.hash_code(); }};
-  }
-  // all others
+
+  /**
+   \fn pipeline_memory_store
+   \tparam T
+   \brief
+   Storage of a just data can be any type but only one type position exists for
+   it. This is a visitor parameter the internal system will skip over when
+   processing unless named within the visitor or used within one of the
+   underlying lambda functions within the pipeline.
+   */
+  //
   template <typename T> void pipeline_memory_store(const T &o) {
     auto ti = std::type_index(typeid(T));
     storage[ti] =
@@ -173,22 +243,41 @@ public:
   /**
    \fn pipeline_memory_access
    \tparam T
+   \brief returns the shared pointer of the visitor or
+   just the data if it is not an internal system processing
+   type. That is system processing types are deduced by their
+   inheritance of the  visitor_interfaces_t within this programming
+   construct. The return type is deduced using the decltype(auto)
+   while the type changes based upoon the constexpr if.
    */
   template <typename T>
-  auto pipeline_memory_access(void) const noexcept -> const std::shared_ptr<T> {
-    std::shared_ptr<T> ptr = {};
-    auto ti = std::type_index(typeid(T));
-    auto item = storage.find(ti);
-    if (item != storage.end()) {
-      auto obj_data = item->second.object;
-      ptr = std::any_cast<std::shared_ptr<T>>(obj_data);
+  decltype(auto) pipeline_memory_access(void) const noexcept {
+    if constexpr (std::is_base_of<display_unit_t, T>::value) {
+      std::shared_ptr<T> ptr = {};
+      auto ti = std::type_index(typeid(T));
+      auto item = storage.find(ti);
+      if (item != storage.end()) {
+        auto obj_data = item->second.object;
+        ptr = std::any_cast<std::shared_ptr<T>>(obj_data);
+      }
+      return ptr;
+    } else {
+      T _data = {};
+      auto ti = std::type_index(typeid(T));
+      auto item = storage.find(ti);
+      if (item != storage.end()) {
+        auto obj_data = item->second.object;
+        _data = std::any_cast<T>(obj_data);
+      }
+      return _data;
     }
-    return ptr;
   }
 
   /**
    \fn pipeline_memory_reset
    \tparam T
+   \brief resets the memory accoisted with the type passed in the template
+   parameter,
    */
   template <typename T> void pipeline_memory_reset(void) {
     storage.erase(std::type_index(typeid(T)));
@@ -196,7 +285,7 @@ public:
   }
   /**
    \fn pipeline_memory_hash_code
-
+  \brief returns the combined hash code for the entire pipeline memory.
    */
   std::size_t pipeline_memory_hash_code(void) const noexcept {
     std::size_t value = {};
@@ -209,6 +298,7 @@ public:
   /**
    \fn pipeline_memory_hash_code
    \tparam T
+   \brief returns the hash code of a specific type.
    */
   template <typename T> std::size_t pipeline_memory_hash_code(void) {
     std::size_t value = {};
@@ -223,27 +313,13 @@ public:
   /**
    \fn pipeline_push
    \param overload_visitors_t &visitors
-   \brief
+   \brief places a lambda expression onto the piple with the order attached.
+   later the order is used to sort the contents.
    */
-  template <std::size_t N> void pipeline_push(fn_emit_overload_t &fn) {
+  template <std::size_t N> void pipeline_push(fn_emit_overload_t fn) {
     pipeline_io.emplace_back(std::make_tuple(N, fn));
     bfinalized = false;
   }
-
-  /**
-   \fn pipeline_push
-   \param overload_visitors_t &visitors
-   \brief
-   */
-  bool pipeline_ready(void) { return !pipeline_io.empty(); }
-
-  /**
-   \fn pipeline_execute
-
-   \brief
-   */
-  void pipeline_execute(display_context_t *context);
-
 
   /**
    \fn unit_memory_to_staged_pipeline
@@ -252,8 +328,8 @@ public:
    to the overloaded provided.
    */
   typedef std::pair<int, fn_emit_overload_t> pipeline_stage_object_t;
-  template <typename... Args> void pipeline_push_visit(Args &... args) {
-    std::list<std::type_index> &overloaded_visitors = {
+  template <typename... Args> void pipeline_push_visit(void) {
+    std::list<std::type_index> overloaded_visitors = {
         std::type_index(typeid(Args))...};
 
     // gather and add all associated items  with interfaces that match.
@@ -293,33 +369,6 @@ public:
    \fn unit_memory_clear
    \brief
    */
-
-  void pipeline_finalize(void) {
-
-    // Using lambda to compare elements.
-    // this function establishes where in the sort order the items are placed.
-    struct less_than_key {
-      bool operator()(pipeline_stage_object_t const &p1,
-                      pipeline_stage_object_t const &p2) {
-        // return "true" if "p1" is ordered
-        // before "p2", for example:
-        return std::get<0>(p1) < std::get<0>(p2);
-      }
-    };
-
-    std::sort(pipeline_io.begin(), pipeline_io.end(), less_than_key());
-    bfinalized = true;
-  }
-
-  /**
-   \fn unit_memory_clear
-   \brief
-   */
   void pipeline_memory_reset(void) { storage.clear(); }
-
-private:
-  bool bfinalized = false;
-  pipeline_memory_unordered_map_t storage = {};
-  pipeline_t pipeline_io = {};
 };
 } // namespace uxdevice

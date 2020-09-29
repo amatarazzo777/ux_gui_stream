@@ -30,8 +30,6 @@ painter_brush_emitter_t
 marker_emitter_t
 storage_emitter_t
 class_storage_emitter_t
-storage_drawing_function_t
-class_storage_drawing_function_t
 
 */
 /**

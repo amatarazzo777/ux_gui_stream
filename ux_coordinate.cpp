@@ -32,6 +32,7 @@
 \details
 
  */
+#include "ux_device.hpp"
 
 void uxdevice::coordinate_t::emit_relative(cairo_t *cr) {
   cairo_rel_move_to(cr, x, y);
@@ -54,8 +55,8 @@ void uxdevice::coordinate_t::emit(PangoLayout *layout) {
 \details
 
         */
-void uxdevice::relative_coordinate_t::emit(display_context_t &context) {
-  context.unit_memory_erase<absolute_coordinate_t>();
+void uxdevice::relative_coordinate_t::emit(display_context_t *context) {
+  context->pipeline_memory_reset<absolute_coordinate_t>();
 }
 
 /**
@@ -67,6 +68,6 @@ void uxdevice::relative_coordinate_t::emit(display_context_t &context) {
 
 
  */
-void uxdevice::absolute_coordinate_t::emit(display_context_t &context) {
-  context.unit_memory_erase<relative_coordinate_t>();
+void uxdevice::absolute_coordinate_t::emit(display_context_t *context) {
+  context->pipeline_memory_reset<relative_coordinate_t>();
 }

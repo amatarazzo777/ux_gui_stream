@@ -69,7 +69,7 @@ class image_block_storage_t : virtual public hash_members_t,
 public:
   /// @brief default
   /// constructor
-  image_block_storage_t() : description{}, image_block{} {}
+  image_block_storage_t() : pipeline_memory_t{}, description{}, image_block{} {}
 
   image_block_storage_t(const std::string &_description)
       : description(_description) {}
@@ -112,7 +112,7 @@ public:
     return __value;
   }
 
-  void pipeline_acquire(void);
+  void pipeline_acquire(cairo_t *cr, coordinate_t *a);
   bool pipeline_has_required_linkages(void);
 
   std::string description = {};

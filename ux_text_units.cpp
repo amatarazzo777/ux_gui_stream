@@ -90,7 +90,7 @@ Text can bend to follow a path if logic is added.
 
  */
 void uxdevice::text_render_path_t::emit(display_context_t *context) {
-  context->unit_memory_erase<text_render_normal_t>();
+  context->pipeline_memory_reset<text_render_normal_t>();
 }
 
 /**
@@ -248,31 +248,41 @@ void uxdevice::text_outline_t::emit(cairo_t *cr, coordinate_t *a) {
 
 
  */
-void uxdevice::text_shadow_t::pipeline(cairo_t *tocr, coordinate_t *a) {
+void uxdevice::text_shadow_t::pipeline_acquire(cairo_t *cr, coordinate_t *a) {
 
-  pipeline_push<order_render>([]&]() {
-    // draw the text in shadow color
-    if (shadow_buffer) {
-      shadow_buffer.emit(cr, a);
-      return;
+  pipeline_push<order_render>(fn_emit_cr_a_t{[&](cairo_t *cr, coordinate_t *a) {
+  // draw the text in shadow color
+  if (internal_buffer) {
+    internal_buffer.emit(cr, a);
+    return;
+  }
+  auto coordinate =
+      coordinate_t{0, 0, a->w + x + radius * 2, a->h + y + radius * 2};
+  internal_buffer = draw_buffer_t(coordinate.w, coordinate.h);
+
+  pipeline_disable_visit<text_shadow_t>();
+  pipeline_push<order_render>(
+      fn_emit_cr_a_t{[&](cairo_t *cr, coordinate_t *a) {
+        internal_buffer.flush();
+        internal_buffer.blur_image(radius);
+
+        internal_buffer.emit(cr, a);
+      }});
     }
-    auto coordinate =
-        coordinate_t{0, 0, a->w + x + radius * 2, a->h + y + radius * 2};
-    shadow_buffer = draw_buffer_t(coordinate->w, coordinate->h);
-
-    textual_render_storage_t::pipeline_memory_reset() l
-    textual_render_storage_t::pipeline_disable_visit<text_shadow_t>();
-    textual_render_storage_t::pipeline_visit(
-        cairo_coordinate_visitor_t{shadow_buffer.cr, coordinate});
-    textual_render_storage_t::pipeline_execute();
-
-    shadow_buffer.flush();
-    shadow_buffer.blur_image(radius);
-
-    shadow_buffer.emit(cr, a);
+    // pipeline_execute();
   });
 }
 
+/**
+\internal
+\fn pipeline_has_required_linkages
+\brief determines if the textual drawing parameters for shadow
+are all stored within the pipeline memory.
+
+*/
+bool uxdevice::text_shadow_t::pipeline_has_required_linkages(void) {
+  return textual_render_storage_t::pipeline_has_required_linkages();
+}
 /**
 \internal
 \fn text_data_t::emit(layout)
@@ -285,8 +295,8 @@ std::size_t uxdevice::text_data_t::hash_code(void) const noexcept {
   std::size_t __value = std::type_index(typeid(text_data_t)).hash_code();
 
   auto text_data_visitor = overload_visitors_t{
-      [&](std::string s) { hash_combine(__value, s); },
-      [&](std::string_view s) { hash_combine(__value, s); },
+      [&](std::string &s) { hash_combine(__value, s); },
+      [&](std::string_view &s) { hash_combine(__value, s); },
       [&](std::shared_ptr<std::string> ps) { hash_combine(__value, *ps); },
       [&](std::shared_ptr<std::string_view> ps) { hash_combine(__value, *ps); },
       [&](std::shared_ptr<std::stringstream> ps) {
@@ -310,12 +320,12 @@ std::size_t uxdevice::text_data_t::hash_code(void) const noexcept {
 void uxdevice::text_data_t::emit(PangoLayout *layout) {
   std::string_view sinternal = std::string_view(pango_layout_get_text(layout));
   auto text_data_visitor =
-      overload_visitors_t{[&](std::string s) {
+      overload_visitors_t{[&](std::string &s) {
                             if (s.compare(sinternal) != 0)
                               pango_layout_set_text(layout, s.data(), -1);
                           },
 
-                          [&](std::string_view s) {
+                          [&](std::string_view &s) {
                             if (s.compare(sinternal) != 0)
                               pango_layout_set_text(layout, s.data(), -1);
                           },

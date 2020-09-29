@@ -121,8 +121,9 @@ public:
   void state_notify_complete(void);
 
   void clear(void);
-
-  std::size_t hash_code(void) const noexcept {
+  virtual void pipeline_acquire(cairo_t *cr, coordinate_t *a) {};
+  virtual bool pipeline_has_required_linkages(void) { return true;}
+  virtual std::size_t hash_code(void) const noexcept {
     std::size_t __value = {};
     hash_combine(__value, std::type_index(typeid(this)),
                  pipeline_memory_hash_code(), window_x, window_y, window_width,

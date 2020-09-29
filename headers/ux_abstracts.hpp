@@ -56,37 +56,30 @@ class coordinate_t;
  * specific rendering stage within the declaration of the unit.
  */
 namespace uxdevice {
-typedef std::function<void(cairo_t *)> fn_emit_cr_t;
-typedef std::function<void(cairo_t *, coordinate_t *)> fn_emit_cr_a_t;
-typedef std::function<void(cairo_t *, coordinate_t *)> fn_emit_cr_a_absolute_t;
-typedef std::function<void(cairo_t *, coordinate_t *)> fn_emit_cr_a_relative_t;
-typedef std::function<void(display_context_t *context)> fn_emit_context_t;
-typedef std::function<void(PangoLayout *)> fn_emit_layout_t;
-typedef std::function<void(PangoLayout *, coordinate_t *)> fn_emit_layout_a_t;
-typedef std::function<void(cairo_t *cr, PangoLayout *)> fn_emit_cr_layout_t;
+using fn_emit_cr_t = std::function<void(cairo_t *)>;
+using fn_emit_cr_a_t = std::function<void(cairo_t *, coordinate_t *)>;
+using fn_emit_cr_a_absolute_t = std::function<void(cairo_t *, coordinate_t *)>;
+using fn_emit_cr_a_relative_t = std::function<void(cairo_t *, coordinate_t *)>;
+using fn_emit_context_t = std::function<void(display_context_t *context)>;
+using fn_emit_layout_t = std::function<void(PangoLayout *)>;
+using fn_emit_layout_a_t = std::function<void(PangoLayout *, coordinate_t *)>;
+using fn_emit_cr_layout_t = std::function<void(cairo_t *cr, PangoLayout *)>;
 
-typedef std::variant<std::monostate, fn_emit_cr_t, fn_emit_cr_a_t,
-                     fn_emit_context_t, fn_emit_layout_t, fn_emit_layout_a_t,
-                     fn_emit_cr_layout_t>
-    fn_emit_overload_t;
-
-static std::unordered_map<std::type_index, std::size_t> fn_emit_overload_index =
-    {{std::type_index(typeid(fn_emit_cr_t)), 1},
-     {std::type_index(typeid(fn_emit_cr_a_t)), 2},
-     {std::type_index(typeid(fn_emit_context_t)), 3},
-     {std::type_index(typeid(fn_emit_layout_t)), 4},
-     {std::type_index(typeid(fn_emit_layout_a_t)), 5}};
-
+using fn_emit_overload_t =
+    std::variant<std::monostate, fn_emit_cr_t, fn_emit_cr_a_t,
+                 fn_emit_cr_a_absolute_t, fn_emit_cr_a_relative_t,
+                 fn_emit_context_t, fn_emit_layout_t, fn_emit_layout_a_t,
+                 fn_emit_cr_layout_t>;
 } // namespace uxdevice
 
 /**
  * \class visitor_interface_t
- * \brief holds information for the visitor
+ * \brief holds information for the visitor by type index.
  */
 namespace uxdevice {
 class visitor_interface_t {
 public:
-  std::type_index type;
+  std::type_index type=std::type_index(typeid(visitor_interface_t));
   std::size_t pipeline_order;
   fn_emit_overload_t fn;
 };
@@ -95,7 +88,7 @@ public:
 namespace uxdevice {
 template <typename FN, std::size_t ORDER>
 visitor_interface_t make_interface_t(FN fn) {
-  return visitor_interface_t{std::type_index(typeid(FN)), ORDER, FN{fn}};
+  return visitor_interface_t{std::type_index(typeid(FN)), ORDER, fn_emit_overload_t{fn}};
 }
 
 } // namespace uxdevice
@@ -124,7 +117,7 @@ public:
       std::bind(&abstract_emit_cr_t::emit, this, std::placeholders::_1));
 };
 
-}; // namespace uxdevice
+} // namespace uxdevice
 
 namespace uxdevice {
 template <std::size_t ORDER> class abstract_emit_cr_absolute_t {
@@ -166,12 +159,15 @@ public:
    * note: the parameters have to be explicitly named
    * to select the correct overload.
    */
+  visitor_interface_t fn_interface=visitor_interface_t{};
+#if 0
   visitor_interface_t fn_interface = make_interface_t<fn_emit_cr_a_t, ORDER>(
       std::bind((void (abstract_emit_cr_a_t::*)(cairo_t *cr, coordinate_t *a)) &
-                    abstract_emit_cr_a_t::emit,
+                    abstract_emit_cr_a_t::emit,*
                 this, std::placeholders::_1, std::placeholders::_2));
+#endif
 };
-}; // namespace uxdevice
+} // namespace uxdevice
 
 namespace uxdevice {
 template <std::size_t ORDER> class abstract_emit_layout_t {
@@ -251,7 +247,7 @@ public:
 namespace uxdevice {
 template <typename... Args> class visitor_interfaces_t : public Args... {
 public:
-  std::unordered_map<std::type_index, visitor_interface_t> visitors;
+  std::unordered_map<std::type_index, visitor_interface_t> visitors = {};
   visitor_interfaces_t() {}
   visitor_interfaces_t(Args &... args) {
     ((void)add_visitor_fn(std::forward<Args>(args)), ...);
