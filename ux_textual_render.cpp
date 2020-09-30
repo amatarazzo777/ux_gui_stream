@@ -72,6 +72,8 @@ void uxdevice::textual_render_storage_t::pipeline_acquire(cairo_t *cr,
    and build up of graphics composite layers.
 
    */
+
+
   pipeline_push<order_init>(fn_emit_cr_t{[&](auto cr) {
     if (!layout)
       layout = pango_cairo_create_layout(cr);
@@ -128,7 +130,7 @@ void uxdevice::textual_render_storage_t::pipeline_acquire(cairo_t *cr,
 
 /**
 \internal
-\fn is_valid
+\fn pipeline_has_required_linkages
 
 \brief
 
@@ -164,9 +166,9 @@ bool uxdevice::textual_render_storage_t::pipeline_has_required_linkages(void) {
 void uxdevice::textual_render_t::emit(display_context_t *context) {
   using namespace std::placeholders;
 
-  // this copys the shared pointers from the context
+  // this copies the shared pointers from the context
   // to this one, but only named visitor - visitor_textual_render_t
-  pipeline_memory_linkages(*context);
+  pipeline_memory_linkages(context);
 
   // this adds a parameter for the specific object
   pipeline_memory_store<PangoLayout *>(layout);
@@ -180,3 +182,6 @@ void uxdevice::textual_render_t::emit(display_context_t *context) {
 
   is_processed = true;
 }
+
+
+
