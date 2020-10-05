@@ -21,25 +21,40 @@
 \file ux_coordinate.hpp
 \date 9/7/20
 \version 1.0
-\brief
+\brief implementation of the coordinate_t visit interfaces.
+The class is used to hold a location and clipping width, height.
+
 */
 
-/**
-
-\class coordinate_t
-\brief The class is used to hold a location and clipping width, height.
-
-\details
-
- */
 #include "ux_device.hpp"
 
+/**
+\internal
+\fn emit_relative
+\param cairo_t *cr
+\brief performs a relative coordinate move
+*/
 void uxdevice::coordinate_t::emit_relative(cairo_t *cr) {
   cairo_rel_move_to(cr, x, y);
 }
+
+/**
+\internal
+\fn emit_absolute
+\param cairo_t *cr
+\brief performs an absolute coordinate location.
+*/
 void uxdevice::coordinate_t::emit_absolute(cairo_t *cr) {
   cairo_move_to(cr, x, y);
 }
+
+/**
+\internal
+\fn emit
+\param PangoLayout *layout
+\brief emits the coordinates to the layout. The layout is primarily
+concerned with the width and height of the requested layout.
+*/
 void uxdevice::coordinate_t::emit(PangoLayout *layout) {
   if (pango_layout_get_width(layout) != w * PANGO_SCALE)
     pango_layout_set_width(layout, w * PANGO_SCALE);
@@ -49,12 +64,11 @@ void uxdevice::coordinate_t::emit(PangoLayout *layout) {
 }
 
 /**
-\class relative_coordinate_t
+\internal
+\fn emit
+\param display_context_t *context
 \brief
-
-\details
-
-        */
+*/
 void uxdevice::relative_coordinate_t::emit(display_context_t *context) {
   context->pipeline_memory_reset<absolute_coordinate_t>();
 }

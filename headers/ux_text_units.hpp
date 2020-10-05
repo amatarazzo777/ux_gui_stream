@@ -176,6 +176,7 @@ using text_font_t = class text_font_t
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
   void emit(PangoLayout *layout);
+
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_font_t);
@@ -247,8 +248,10 @@ using text_color_t = class text_color_t
           visitor_textual_render_t> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
-  void emit(cairo_t *cr);
-  void emit(cairo_t *cr, coordinate_t *a);
+  void emit(cairo_t *cr) { painter_brush_emitter_t::emit(cr); }
+  void emit(cairo_t *cr, coordinate_t *a) {
+    painter_brush_emitter_t::emit(cr, a);
+  }
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_color_t);
@@ -274,9 +277,10 @@ public:
   // that is inherited. The emitter functions should call the
   // base class members.
   void emit(cairo_t *cr);
-
   void emit(cairo_t *cr, coordinate_t *a);
 
+  // local property that returns the same object. Continuation syntax for inline
+  // options.
   text_outline_t &width(double __width) {
     _width = __width;
     return *this;
@@ -450,11 +454,9 @@ public:
   void emit(cairo_t *cr);
   void emit(cairo_t *cr, coordinate_t *a);
 
-
   // private functions
   void pipeline_acquire(cairo_t *cr, coordinate_t *a);
   bool pipeline_has_required_linkages(void);
-
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_shadow_t);

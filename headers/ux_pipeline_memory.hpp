@@ -48,7 +48,7 @@ typedef std::vector<pipeline_io_storage_t> pipeline_t;
 class pipeline_memory_object_t {
 public:
   std::any object = {};
-  std::unordered_map<std::type_index, visitor_interface_t> *visitors = {};
+  std::unordered_map<std::type_index, visitor_interface_t> *accept_interfaces = {};
   hash_function_t hash_function = {};
 };
 
@@ -95,6 +95,8 @@ public:
   virtual bool pipeline_has_required_linkages(void) = 0;
   void pipeline_execute(display_context_t *context);
 
+
+
   /**
    \fn pipeline_push
    \param overload_visitors_t &visitors
@@ -130,7 +132,7 @@ public:
 };
 
 /**
- * \class
+ * \class pipeline_memory_t
  */
 template <typename ATTR>
 class pipeline_memory_t : public pipeline_acquisition_t {
@@ -143,8 +145,7 @@ public:
    \param display_context_t *context display context to execute the pipeline on
    \brief
    */
-  //virtual void pipeline_execute(display_context_t *context);
-
+  // virtual void pipeline_execute(display_context_t *context);
 
   /// @brief copy assignment operator
   pipeline_memory_t &operator=(const pipeline_memory_t &other) {
@@ -159,7 +160,7 @@ public:
 
   /// @brief move constructor
   pipeline_memory_t(pipeline_memory_t &&other) noexcept
-      : pipeline_acquisition_t(other.storage) {}
+      : pipeline_acquisition_t(other) {}
 
   /// @brief copy constructor
   pipeline_memory_t(const pipeline_memory_t &other)
@@ -168,7 +169,7 @@ public:
   /**
    \fn pipeline_memory_linkages
    */
-  void pipeline_memory_linkages(display_context_t &other);
+  void pipeline_memory_linkages(display_context_t *context);
 
   /**
    \fn pipeline_disable_visit
@@ -193,9 +194,9 @@ public:
     auto ti = std::type_index(typeid(T));
 
     // place into unordered map as a visitor object shared_ptr
-    if constexpr (std::is_base_of<visitor_interfaces_t<T>, T>::value) {
+    if constexpr (std::is_base_of<visitor_interfaces_base_t, T>::value) {
       storage[ti] = pipeline_memory_object_t{
-          ptr, &ptr->visitors, [&]() { return ptr->hash_code(); }};
+          ptr, &ptr->accepted_interfaces, [&]() { return ptr->hash_code(); }};
 
       // place into umap as a hashing visitor parameter shared_ptr
     } else if constexpr (std::is_base_of<hash_members_t, T>::value) {
@@ -224,21 +225,6 @@ public:
     storage[ti] =
         pipeline_memory_object_t{o, nullptr, [&]() { return ti.hash_code(); }};
   }
-
-#if 0
-  /**
-   \fn pipeline_memory_store
-   \tparam T
-   */
-  template <typename T>
-  void pipeline_memory_store(const std::shared_ptr<display_unit_t> ptr) {
-    auto ti = std::type_index(typeid(T));
-
-    storage[ti] = pipeline_memory_object_t{
-        std::dynamic_pointer_cast<T>(ptr),, ptr->visitors,
-        [&]() { return std::dynamic_pointer_cast<T>(ptr)->hash_code(); }};
-  }
-#endif
 
   /**
    \fn pipeline_memory_access
@@ -317,7 +303,7 @@ public:
    later the order is used to sort the contents.
    */
   template <std::size_t N, typename FN> void pipeline_push(FN fn) {
-	  fn_emit_overload_t vfn=fn;
+    fn_emit_overload_t vfn = fn;
     pipeline_io.emplace_back(std::make_tuple(N, vfn));
     bfinalized = false;
   }
@@ -345,20 +331,16 @@ public:
     // from the lambda function.
 
     // for each of the visitors passed.
-    for (auto ti : overloaded_visitors) {
+    for (auto ti : overloaded_visitors)
       // go through all of the "accept" objects within pipeline memory
       // storage.
-      for (auto o : storage) {
+      for (auto o : storage)
         // test if object accepts the visitor interface
-        if (o.second.visitors) {
-          auto v = o.second.visitors->find(ti);
-          if (v != o.second.visitors->end()) {
-            // place call
+        if (o.second.accept_interfaces) {
+          auto v = o.second.accept_interfaces->find(ti);
+          if (v != o.second.accept_interfaces->end())
             pipeline_io.push_back({v->second.pipeline_order, v->second.fn});
-          }
         }
-      }
-    }
 
     bfinalized = false;
 

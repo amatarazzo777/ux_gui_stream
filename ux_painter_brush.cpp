@@ -92,6 +92,7 @@ void uxdevice::color_stop_t::parse_color(const std::string &_s) {
 }
 
 /**
+\fn create
 \brief The routine handles the creation of the pattern or surface.
 Patterns can be an image_block_t file, a description of a linear, actual
 parameters of linear, a description of a radial, the actual radial parameters
@@ -247,13 +248,13 @@ bool uxdevice::painter_brush_t::create(void) {
 }
 
 /**
-\brief The routine is called by area, text or other rendering attribute
-areas when the color style is needed for painting. The cairo context is
-passed. The paint is loaded if need be. File processing or simply parsing
-the color name string.
+\internal
+\fn emit
+\param cairo_t *cr
+\brief The paint is loaded if need be. the paint is
+set for the passed surface.
 
 */
-
 void uxdevice::painter_brush_t::emit(cairo_t *cr) {
   if (!data_storage->is_processed)
     create();
@@ -262,6 +263,15 @@ void uxdevice::painter_brush_t::emit(cairo_t *cr) {
     data_storage->emit(cr);
 }
 
+/**
+\internal
+\fn emit
+\param cairo_t *cr
+\param coordinate_t *a
+\brief The paint is loaded if need be. the paint is
+set for the passed surface.
+
+*/
 void uxdevice::painter_brush_t::emit(cairo_t *cr, coordinate_t *a) {
   if (!data_storage->is_processed) {
     create();

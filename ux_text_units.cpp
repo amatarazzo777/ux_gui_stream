@@ -239,6 +239,32 @@ void uxdevice::text_outline_t::emit(cairo_t *cr, coordinate_t *a) {
   cairo_stroke(cr);
   cairo_set_line_width(cr, dwidth);
 }
+
+/**
+\internal
+\fn emit
+\param cairo_t *cr
+
+\brief shows the text shadow
+
+ */
+void uxdevice::text_shadow_t::emit(cairo_t *cr) {
+  internal_buffer.emit(cr);
+}
+
+/**
+\internal
+\fn emit
+\param cairo_t *cr
+\param coordinate_t *a
+
+\brief shows the text shadow
+
+ */
+void uxdevice::text_shadow_t::emit(cairo_t *cr, coordinate_t *a) {
+  internal_buffer.emit(cr, a);
+}
+
 /**
 \internal
 \fn create_text_shadow
@@ -250,26 +276,27 @@ void uxdevice::text_outline_t::emit(cairo_t *cr, coordinate_t *a) {
  */
 void uxdevice::text_shadow_t::pipeline_acquire(cairo_t *cr, coordinate_t *a) {
 
-  pipeline_push<order_render>(fn_emit_cr_a_t{[&](cairo_t *cr, coordinate_t *a) {
-  // draw the text in shadow color
-  if (internal_buffer) {
-    internal_buffer.emit(cr, a);
-    return;
-  }
-  auto coordinate =
-      coordinate_t{0, 0, a->w + x + radius * 2, a->h + y + radius * 2};
-  internal_buffer = draw_buffer_t(coordinate.w, coordinate.h);
+  pipeline_push<order_render>(fn_emit_cr_a_t{
+      [&](cairo_t *cr, coordinate_t *a) {
+        // draw the text in shadow color
+        if (internal_buffer) {
+          internal_buffer.emit(cr, a);
+          return;
+        }
+        auto coordinate =
+            coordinate_t{0, 0, a->w + x + radius * 2, a->h + y + radius * 2};
+        internal_buffer = draw_buffer_t(coordinate.w, coordinate.h);
 
-  pipeline_disable_visit<text_shadow_t>();
-  pipeline_push<order_render>(
-      fn_emit_cr_a_t{[&](cairo_t *cr, coordinate_t *a) {
-        internal_buffer.flush();
-        internal_buffer.blur_image(radius);
+        pipeline_disable_visit<text_shadow_t>();
+        pipeline_push<order_render>(
+            fn_emit_cr_a_t{[&](cairo_t *cr, coordinate_t *a) {
+              internal_buffer.flush();
+              internal_buffer.blur_image(radius);
 
-        internal_buffer.emit(cr, a);
-      }});
-    }
-    // pipeline_execute();
+              internal_buffer.emit(cr, a);
+            }});
+      }
+      // pipeline_execute();
   });
 }
 

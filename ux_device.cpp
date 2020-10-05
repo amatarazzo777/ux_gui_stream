@@ -18,22 +18,20 @@
 
 /**
 \author Anthony Matarazzo
-\file uxdisplayunits.hpp
+\file ux_device.hpp
 \date 9/7/20
-\version 1.0
-\brief
-*/
-/**
-\file uxdevice.cpp
-
-\author Anthony Matarazzo
-
-\date 3/26/20
 \version 1.0
 
 \brief rendering and platform services.
 
+\details The file is the client API interface published the system.
+The main class implemntations are for surface_area_t. The rendering and message
+loops for the base os servies are within this file. The start_processing
+function is called by the window initialization constructors to
+create two threads, one for the message queue and one for the rendering loop.
+
 */
+
 #include "ux_device.hpp"
 
 using namespace std;
@@ -42,32 +40,34 @@ using namespace uxdevice;
 /**
 \internal
 \fn render_loop(void)
+
 \brief The routine is the main rendering thread. The thread runs
 when necessary based upon a condition variable.
 Locks are placed on the surface and
 rectangle list. The surface may change due to user resizing the gui
 window so a spin flag is used to accommodate the functionality. That is
-drawing cannot occur on the graphical while the surface is being resized.
+drawing cannot occur on the graphic device while the surface is being resized.
 
+The surface_prime function checks to see if the surface exists.
+if so, the two possible work flows are painting
+background rectangles that are caused by the user resizing the
+window to a greater value. These values are inserted as part
+of the paint event received from the base os message queue handler.
+This function acquires locks on these
+small lists for the multi-threaded necessity.
 
+The other work flow occurs when objects or their associated units
+change values that must instantiate a redraw of the object. The
+hash_code() function is used to detect changes.
 
+If no work exists, the surface_prime waits on the
+cvRenderWork condition variable.
 
 */
 void uxdevice::surface_area_t::render_loop(void) {
   while (bProcessing) {
-
-    // surfacePrime checks to see if the surface exists.
-    // if so, the two possible work flows are painting
-    // background rectangles that are caused by the user resizing the
-    // window to a greater value. These values are inserted as part
-    // of the paint event. As well, the underlying surface may
-    // need to be resized. This function acquires locks on these
-    // small lists for the multi-threaded necessity.
-    // search these for unready and syncs display context
-    // if no work exists  it waits on the cvRenderWork condition variable.
     if (context.surface_prime())
       context.render();
-
 
     if (error_check()) {
       std::string errors = error_text();
@@ -79,10 +79,10 @@ void uxdevice::surface_area_t::render_loop(void) {
 
 /**
 \internal
-\fn dispatch_event(const event_t &evt)
+\fn dispatch_event
+\param const event_t &evt
 \brief the dispatch routine is invoked by the messageLoop.
-If default
- * handling is to be supplied, the method invokes the
+If default handling is to be supplied, the method invokes the
 necessary operation.
 
 */

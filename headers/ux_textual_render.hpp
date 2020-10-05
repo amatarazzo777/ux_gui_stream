@@ -33,9 +33,9 @@
  \brief class used to store parameters and options for a textual render. The
  object is created as the side effect of inserting text, char *, std string or a
  std::shared_ptr<std::string>. The class inherits from display_visual_t
- which notes the ink rectangle of the object. The drawing_output_class_t class
- also exposes intersection method for the render system to decide which function
- to invoke, a standard draw or a clipped draw.
+ which notes the ink rectangle of the object. The display_visual_t class
+ also exposes an intersection method for the render system to decide which
+ function to invoke, a standard draw or a clipped draw.
  */
 namespace uxdevice {
 class textual_render_storage_t
@@ -45,7 +45,6 @@ class textual_render_storage_t
       virtual public system_error_t {
 public:
   textual_render_storage_t() {}
-  friend class pipeline_memory_t<visitor_textual_render_t>;
 
   virtual ~textual_render_storage_t() {
     if (layout)
@@ -55,12 +54,11 @@ public:
   /// @brief move constructor
   textual_render_storage_t(textual_render_storage_t &&other) noexcept
       : layout(other.layout), ink_rect(other.ink_rect),
-        logical_rect(other.logical_rect), matrix(other.matrix) {}
+        logical_rect(other.logical_rect) {}
 
   /// @brief copy constructor
   textual_render_storage_t(const textual_render_storage_t &other)
-      : ink_rect(other.ink_rect), logical_rect(other.logical_rect),
-        matrix(other.matrix) {
+      : ink_rect(other.ink_rect), logical_rect(other.logical_rect) {
     if (other.layout)
       layout = pango_layout_copy(other.layout);
   }
@@ -71,7 +69,6 @@ public:
       layout = pango_layout_copy(other.layout);
     ink_rect = other.ink_rect;
     logical_rect = other.logical_rect;
-    matrix = other.matrix;
     return *this;
   }
 
@@ -81,22 +78,17 @@ public:
     layout = other.layout;
     ink_rect = other.ink_rect;
     logical_rect = other.logical_rect;
-    matrix = other.matrix;
     return *this;
   }
 
+  void pipeline_acquire(cairo_t *cr, coordinate_t *a);
+  bool pipeline_has_required_linkages(void);
   std::size_t hash_code(void) const noexcept;
 
   PangoLayout *layout = nullptr;
   guint layout_serial = {};
   PangoRectangle ink_rect = PangoRectangle();
   PangoRectangle logical_rect = PangoRectangle();
-  matrix_t matrix = {};
-
-  typedef std::function<void()> text_pipeline_function_t;
-
-  void pipeline_acquire(cairo_t *cr, coordinate_t *a);
-  bool pipeline_has_required_linkages(void);
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::textual_render_storage_t);

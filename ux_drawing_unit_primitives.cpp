@@ -28,11 +28,8 @@
 
 /**
 
-\class antialias_t
+\fn antialias_t
 \brief
-
-\details
-
 
 */
 void uxdevice::antialias_t::emit(cairo_t *cr) {

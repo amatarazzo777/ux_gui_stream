@@ -362,7 +362,7 @@ int main(int argc, char **argv) {
 #elif defined(_WIN64)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /* hPrevInstance */,
                    LPSTR lpCmdLine, int /* nCmdShow */) {
-  // command line
+  // command  line
 #endif
 
   std::uniform_int_distribution<> motime(500, 5000);
@@ -434,7 +434,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /* hPrevInstance */,
   // be used where textual data within the display list is very large.
   // meaning that hash values will not be calculated for the string,
   // rather the [] operator informs the system of the change.
-  auto paragraph_font = std::make_shared<text_font_t>("150px");
+  auto paragraph_font = std::make_shared<text_font_t>("50px");
 
   // data structures storage for most applications is a normal practice,
   // so providing managed client storage is most likely the default "structured"

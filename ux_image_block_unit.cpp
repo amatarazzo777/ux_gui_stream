@@ -32,25 +32,20 @@
 
 /**
 \internal
-\fn pipeline
-
+\fn pipeline_acquire
+\param cairo_t *cr
+\param coordinate_t *a
 \brief create the image rendering pipeline
 
- */
-void uxdevice::image_block_storage_t::pipeline_acquire(cairo_t *cr, coordinate_t *a) {
-
-  /**
     \details The cached rendering function has not been established,
     create the image rendering pipeline consisting of individualized lambda
     functions. This functionality can provide image processing capabilities
     to produce visual effects. Using the emplace back to invoke operations
     on the image->block_ptr;
-  */
 
-  /// @brief these steps are common in the first part of the image rendering
-  pipeline_push<order_render_option>(
-      fn_emit_cr_t{[&](cairo_t *cr) { matrix.emit(cr); }});
-
+ */
+void uxdevice::image_block_storage_t::pipeline_acquire(cairo_t *cr,
+                                                       coordinate_t *a) {
   // compute pipeline that includes rendering commands. The rendering commands
   // are sequenced and appropriate fill, preserve order is maintained.
   pipeline_push_visit<fn_emit_cr_t, fn_emit_cr_a_t>();
@@ -62,7 +57,19 @@ void uxdevice::image_block_storage_t::pipeline_acquire(cairo_t *cr, coordinate_t
   pipeline_push<order_render>(fn_emit_cr_a_t{
       [&](cairo_t *cr, coordinate_t *a) { image_block.emit(cr, a); }});
 }
+/**
+\internal
+\fn pipeline
 
+\brief create the image rendering pipeline
+
+    \details The cached rendering function has not been established,
+    create the image rendering pipeline consisting of individualized lambda
+    functions. This functionality can provide image processing capabilities
+    to produce visual effects. Using the emplace back to invoke operations
+    on the image->block_ptr;
+
+ */
 bool uxdevice::image_block_storage_t::pipeline_has_required_linkages() {
   bool has_requirements = true;
 
@@ -79,6 +86,7 @@ bool uxdevice::image_block_storage_t::pipeline_has_required_linkages() {
 
 /**
 \internal
+\class image_block_t
 \brief
 */
 void uxdevice::image_block_t::emit(display_context_t *context) {
@@ -86,6 +94,10 @@ void uxdevice::image_block_t::emit(display_context_t *context) {
 
   if (is_processed)
     return;
+
+  // this copies the shared pointers from the context
+  // to this one, but only named visitor - visitor_image_block_render_t
+  pipeline_memory_linkages(context);
 
   if (!is_valid())
     return;

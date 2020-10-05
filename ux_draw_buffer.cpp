@@ -23,15 +23,20 @@
 \version 1.0
 \brief
 
-  Functions are provided "box blur" by Ivan Gagis <igagis@gmail.com>
+  References to source and functions that are provided by others.
+
+===============
+  "box blur" by Ivan Gagis <igagis@gmail.com>
   Implementation adopted from the svgren project.
 
   NOTE: see https://www.w3.org/TR/SVG/filters.html#feGaussianBlurElement
     for Gaussian Blur approximation algorithm.
 
+================
   Code spinet from base64 decode snippet in c++
   stackoverflow.com/base64 decode snippet in c++ - Stack Overflow.html
 
+================
   Stack Blur Algorithm by Mario Klingemann <mario@quasimondo.com>
   Stackblur algorithm by Mario Klingemann
   Details here:

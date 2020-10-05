@@ -52,24 +52,25 @@
 #include "ux_painter_brush.hpp"
 
 /* Pipeline operations occur in staged order.
- * The system provides the flexibility of design by using a
- * std::sort. Most objects have multiple meanings based upon the
+ * The system provides this flexibility of design by using a
+ * visitor and std::sort. Most objects have multiple meanings based upon the
  * type of operations requested. This is accomplished with
  * overloading visitor functionality. A visitor will emit
  * multiple distinct functional call points for the object
- * within the pipeline along with a numeric representing the stage
- * which the operation belongs.
+ * within the pipeline. The stage is simply a const numeric representing
+ * the position in which the operation belongs.
  *
  *
  */
 #include "ux_pipeline_memory.hpp"
 
 /**
- * The display_context_visual_t object provides interoperability
- * between the display context and a display render object. The object
- * which derives this interface should do it publicly. As it must implement
- * the abstract virtual functions pipeline_acquire() and
- * pipeline_has_required_linkages(). see ux_pipeline_memory.hpp.
+ * The display_visual_t object provides interoperability
+ * between the display context and a display render unit. The object
+ * which derives this interface should do it publicly. Another portion of the
+ * construct is the rendering pipeline. Two abstract virtual functions must be implemented as
+ * they are used by the display_context_t: pipeline_acquire() and
+ * pipeline_has_required_linkages(). See ux_pipeline_memory.hpp.
  *
  */
 #include "ux_display_visual.hpp"
@@ -85,7 +86,7 @@
 #include "ux_textual_render.hpp"
 
 // these files encompass the display unit objects which
-// is published
+// is published as the user object api.
 #include "ux_text_units.hpp"
 #include "ux_image_block_unit.hpp"
 #include "ux_surface_area_units.hpp"

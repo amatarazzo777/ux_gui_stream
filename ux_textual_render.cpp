@@ -118,8 +118,6 @@ void uxdevice::textual_render_storage_t::pipeline_acquire(cairo_t *cr,
     }
   }});
 
-  pipeline_push<order_render>(fn_emit_cr_t{[&](auto cr) { matrix.emit(cr); }});
-
   // compute pipeline that includes rendering commands. The rendering
   // commands are sequenced and appropriate fill, preserve order is
   // maintained.
@@ -166,6 +164,9 @@ bool uxdevice::textual_render_storage_t::pipeline_has_required_linkages(void) {
 void uxdevice::textual_render_t::emit(display_context_t *context) {
   using namespace std::placeholders;
 
+  if (is_processed)
+    return;
+
   // this copies the shared pointers from the context
   // to this one, but only named visitor - visitor_textual_render_t
   pipeline_memory_linkages(context);
@@ -173,12 +174,6 @@ void uxdevice::textual_render_t::emit(display_context_t *context) {
   // this adds a parameter for the specific object
   pipeline_memory_store<PangoLayout *>(layout);
 
-  if (is_processed)
-    return;
-
-  // check the context parameters before operating
-  if (!is_valid())
-    return;
 
   is_processed = true;
 }

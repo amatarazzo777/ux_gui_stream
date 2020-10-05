@@ -18,74 +18,91 @@
 
 /**
 \author Anthony Matarazzo
-\file uxunitmemory.cpp
+\file ux_pipeline_memory.cpp
 \date 9/7/20
 \version 1.0
-\brief
+\brief The file contains template implementations of functions associated
+with the pipeline_memory_t template. The file has a list of explicit template
+instantiations for visitors that should be maintained if new visitors are added.
+This provides the functionality that only units associated with the
+visitor attribute are copied.
 */
 #include "ux_device.hpp"
 
 /**
+  \internal
   \fn unit_memory_linkages
-
+  \tparam ATTR - the visitor attribute
+  \brief The function copies the applicable units from the context.
+  The ATTR shoulc be one of the visitor attributes defined in
+  ux_abstracts.hpp
 */
 template <typename ATTR>
 void uxdevice::pipeline_memory_t<ATTR>::pipeline_memory_linkages(
-    display_context_t &other) {
-  for (auto n : other.storage)
+    display_context_t *context) {
+  for (auto n : context->storage)
     if (n.first == std::type_index(typeid(ATTR)))
       storage[n.first] = n.second;
 }
 
 /**
-  \fn pipeline_execute
-  \param display_context_t *context
-  \brief function visits the pipeline sequentially
-      executing the pipeline lambda using the context parameter.
-      Parameters for visitors use the pipeline_memory_access
-      routine and pass the type requested.
+\internal
+ \brief These explicit template instantiations are provided to resolve the
+ pipeline_memory_linkages function for link. The function appears in the cpp
+ file rather than the header to resolve a circular reference to
+ "context" object. Separating the code to a cpp allows this.
 
+ This list should be maintained:
+
+ */
+template class uxdevice::pipeline_memory_t<uxdevice::visitor_textual_render_t>;
+template class uxdevice::pipeline_memory_t<uxdevice::visitor_image_block_t>;
+
+/**
+  \fn pipeline_execute
+  \brief The function visits the pipeline sequentially executing the pipeline
+  lambdas using the context parameter. Parameters for visitors use the
+  pipeline_memory_access routine and pass the type requested to the public
+  member of the object.
 */
-// template <typename ATTR>
-// void uxdevice::pipeline_memory_t<ATTR>::pipeline_execute(
 void uxdevice::pipeline_acquisition_t::pipeline_execute(
     display_context_t *context) {
 
-  // all types have to be declared here in the visitor
-  // The compile errors are very difficult to relate
-  // to this. Each of the std::functions have to have a unique
-  // prototype signature. This is true even if the
-  // class has a different name. Notice that the
-  // abstract class abstract_emit_cr_relative_t and
-  // abstract_emit_cr_absolute_t use the fn_emit_cr_a_t
-  // function typedef.
-  //
-  // the pipeline_memory_access<> functions reference information
-  // stored within the context. The system objects {ie. coordinate_t}
-  // are returned as a shared pointer, hence the .get() at the end.
-  // this could be simplified to:
-  // pipeline_memory_access<coordinate_t *> but that would
-  // confuse internal design.
+  /**
+    \brief
+    All types have to be declared here in the visitor The compile errors are
+    very difficult to relate to this. Each of the std::functions have to have a
+    unique prototype signature. This is true even if the class has a different
+    name. Notice that the abstract class abstract_emit_cr_relative_t and
+    abstract_emit_cr_absolute_t use the fn_emit_cr_a_t function typedef.
+
+    The pipeline_memory_access<> functions reference information stored within
+    the context. The system objects {ie. coordinate_t} are returned as a shared
+    pointer, hence the .get() at the end. this could be simplified to:
+    pipeline_memory_access<coordinate_t *> but that would confuse internal
+    design.
+
+   */
   auto fn_visitors = overload_visitors_t{
 
-      [&](fn_emit_cr_t fn) { fn(context->cr); },
+      [&](const fn_emit_cr_t &fn) { fn(context->cr); },
 
-      [&](fn_emit_context_t fn) { fn(context); },
+      [&](const fn_emit_context_t &fn) { fn(context); },
 
-      [&](fn_emit_cr_a_t fn) {
+      [&](const fn_emit_cr_a_t &fn) {
         fn(context->cr, context->pipeline_memory_access<coordinate_t>().get());
       },
 
-      [&](fn_emit_layout_t fn) {
+      [&](const fn_emit_layout_t &fn) {
         fn(context->pipeline_memory_access<PangoLayout *>());
       },
 
-      [&](fn_emit_layout_a_t fn) {
+      [&](const fn_emit_layout_a_t &fn) {
         fn(context->pipeline_memory_access<PangoLayout *>(),
            context->pipeline_memory_access<coordinate_t>().get());
       },
 
-      [&](fn_emit_cr_layout_t fn) {
+      [&](const fn_emit_cr_layout_t &fn) {
         fn(context->cr, context->pipeline_memory_access<PangoLayout *>());
       },
 
@@ -97,11 +114,9 @@ void uxdevice::pipeline_acquisition_t::pipeline_execute(
 
   // if the pipeline is in a ready state.
   // providing broad functionality allow for expansion if necessary.
-  if (pipeline_ready()) {
-    // pipeline has already been sorted.
+  if (pipeline_ready())
     for (auto o : pipeline_io) {
       auto overloaded_function = std::get<fn_emit_overload_t>(o);
       std::visit(fn_visitors, overloaded_function);
     }
-  }
 }

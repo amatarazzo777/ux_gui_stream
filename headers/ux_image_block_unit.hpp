@@ -117,7 +117,6 @@ public:
 
   std::string description = {};
   draw_buffer_t image_block = {};
-  matrix_t matrix = {};
 };
 } // namespace uxdevice
 

@@ -30,7 +30,7 @@
 \brief The routine checks the system for render work which primarily
 arrives to the thread via the regions list. However, when no official work
 exists, the condition variable cvRenderWork is placed in a wait state. The
-condition may be awoken by calling the routine state_notify_complete().
+condition may be awoke by calling the routine state_notify_complete().
 \return bool - true - work exists, false none.
 */
 bool uxdevice::display_context_t::surface_prime() {
@@ -225,6 +225,7 @@ void uxdevice::display_context_t::render(void) {
 
 /**
 \internal
+\param std::shared_ptr<display_visual_t> _obj
 \brief The routine adds a drawing output object to the
 appropriate list, on or offscreen. If the item is on screen,
 a region area paint is requested for the object's area.
@@ -264,6 +265,7 @@ void uxdevice::display_context_t::add_visual(
     VIEWPORT_OFF_SPIN;
     viewport_off.emplace_back(_obj);
     VIEWPORT_OFF_CLEAR;
+
   } else {
     VIEWPORT_ON_SPIN;
     viewport_on.emplace_back(_obj);
@@ -299,7 +301,7 @@ void uxdevice::display_context_t::partition_visibility(void) {
     }
 
     if (n->overlap != CAIRO_REGION_OVERLAP_OUT) {
-    	auto next = obj;
+      auto next = obj;
       next++;
       VIEWPORT_ON_SPIN;
       viewport_on.emplace_back(n);
@@ -449,6 +451,8 @@ bool uxdevice::display_context_t::state(void) {
 }
 
 /**
+ \fn plot
+ \param context_cairo_region_t &plotArea
  \details Routine iterates each of objects that draw and tests if
  the rectangle is within the region.
 
@@ -487,6 +491,7 @@ void uxdevice::display_context_t::plot(context_cairo_region_t &plotArea) {
       error_check(cr);
     } break;
     }
+    // save the state as being rendered.
     n->state_hash_code();
     if (clearing_frame)
       bDone = true;
