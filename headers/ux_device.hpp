@@ -235,8 +235,12 @@ public:
       if constexpr (std::is_base_of<typed_index_t<T>, T>::value)
         maintain_index(std::dynamic_pointer_cast<display_unit_t>(obj));
 
-      if constexpr (std::is_base_of<visitor_base_t, T>::value)
+      // the abstract interface function must be bound to an implementation.
+      // the init_dispatch function accomplishes this.
+      if constexpr (std::is_base_of<visitor_base_t, T>::value) {
+        obj->init_dispatch();
         context.pipeline_memory_store<T>(obj);
+      }
 
       // if the item is a drawing output object, inform the context of it.
       if constexpr (std::is_base_of<display_visual_t, T>::value)
@@ -273,8 +277,12 @@ public:
 
       // all objects that are tracked as visitors inherit from this base
       // the display context holds the entire list for all types of visitors.
-      if constexpr (std::is_base_of<visitor_base_t, T>::value)
+      // the abstract interface function must be bound to an implementation.
+      // the init_dispatch function accomplishes this.
+      if constexpr (std::is_base_of<visitor_base_t, T>::value) {
+        obj->init_dispatch();
         context.pipeline_memory_store<T>(obj);
+      }
 
       // if the item is a drawing output object, inform the context of it.
       if constexpr (std::is_base_of<display_visual_t, T>::value)
