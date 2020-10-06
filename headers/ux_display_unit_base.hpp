@@ -109,8 +109,7 @@ public:
 
   /// @brief copy constructor
   display_unit_t(const display_unit_t &other)
-      : is_processed(other.is_processed) {
-  }
+      : is_processed(other.is_processed) {}
 
   virtual ~display_unit_t() {}
 
@@ -121,7 +120,7 @@ public:
   std::size_t hash_code(void) const noexcept {
     std::size_t __value = {};
     hash_combine(__value, std::type_index(typeid(display_unit_t)), is_processed,
-                  bchanged);
+                 bchanged);
     return __value;
   }
 
@@ -208,8 +207,6 @@ public:
 };
 } // namespace uxdevice
 
-
-
 /**
 \internal
 \class painter_brush_emitter_t
@@ -240,11 +237,12 @@ class painter_brush_emitter_t : public display_unit_t,
                                 virtual public hash_members_t,
                                 public typed_index_t<T>,
                                 std::enable_shared_from_this<T>,
-                                public Args... {
+                                public Args...,
+                                public system_base_t {
 
 public:
   using painter_brush_t::painter_brush_t;
-  painter_brush_emitter_t(){}
+  painter_brush_emitter_t() {}
 
   // copy constructor
   painter_brush_emitter_t(const painter_brush_emitter_t &other)
@@ -314,7 +312,8 @@ template <typename T, typename... Args>
 class marker_emitter_t : public display_unit_t,
                          virtual public hash_members_t,
                          public typed_index_t<T>,
-                         public Args... {
+                         public Args...,
+                         public system_base_t {
 public:
   marker_emitter_t() {}
 
@@ -370,7 +369,8 @@ class storage_emitter_t : virtual public hash_members_t,
                           public display_unit_t,
                           public typed_index_t<T>,
                           std::enable_shared_from_this<T>,
-                          public Args... {
+                          public Args...,
+                          public system_base_t {
 public:
   storage_emitter_t() : value(TS{}) {}
   storage_emitter_t(const TS &o) : value(o) {}
@@ -441,7 +441,8 @@ class class_storage_emitter_t : public TC,
                                 public display_unit_t,
                                 virtual public hash_members_t,
                                 std::enable_shared_from_this<T>,
-                                public Args... {
+                                public Args...,
+                                public system_base_t {
 public:
   using TC::TC;
   class_storage_emitter_t() {}
@@ -484,6 +485,6 @@ public:
 
     return __value;
   }
+
 };
 } // namespace uxdevice
-

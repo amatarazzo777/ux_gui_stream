@@ -48,7 +48,8 @@ typedef std::vector<pipeline_io_storage_t> pipeline_t;
 class pipeline_memory_object_t {
 public:
   std::any object = {};
-  std::unordered_map<std::type_index, visitor_interface_t> *accept_interfaces = {};
+  std::unordered_map<std::type_index, visitor_interface_t *>
+      *accept_interfaces = {};
   hash_function_t hash_function = {};
 };
 
@@ -94,8 +95,6 @@ public:
   virtual void pipeline_acquire(cairo_t *cr, coordinate_t *a) = 0;
   virtual bool pipeline_has_required_linkages(void) = 0;
   void pipeline_execute(display_context_t *context);
-
-
 
   /**
    \fn pipeline_push
@@ -339,7 +338,7 @@ public:
         if (o.second.accept_interfaces) {
           auto v = o.second.accept_interfaces->find(ti);
           if (v != o.second.accept_interfaces->end())
-            pipeline_io.push_back({v->second.pipeline_order, v->second.fn});
+            pipeline_io.push_back({v->second->pipeline_order, v->second->fn});
         }
 
     bfinalized = false;

@@ -25,6 +25,8 @@
 \brief
 */
 
+
+
 /**
 
 \internal
@@ -72,143 +74,231 @@ typedef std::variant<std::monostate, fn_emit_cr_t, fn_emit_cr_a_t,
 
 /**
  * \class visitor_interface_t
- * \brief holds information for the visitor by type index.
+ * \brief holds information for the visitor interface. The function bind_dispatch
+ * should be called after the immediately object is created.
  */
+
 namespace uxdevice {
+ class system_base_t;
 class visitor_interface_t {
 public:
-  std::type_index type = std::type_index(typeid(visitor_interface_t));
-  std::size_t pipeline_order;
-  fn_emit_overload_t fn;
+  fn_emit_overload_t fn={};
+  std::size_t pipeline_order={};
+  virtual void bind_dispatch(system_base_t *ptr) {}
+};
+} // namespace uxdevice
+
+
+
+/**
+ * \class visitor_interfaces_t
+ * \brief 
+ */
+namespace uxdevice {
+class visitor_interfaces_base_t {
+public:
+  visitor_interfaces_base_t() {}
+  virtual ~visitor_interfaces_base_t() {}
+  std::unordered_map<std::type_index, visitor_interface_t *> accepted_interfaces =
+      {};
+};
+} // namespace uxdevice
+
+/**
+ * \class visitor_interfaces_t
+ * \tparam ...
+ * \brief class used within the unit declaration parameters
+ * to note abstracts that are published.
+ */
+namespace uxdevice {
+
+template <typename... Args>
+class visitor_interfaces_t : public visitor_interfaces_base_t, public Args... {
+public:
+  visitor_interfaces_t() : Args(this)... {}
 };
 } // namespace uxdevice
 
 namespace uxdevice {
-template <typename FN, std::size_t ORDER>
-visitor_interface_t make_interface_t(FN fn) {
-  fn_emit_overload_t vfn;
-  vfn = fn;
-  return visitor_interface_t{std::type_index(typeid(FN)), ORDER, vfn};
+class system_base_t {
+public:
+  system_base_t() {
+    if (!visitor_dispatch_bound)
+      ;
+  }
+  virtual ~system_base_t() {}
+  void init_dispatch(void) {
+  	auto p = dynamic_cast<visitor_interfaces_base_t *>(this);
+    for (auto n : p->accepted_interfaces)
+      n.second->bind_dispatch(this);
+    visitor_dispatch_bound=true;
+  }
+  bool visitor_dispatch_bound = false;
+};
 }
 
-} // namespace uxdevice
-
+  /** 
+  \details the constructor is called by the visitor_interfaces_t param pack expansion.
+  The interface position within the unordered_map accpeted_interfaces
+  is reserved by setting the type id. Later the interface is resolved by iterating the map.
+   This is done in two phases because at this point within the logic, the base class 
+   which can be used in a polymorphic way is not availble.
+   The method bind_interface is called to tie the interface pointer
+  to the instance of the implemented abstract method. The system_base_t
+  is used for this. There is a curisiousty that gdb does not recognize the fn
+  holds a value, as it does.*/
+  
 namespace uxdevice {
-template <std::size_t ORDER> class abstract_emit_context_t {
+template <std::size_t ORDER> class abstract_emit_context_t : visitor_interface_t {
 public:
   abstract_emit_context_t() {}
+
+  abstract_emit_context_t(visitor_interfaces_base_t *ptr) {
+  	pipeline_order = ORDER;
+    ptr->accepted_interfaces[std::type_index(typeid(this))] =this;
+    }
+  
+  void bind_interface(system_base_t *ptr) {
+    fn = fn_emit_context_t{std::bind(&abstract_emit_context_t::emit,
+            dynamic_cast<abstract_emit_context_t *>(ptr), std::placeholders::_1)};
+  }
+    
   virtual ~abstract_emit_context_t() {}
   virtual void emit(display_context_t *context) = 0;
-
-  visitor_interface_t interface(abstract_emit_context_t *ptr) {
-    return make_interface_t<fn_emit_context_t, ORDER>(
-        std::bind(&abstract_emit_context_t::emit, ptr, std::placeholders::_1));
-  }
 
 }; // namespace uxdevice
 } // namespace uxdevice
 
 namespace uxdevice {
-template <std::size_t ORDER> class abstract_emit_cr_t {
+template <std::size_t ORDER> class abstract_emit_cr_t : visitor_interface_t  {
 public:
   abstract_emit_cr_t() {}
+  abstract_emit_cr_t(visitor_interfaces_base_t *ptr) {
+  	pipeline_order = ORDER;
+    ptr->accepted_interfaces[std::type_index(typeid(this))] =this;
+    }
+  
+  void bind_interface(system_base_t *ptr) {
+    fn = fn_emit_cr_t{std::bind(&abstract_emit_cr_t::emit,
+            dynamic_cast<abstract_emit_cr_t *>(ptr), std::placeholders::_1)};
+  }
+    
   virtual ~abstract_emit_cr_t() {}
   virtual void emit(cairo_t *cr) = 0;
-
-  visitor_interface_t interface(abstract_emit_cr_t *ptr) {
-    return make_interface_t<fn_emit_cr_t, ORDER>(
-        std::bind(&abstract_emit_cr_t::emit, ptr, std::placeholders::_1));
-  }
 };
 
 } // namespace uxdevice
 
 namespace uxdevice {
-template <std::size_t ORDER> class abstract_emit_cr_absolute_t {
+template <std::size_t ORDER> class abstract_emit_cr_absolute_t  : visitor_interface_t {
 public:
   abstract_emit_cr_absolute_t() {}
+  abstract_emit_cr_absolute_t(visitor_interfaces_base_t *ptr) {
+  	pipeline_order = ORDER;
+    ptr->accepted_interfaces[std::type_index(typeid(this))] =this;
+    }
+  
+  void bind_interface(system_base_t *ptr) {
+    fn = fn_emit_cr_t{std::bind(&abstract_emit_cr_absolute_t::emit_absolute,
+            dynamic_cast<abstract_emit_cr_absolute_t *>(ptr), std::placeholders::_1)};
+  }
+    
   virtual ~abstract_emit_cr_absolute_t() {}
   virtual void emit_absolute(cairo_t *cr) = 0;
-
-  visitor_interface_t interface(abstract_emit_cr_absolute_t *ptr) {
-    return make_interface_t<fn_emit_cr_t, ORDER>(
-        std::bind(&abstract_emit_cr_absolute_t::emit_absolute, ptr,
-                  std::placeholders::_1));
-  }
 };
 } // namespace uxdevice
 
 namespace uxdevice {
-template <std::size_t ORDER> class abstract_emit_cr_relative_t {
+template <std::size_t ORDER> class abstract_emit_cr_relative_t  : visitor_interface_t {
 public:
   abstract_emit_cr_relative_t() {}
+  abstract_emit_cr_relative_t(visitor_interfaces_base_t *ptr) {
+  	pipeline_order = ORDER;
+    ptr->accepted_interfaces[std::type_index(typeid(this))] =this;
+    }
+  
+  void bind_interface(system_base_t *ptr) {
+    fn = fn_emit_cr_t{std::bind(&abstract_emit_cr_relative_t::emit_relative,
+            dynamic_cast<abstract_emit_cr_relative_t *>(ptr), std::placeholders::_1)};
+  }  
   virtual ~abstract_emit_cr_relative_t() {}
   virtual void emit_relative(cairo_t *cr) = 0;
-
-  visitor_interface_t interface(abstract_emit_cr_relative_t *ptr) {
-    return make_interface_t<fn_emit_cr_t, ORDER>(
-        std::bind(&abstract_emit_cr_relative_t::emit_relative, ptr,
-                  std::placeholders::_1));
-  }
 };
 } // namespace uxdevice
 
 namespace uxdevice {
-template <std::size_t ORDER> class abstract_emit_cr_a_t {
+template <std::size_t ORDER> class abstract_emit_cr_a_t  : visitor_interface_t {
 public:
   abstract_emit_cr_a_t() {}
+  abstract_emit_cr_a_t(visitor_interfaces_base_t *ptr) {
+  	pipeline_order = ORDER;
+    ptr->accepted_interfaces[std::type_index(typeid(this))] =this;
+    }
+  
+  void bind_interface(system_base_t *ptr) {
+    fn = fn_emit_cr_a_t{std::bind(&abstract_emit_cr_a_t::emit_relative,
+            dynamic_cast<abstract_emit_cr_a_t *>(ptr), std::placeholders::_1)};
+  }    
   virtual ~abstract_emit_cr_a_t() {}
   virtual void emit(cairo_t *cr, coordinate_t *a) = 0;
-
-  visitor_interface_t interface(abstract_emit_cr_a_t *ptr) {
-    return make_interface_t<fn_emit_cr_a_t, ORDER>(
-        std::bind(&abstract_emit_cr_a_t::emit, ptr, std::placeholders::_1,
-                  std::placeholders::_2));
-  }
 };
 } // namespace uxdevice
 
 namespace uxdevice {
-template <std::size_t ORDER> class abstract_emit_layout_t {
+template <std::size_t ORDER> class abstract_emit_layout_t  : visitor_interface_t {
 public:
   abstract_emit_layout_t() {}
+
+  abstract_emit_layout_t(visitor_interfaces_base_t *ptr) {
+  	pipeline_order = ORDER;
+    ptr->accepted_interfaces[std::type_index(typeid(this))] =this;
+    }
+  
+  void bind_interface(system_base_t *ptr) {
+    fn = fn_emit_layout_t{std::bind(&abstract_emit_layout_t::emit_relative,
+            dynamic_cast<abstract_emit_layout_t *>(ptr), std::placeholders::_1)};
+  }  
+  
   virtual ~abstract_emit_layout_t() {}
   virtual void emit(PangoLayout *layout) = 0;
-
-  visitor_interface_t interface(abstract_emit_layout_t *ptr) {
-    return make_interface_t<fn_emit_layout_t, ORDER>(
-        std::bind(&abstract_emit_layout_t::emit, ptr, std::placeholders::_1));
-  }
 };
 } // namespace uxdevice
 
 namespace uxdevice {
-template <std::size_t ORDER> class abstract_emit_layout_a_t {
+template <std::size_t ORDER> class abstract_emit_layout_a_t  : visitor_interface_t {
 public:
   abstract_emit_layout_a_t() {}
+  abstract_emit_layout_a_t(visitor_interfaces_base_t *ptr) {
+  	pipeline_order = ORDER;
+    ptr->accepted_interfaces[std::type_index(typeid(this))] =this;
+    }
+  
+  void bind_interface(system_base_t *ptr) {
+    fn = fn_emit_layout_a_t{std::bind(&abstract_emit_layout_a_t::emit, ptr,
+                      std::placeholders::_1, std::placeholders::_2)};;
+  } 
+    
   virtual ~abstract_emit_layout_a_t(){};
   virtual void emit(PangoLayout *layout, coordinate_t *a) = 0;
-
-  visitor_interface_t interface(abstract_emit_layout_a_t *ptr) {
-    return make_interface_t<fn_emit_layout_a_t, ORDER>(
-        std::bind(&abstract_emit_layout_a_t::emit, ptr, std::placeholders::_1,
-                  std::placeholders::_2));
-  }
 };
 } // namespace uxdevice
 
 namespace uxdevice {
-template <std::size_t ORDER> class abstract_emit_cr_layout_t {
+template <std::size_t ORDER> class abstract_emit_cr_layout_t  : visitor_interface_t {
 public:
   abstract_emit_cr_layout_t() {}
+  abstract_emit_cr_layout_t(visitor_interfaces_base_t *ptr) {
+  	pipeline_order = ORDER;
+    ptr->accepted_interfaces[std::type_index(typeid(this))] =this;
+    }
+  
+  void bind_interface(system_base_t *ptr) {
+    fn = fn_emit_layout_a_t{std::bind(&abstract_emit_cr_layout_t::emit, ptr,
+                      std::placeholders::_1, std::placeholders::_2)};;
+  } 
+    
   virtual ~abstract_emit_cr_layout_t() {}
   virtual void emit(cairo_t *cr, PangoLayout *layout) = 0;
-
-  visitor_interface_t interface(abstract_emit_cr_layout_t *ptr) {
-    return make_interface_t<fn_emit_cr_layout_t, ORDER>(
-        std::bind(&abstract_emit_cr_layout_t::emit, ptr, std::placeholders::_1,
-                  std::placeholders::_2));
-  }
 };
 } // namespace uxdevice
 
@@ -237,36 +327,4 @@ public:
 };
 } // namespace uxdevice
 
-namespace uxdevice {
-class visitor_interfaces_base_t {
-public:
-  visitor_interfaces_base_t() {}
-  virtual ~visitor_interfaces_base_t() {}
-};
-} // namespace uxdevice
 
-/**
- * \class visitor_interfaces_t
- * \tparam ...
- * \brief class used within the unit declaration parameters
- * to note abstracts that are published.
- */
-namespace uxdevice {
-
-template <typename... Args>
-class visitor_interfaces_t : public visitor_interfaces_base_t, public Args... {
-public:
-  std::unordered_map<std::type_index, visitor_interface_t> accepted_interfaces =
-      {};
-  visitor_interfaces_t() {}
-  visitor_interfaces_t(Args &... args) {
-    ((void)publish_interface(std::forward<Args>(args)), ...);
-  }
-
-  template <typename T> void publish_interface(T &obj_fn) {
-
-    accepted_interfaces[std::type_index(typeid(T))] =
-    		obj_fn.interface(dynamic_cast<T *>(this));
-  }
-};
-} // namespace uxdevice

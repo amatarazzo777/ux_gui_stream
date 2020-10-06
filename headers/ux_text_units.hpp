@@ -135,33 +135,6 @@ public:
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_font_storage_t);
 
-/**
-
- \class
- text_tab_stops_storage_t
- \brief sets the tab stops on
- the layout
- */
-
-namespace uxdevice {
-class text_tab_stops_storage_t : virtual public hash_members_t {
-public:
-  text_tab_stops_storage_t() {}
-  text_tab_stops_storage_t(const std::vector<double> &_value) : value(_value) {}
-  virtual ~text_tab_stops_storage_t() {}
-
-  std::size_t hash_code(void) const noexcept {
-    std::size_t __value = {};
-    hash_combine(__value, std::type_index(typeid(text_tab_stops_storage_t)));
-    for (auto n : value)
-      hash_combine(__value, n);
-    return __value;
-  }
-
-  std::vector<double> value = {};
-};
-} // namespace uxdevice
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_tab_stops_storage_t);
 
 /**
  \class text_font_t
@@ -350,6 +323,34 @@ public:
 };
 } // namespace uxdevice
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_indent_t);
+
+/**
+
+ \class
+ text_tab_stops_storage_t
+ \brief sets the tab stops on
+ the layout
+ */
+
+namespace uxdevice {
+class text_tab_stops_storage_t : virtual public hash_members_t {
+public:
+  text_tab_stops_storage_t() {}
+  text_tab_stops_storage_t(const std::vector<double> &_value) : value(_value) {}
+  virtual ~text_tab_stops_storage_t() {}
+
+  std::size_t hash_code(void) const noexcept {
+    std::size_t __value = {};
+    hash_combine(__value, std::type_index(typeid(text_tab_stops_storage_t)));
+    for (auto n : value)
+      hash_combine(__value, n);
+    return __value;
+  }
+
+  std::vector<double> value = {};
+};
+} // namespace uxdevice
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_tab_stops_storage_t);
 
 /**
  \class

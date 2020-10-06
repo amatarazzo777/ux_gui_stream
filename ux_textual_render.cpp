@@ -67,7 +67,7 @@ void uxdevice::textual_render_storage_t::pipeline_acquire(cairo_t *cr,
    * these steps are common in the first part of the textual rendering  The
    visitor of the pango, and cairo operate in a sorted fashion to execute
    themselves within a rule based set of order. refinements within the stream
-   can occur as successive execution happens but his is not facilitated
+   can occur as successive execution happens but this is not facilitated
    by current code (pipeline_optimize is suffice). Initialization for example,
    and build up of graphics composite layers.
 
