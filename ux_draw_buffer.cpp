@@ -17,49 +17,49 @@
  */
 
 /**
-\author Anthony Matarazzo
-\file uxdrawbuffer.cpp
-\date 9/19/20
-\version 1.0
-\brief
+ * @author Anthony Matarazzo
+ * @file ux_draw_buffer.cpp
+ * @date 9/19/20
+ * @version 1.0
+ * @brief
+ *   References to source and functions that are provided by others.
+ *
+ *   ===============
+ *   "box blur" by Ivan Gagis <igagis@gmail.com>
+ *   Implementation adopted from the svgren project.
+ *
+ *   NOTE: see https://www.w3.org/TR/SVG/filters.html#feGaussianBlurElement
+ *    for Gaussian Blur approximation algorithm.
+ *
+ *   ================
+ *   Code spinet from base64 decode snippet in c++
+ *   stackoverflow.com/base64 decode snippet in c++ - Stack Overflow.html
+ *
+ *   ================
+ *   Stack Blur Algorithm by Mario Klingemann <mario@quasimondo.com>
+ *   Stackblur algorithm by Mario Klingemann
+ *
+ *   Details here:
+ *    http://www.quasimondo.com/StackBlurForCanvas/StackBlurDemo.html
+ *
+ *   C++ implementation base from:
+ *    https://gist.github.com/benjamin9999/3809142
+ *    http://www.antigrain.com/__code/include/agg_blur.h.html
+ *
+ *   This version works only with RGBA color
+ */
 
-  References to source and functions that are provided by others.
-
-===============
-  "box blur" by Ivan Gagis <igagis@gmail.com>
-  Implementation adopted from the svgren project.
-
-  NOTE: see https://www.w3.org/TR/SVG/filters.html#feGaussianBlurElement
-    for Gaussian Blur approximation algorithm.
-
-================
-  Code spinet from base64 decode snippet in c++
-  stackoverflow.com/base64 decode snippet in c++ - Stack Overflow.html
-
-================
-  Stack Blur Algorithm by Mario Klingemann <mario@quasimondo.com>
-  Stackblur algorithm by Mario Klingemann
-  Details here:
-  http://www.quasimondo.com/StackBlurForCanvas/StackBlurDemo.html
-
-  C++ implementation base from:
-  https://gist.github.com/benjamin9999/3809142
-  http://www.antigrain.com/__code/include/agg_blur.h.html
-  This version works only with RGBA color
-
-*/
-
-#include "ux_device.hpp"
+#include <ux_device.h>
 
 using namespace std;
 using namespace uxdevice;
 
 /**
-\internal
-\fn emit
-\param cairo_t *tocr
-\brief output surface to the requested surface.
-*/
+ * @internal
+ * @fn emit
+ * @param cairo_t *tocr
+ * @brief output surface to the requested surface.
+ */
 void uxdevice::draw_buffer_t::emit(cairo_t *tocr) {
   cairo_set_source_surface(tocr, rendered, 0, 0);
   cairo_rectangle(tocr, 0, 0, width, height);
@@ -67,13 +67,12 @@ void uxdevice::draw_buffer_t::emit(cairo_t *tocr) {
 }
 
 /**
-\internal
-\fn emit
-\param cairo_t *tocr
-\param coordinate_t &a
-\brief output surface to the requested surface.
-
-*/
+ * @internal
+ * @fn emit
+ * @param cairo_t *tocr
+ * @param coordinate_t &a
+ * @brief output surface to the requested surface.
+ */
 void uxdevice::draw_buffer_t::emit(cairo_t *tocr, coordinate_t *a) {
   cairo_set_source_surface(tocr, rendered, a->x, a->y);
   cairo_rectangle(tocr, a->x, a->y, a->w, a->h);
@@ -81,17 +80,14 @@ void uxdevice::draw_buffer_t::emit(cairo_t *tocr, coordinate_t *a) {
 }
 
 /**
-\internal
-\fn read_contents
-
-\param const gchar *file_name
-\param guint8 **contents - g_new
-\param gsize *length
-
-\brief reads the file based upon the name. Allocates a buffer "**contents"
-as a double pointer.
-
-*/
+ * @internal
+ * @fn read_contents
+ * @param const gchar *file_name
+ * @param guint8 **contents - g_new
+ * @param gsize *length
+ * @brief reads the file based upon the name. Allocates a buffer "**contents" as
+ * a double pointer.
+ */
 cairo_status_t uxdevice::draw_buffer_t::read_contents(const gchar *file_name,
                                                       guint8 **contents,
                                                       gsize *length) {
@@ -132,18 +128,16 @@ cairo_status_t uxdevice::draw_buffer_t::read_contents(const gchar *file_name,
 }
 
 /**
-\internal
-\fn image_surface_SVG
-\param bool bDataPassed
-\param std::string &info
-\param double _width
-\param double _height
-
-\brief creates a drawing_buffer_t surface from an svg using the rsvg library.
-Data can be passed in as a string inlined svg that perhaps would be
-parameterized by the caller. Or as a filename.
-
-*/
+ * @internal
+ * @fn image_surface_SVG
+ * @param bool bDataPassed
+ * @param std::string &info
+ * @param double _width
+ * @param double _height
+ * @brief creates a drawing_buffer_t surface from an svg using the rsvg library.
+ * Data can be passed in as a string inlined svg that perhaps would be
+ * parameterized by the caller. Or as a filename.
+ */
 void uxdevice::draw_buffer_t::image_surface_SVG(const bool bDataPassed,
                                                 std::string &info,
                                                 const double _width,
@@ -252,16 +246,14 @@ error_exit:
 }
 
 /**
-\internal
-\fn read_image
-\param const std::string &data
-\param const double w
-\param const double h
-
-\brief reads the image, which can be described in multiple formats such
-as supported by the system. This is the main input routine.
-
-*/
+ * @internal
+ * @fn read_image
+ * @param const std::string &data
+ * @param const double w
+ * @param const double h
+ * @brief reads the image, which can be described in multiple formats such as
+ * supported by the system. This is the main input routine.
+ */
 void uxdevice::draw_buffer_t::read_image(std::string &data, const double w,
                                          const double h) {
   const string dataPNG = string("data:image/png;base64,");
@@ -366,22 +358,20 @@ void uxdevice::draw_buffer_t::read_image(std::string &data, const double w,
 
 #if defined(USE_STACKBLUR)
 /**
-\internal
-\fn blur_image
-\param unsigned int radius
-
-\details
-Stack Blur Algorithm by Mario Klingemann <mario@quasimondo.com>
-Stackblur algorithm by Mario Klingemann
-
-http://www.quasimondo.com/StackBlurForCanvas/StackBlurDemo.html
-https://gist.github.com/benjamin9999/3809142
-http://www.antigrain.com/__code/include/agg_blur.h.html
-
-This version works only with RGBA color
-
-*/
-
+ * @internal
+ * @fn blur_image
+ * @param unsigned int radius
+ * @details
+ * Stack Blur Algorithm by Mario Klingemann <mario@quasimondo.com>
+ * Stackblur algorithm by Mario Klingemann
+ *
+ * http://www.quasimondo.com/StackBlurForCanvas/StackBlurDemo.html
+ * https://gist.github.com/benjamin9999/3809142
+ * http://www.antigrain.com/__code/include/agg_blur.h.html
+ *
+ * This version works only with RGBA color
+ *
+ */
 void uxdevice::draw_buffer_t::blur_image(const unsigned int radius) {
   static unsigned short const stackblur_mul[255] = {
       512, 512, 456, 512, 328, 456, 335, 512, 405, 328, 271, 456, 388, 335,
@@ -680,11 +670,11 @@ void uxdevice::draw_buffer_t::blur_image(const unsigned int radius) {
 #elif defined(USE_SVGREN)
 
 /**
-\internal
-\details
-
-"box blur" by Ivan Gagis <igagis@gmail.com>
- svgren project.
+ * @internal
+ * @details
+ *
+ * "box blur" by Ivan Gagis <igagis@gmail.com>
+ * svgren project.
 
 The MIT License (MIT)
 
@@ -718,20 +708,19 @@ void uxdevice::draw_buffer_t::blur_image(const unsigned int radius) {
 }
 
 /**
-\internal
-\fn box_blur_horizontal
-\param std::uint8_t *dst
-\param const std::uint8_t *src
-\param unsigned dstStride
-\param unsigned srcStride
-\param unsigned width
-\param unsigned height
-\param unsigned boxSize
-\param unsigned boxOffset
-\param unsigned channel
-\brief
-*/
-
+ * @internal
+ * @fn box_blur_horizontal
+ * @param std::uint8_t *dst
+ * @param const std::uint8_t *src
+ * @param unsigned dstStride
+ * @param unsigned srcStride
+ * @param unsigned width
+ * @param unsigned height
+ * @param unsigned boxSize
+ * @param unsigned boxOffset
+ * @param unsigned channel
+ * @brief
+ */
 cairo_surface_t *uxdevice::draw_buffer_t::blur_image(unsigned int radius) {
   std::array<double, 2> stdDeviation = {static_cast<double>(radius),
                                         static_cast<double>(radius)};
@@ -741,19 +730,19 @@ cairo_surface_t *uxdevice::draw_buffer_t::blur_image(unsigned int radius) {
 }
 
 /**
-\internal
-\fn box_blur_horizontal
-\param std::uint8_t *dst
-\param const std::uint8_t *src
-\param unsigned dstStride
-\param unsigned srcStride
-\param unsigned width
-\param unsigned height
-\param unsigned boxSize
-\param unsigned boxOffset
-\param unsigned channel
-\brief
-*/
+ * @internal
+ * @fn box_blur_horizontal
+ * @param std::uint8_t *dst
+ * @param const std::uint8_t *src
+ * @param unsigned dstStride
+ * @param unsigned srcStride
+ * @param unsigned width
+ * @param unsigned height
+ * @param unsigned boxSize
+ * @param unsigned boxOffset
+ * @param unsigned channel
+ * @brief
+ */
 void uxdevice::draw_buffer_t::box_blur_horizontal(
     std::uint8_t *dst, const std::uint8_t *src, unsigned dstStride,
     unsigned srcStride, unsigned width, unsigned height, unsigned boxSize,
@@ -784,19 +773,19 @@ void uxdevice::draw_buffer_t::box_blur_horizontal(
 }
 
 /**
-\internal
-\fn box_blur_vertical
-\param std::uint8_t *dst
-\param const std::uint8_t *src
-\param unsigned dstStride
-\param unsigned srcStride
-\param unsigned width
-\param unsigned height
-\param unsigned boxSize
-\param unsigned boxOffset
-\param unsigned channel
-\brief
-*/
+ * @internal
+ * @fn box_blur_vertical
+ * @param std::uint8_t *dst
+ * @param const std::uint8_t *src
+ * @param unsigned dstStride
+ * @param unsigned srcStride
+ * @param unsigned width
+ * @param unsigned height
+ * @param unsigned boxSize
+ * @param unsigned boxOffset
+ * @param unsigned channel
+ * @brief
+ */
 void uxdevice::draw_buffer_t::box_blur_vertical(
     std::uint8_t *dst, const std::uint8_t *src, unsigned dstStride,
     unsigned srcStride, unsigned width, unsigned height, unsigned boxSize,
@@ -827,13 +816,11 @@ void uxdevice::draw_buffer_t::box_blur_vertical(
 }
 
 /**
-\internal
-\fn cairo_image_surface_blur
-
-\param cairo_surface_t *img
-\param std::array<double, 2> stdDeviation
-
-*/
+ * @internal
+ * @fn cairo_image_surface_blur
+ * @param cairo_surface_t *img
+ * @param std::array<double, 2> stdDeviation
+ */
 cairo_surface_t *uxdevice::draw_buffer_t::cairo_image_surface_blur(
     cairo_surface_t *img, std::array<double, 2> stdDeviation) {
 

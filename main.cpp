@@ -24,7 +24,8 @@
 \brief
 */
 
-#include "ux_device.hpp"
+#include <ux_device.h>
+#include <chrono>
 
 using namespace std;
 using namespace uxdevice;

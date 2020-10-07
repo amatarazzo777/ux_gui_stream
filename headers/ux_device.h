@@ -18,11 +18,11 @@
 #pragma once
 
 /**
- \author Anthony Matarazzo
- \file ux_device.hpp
- \date 9/7/20
- \version 1.0
- \brief interface for the platform.
+ @author Anthony Matarazzo
+ @file ux_device.hpp
+ @date 9/7/20
+ @version 1.0
+ @brief interface for the platform.
 
  */
 
@@ -33,23 +33,23 @@
  */
 // clang-format off
 
-#include "ux_compile_options.hpp"
-#include "ux_base.hpp"
-#include "ux_error.hpp"
-#include "ux_variant_visitor.hpp"
-#include "ux_abstracts.hpp"
-#include "ux_hash.hpp"
+#include <ux_compile_options.h>
+#include <ux_base.h>
+#include <ux_error.h>
+#include <ux_variant_visitor.h>
+#include <ux_abstracts.h>
+#include <ux_hash.h>
 
-#include "ux_enums.hpp"
+#include <ux_enums.h>
 
 // these are the literals which are noted within the abstracts such as emit(...);
 // they are informative of the order in which the published interfaces appear within the
 // rendering pipeline.
-#include "ux_pipeline_order.hpp"
+#include <ux_pipeline_order.h>
 
-#include "ux_matrix.hpp"
-#include "ux_draw_buffer.hpp"
-#include "ux_painter_brush.hpp"
+#include <ux_matrix.h>
+#include <ux_draw_buffer.h>
+#include <ux_painter_brush.h>
 
 /* Pipeline operations occur in staged order.
  * The system provides this flexibility of design by using a
@@ -62,7 +62,7 @@
  *
  *
  */
-#include "ux_pipeline_memory.hpp"
+#include <ux_pipeline_memory.h>
 
 /**
  * The display_visual_t object provides interoperability
@@ -73,24 +73,24 @@
  * pipeline_has_required_linkages(). See ux_pipeline_memory.hpp.
  *
  */
-#include "ux_display_visual.hpp"
-#include "ux_display_context.hpp"
-#include "ux_display_unit_base.hpp"
+#include <ux_display_visual.h>
+#include <ux_display_context.h>
+#include <ux_display_unit_base.h>
 
-#include "ux_coordinate.hpp"
+#include <ux_coordinate.h>
 
-#include "ux_event.hpp"
-#include "ux_event_listeners.hpp"
+#include <ux_event.h>
+#include <ux_event_listeners.h>
 
 // textual object may be reused to show text.
-#include "ux_textual_render.hpp"
+#include <ux_textual_render.h>
 
 // these files encompass the display unit objects which
 // is published as the user object api.
-#include "ux_text_units.hpp"
-#include "ux_image_block_unit.hpp"
-#include "ux_surface_area_units.hpp"
-#include "ux_drawing_unit_primitives.hpp"
+#include <ux_text_units.h>
+#include <ux_image_block_unit.h>
+#include <ux_surface_area_units.h>
+#include <ux_drawing_unit_primitives.h>
 
 // clang-format on
 
@@ -114,7 +114,7 @@ public:
 
  \def UX_DECLARE_STREAM_INTERFACE
 
- \brief the macro creates the stream interface for both constant references
+ @brief the macro creates the stream interface for both constant references
  and shared pointers as well as establishes the prototype for the insertion
  function. The implementation is not standard and will need definition.
  This is the route for formatting objects that accept numerical data and
@@ -141,8 +141,8 @@ private:                                                                       \
   surface_area_t &stream_input(const std::shared_ptr<CLASS_NAME> _val);
 
 /**
- \typedef coordinate_list_t
- \brief An std::list used to communicate coordinate for the window.
+ @typedef coordinate_list_t
+ @brief An std::list used to communicate coordinate for the window.
  varying pairs may be given. two or four.
 
 
@@ -150,9 +150,9 @@ private:                                                                       \
 typedef std::list<short int> coordinate_list_t;
 
 /**
- \class surface_area_t
+ @class surface_area_t
 
- \brief The main interface object of the system.
+ @brief The main interface object of the system.
 
 
  */
@@ -216,8 +216,8 @@ public:
   }
 
   /**
-   \fn template << operator.
-   \brief The operator is a template function that also checks the base class
+   @fn template << operator.
+   @brief The operator is a template function that also checks the base class
    inheritance for the type of object as well as its exposed methods. The base
    class inheritance signifies operations that occur specific to the object
    type. The constexpr if states decide this at compile time which creates a
@@ -259,8 +259,8 @@ public:
   }
 
   /**
-   \fn operator<<
-   \brief
+   @fn operator<<
+   @brief
 
    */
   template <typename T>
@@ -319,11 +319,11 @@ public:
    */
 
   /**
-   \fn in
-   \tparam T - object to insert using the stream operator.
-   \tparam Args - list of them, param pack expansion calls recursively to
+   @fn in
+   @tparam T - object to insert using the stream operator.
+   @tparam Args - list of them, param pack expansion calls recursively to
    operator.
-   \brief An alternative input function to stream syntax.
+   @brief An alternative input function to stream syntax.
    e.g.
    vis.in(text_font_t{"Arial 20px"}, coordindate_t{0,0}, "Hello");
    */
@@ -337,9 +337,9 @@ public:
 
 public:
   /**
-   \fn
-   \tparam T -
-   \brief
+   @fn
+   @tparam T -
+   @brief
 
    */
   template <typename T> T &operator[](const T &o) {
@@ -437,15 +437,6 @@ private:
   display_unit_list_t display_list_storage = {};
   display_unit_list_t::iterator itDL_Processed = display_list_storage.begin();
 
-  /// @brief template function to insert into the display list
-  /// and perform initialization based upon the type. The c++ constexpr
-  /// conditional compiling functionality is used to trim the run time and
-  /// code size.
-  template <class T, typename... Args>
-  std::shared_ptr<T> display_list(const Args &... args) {
-    return display_list<T>(std::make_shared<T>(args...));
-  }
-
   // interface between client and API rendering threads.
   std::atomic_flag DL_readwrite = ATOMIC_FLAG_INIT;
 
@@ -453,6 +444,23 @@ private:
   while (DL_readwrite.test_and_set(std::memory_order_acquire))
 #define UX_DISPLAY_LIST_CLEAR DL_readwrite.clear(std::memory_order_release)
 
+  /**
+   * @fn display_list
+   * @brief template function to insert into the display list and perform
+   * initialization based upon the type. The c++ constexpr conditional compiling
+   * functionality is used to trim the run time and code size.
+   */
+  template <class T, typename... Args>
+  std::shared_ptr<T> display_list(const Args &... args) {
+    return display_list<T>(std::make_shared<T>(args...));
+  }
+
+  /**
+   * @fn display_list
+   * @brief template function to insert into the display list and perform
+   * initialization based upon the type. The c++ constexpr conditional compiling
+   * functionality is used to trim the run time and code size.
+   */
   template <class T, typename... Args>
   std::shared_ptr<T> display_list(const std::shared_ptr<T> ptr) {
     UX_DISPLAY_LIST_SPIN;
@@ -462,6 +470,10 @@ private:
     return ptr;
   }
 
+  /**
+   * @fn display_list_clear
+   * @brief
+   */
   void display_list_clear(void) {
     UX_DISPLAY_LIST_SPIN;
     display_list_storage.clear();
@@ -489,6 +501,6 @@ private:
 
   std::list<event_handler_t> &get_event_vector(std::type_index evt_type);
 };
-// namespace uxdevice
+
 
 } // namespace uxdevice

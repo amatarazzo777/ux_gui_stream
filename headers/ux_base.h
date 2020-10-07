@@ -28,8 +28,6 @@ and base operating system windowing and event system. disk access, etc.
 
 */
 
-#define PI (3.14159265358979323846264338327f)
-
 #include <algorithm>
 #include <any>
 #include <array>
@@ -38,7 +36,6 @@ and base operating system windowing and event system. disk access, etc.
 #include <assert.h>
 #include <atomic>
 #include <cctype>
-#include <chrono>
 #include <climits>
 #include <cmath>
 #include <condition_variable>
@@ -58,10 +55,7 @@ and base operating system windowing and event system. disk access, etc.
 #include <map>
 #include <memory>
 #include <numeric>
-#include <optional>
-#include <queue>
 #include <random>
-#include <regex>
 #include <sstream>
 #include <stdexcept>
 #include <string>

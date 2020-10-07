@@ -17,59 +17,35 @@
  */
 
 /**
-\author Anthony Matarazzo
-\file uxdisplayunits.hpp
-\date 9/7/20
-\version 1.0
+ * @author Anthony Matarazzo
+ * @file ux_text_units.hpp
+ * @date 9/7/20
+ * @version 1.0
+ * @brief emit implementations for objects.
+ */
 
-\brief emit implementations for objects.
-
-\details
-
-The modules extends the uxdevice namespace. The objects
-provided are the base objects for which the caller may instantiate to
-draw either text or line.
-
-While most of these objects are parameters to drawing functions, the
-implementation with in this file provides the functional logic. All
-objects derive from the display_unit_t class which contains the virtual
-abstracts named for the object created from the template class.
-Objects that provide drawing operations can inherit from
-the display_visual_t base class which enables visibility query.
-
-
-*/
-
-#include "ux_device.hpp"
+#include <ux_device.h>
 
 /**
-
-\fn text_render_normal_t::emit
-
-\param display_context_t &context
-
-\brief uses cached glyph bitmap rendering. fastest method of display
-using bitmap font cache data.
-
-\details
-
+ * @internal
+ * @fn text_render_normal_t::emit
+ * @param display_context_t &context
+ * @brief uses cached glyph bitmap rendering. fastest method of display using
+ * bitmap font cache data. The emit function removes the text_render_path_t from
+ * the display memory as they are exclusive
+ * @details
  */
 void uxdevice::text_render_normal_t::emit(display_context_t *context) {
-  // the emit function removes the text_render_path_t from the display memory
-  // as they are exclusive
   context->pipeline_memory_reset<text_render_path_t>();
 }
 
 /**
-
-\fn text_render_normal_t::emit
-
-\param cairo_t *cr
-\param PangoLayout *layout
-
-\brief invokes the pango api
-
-\details
+ * @internal
+ * @fn text_render_normal_t::emit
+ * @param cairo_t *cr
+ * @param PangoLayout *layout
+ * @brief invokes the pango api
+ * @details
 
  */
 void uxdevice::text_render_normal_t::emit(cairo_t *cr, PangoLayout *layout) {
@@ -77,47 +53,33 @@ void uxdevice::text_render_normal_t::emit(cairo_t *cr, PangoLayout *layout) {
 }
 
 /**
-
-\fn text_render_path_t::emit
-
-\param display_context_t &context
-
-\brief outputs text using vector drawing operations. This enables
-the custom outline and fill of text. Slower but more versatile.
-Text can bend to follow a path if logic is added.
-
-\details
-
+ * @internal
+ * @fn text_render_path_t::emit
+ * @param display_context_t &context
+ * @brief outputs text using vector drawing operations. This enables the custom
+ * outline and fill of text. Slower but more versatile. Text can bend to follow
+ * a path if logic is added.
  */
 void uxdevice::text_render_path_t::emit(display_context_t *context) {
   context->pipeline_memory_reset<text_render_normal_t>();
 }
 
 /**
-
-\fn text_render_path_t::emit
-
-\param cairo_t *cr
-\param PangoLayout *layout
-
-\brief invokes the pango api to render font text as a path from the layout
-
-\details
-
+ * @internal
+ * @fn text_render_path_t::emit
+ * @param cairo_t *cr
+ * @param PangoLayout *layout
+ * @brief invokes the pango api to render font text as a path from the layout
  */
 void uxdevice::text_render_path_t::emit(cairo_t *cr, PangoLayout *layout) {
   pango_cairo_layout_path(cr, layout);
 }
 
 /**
-
-\class text_alignment_t
-\brief sets the alignment mode when wrapping, left, right, center,
-justified.
-
-\details
-
-
+ * @internal
+ * @fn text_alignment_t::emit
+ * @param PangoLayout *layout
+ * @brief sets the alignment mode when wrapping, left, right, center, justified.
  */
 void uxdevice::text_alignment_t::emit(PangoLayout *layout) {
   PangoAlignment correlated_value = static_cast<PangoAlignment>(value);
@@ -131,13 +93,10 @@ void uxdevice::text_alignment_t::emit(PangoLayout *layout) {
 }
 
 /**
-
-\class text_indent_t
-\brief indentation of first line paragraph.
-
-\details
-
-
+ * @internal
+ * @fn text_indent_t::emit
+ * @param PangoLayout *layout
+ * @brief indentation of first line paragraph.
  */
 void uxdevice::text_indent_t::emit(PangoLayout *layout) {
   int pangoUnits = value * PANGO_SCALE;
@@ -145,41 +104,32 @@ void uxdevice::text_indent_t::emit(PangoLayout *layout) {
 }
 
 /**
-
-\class text_ellipsize_t
-\brief when text is longer than the defined box, "..."
-  is shown. can be at beginning, middle, or end.
-
-\details
-
-
+ * @internal
+ * @fn text_ellipsize_t::emit
+ * @param PangoLayout *layout
+ * @brief when text is longer than the defined box, "..." is shown. can be at
+ * beginning, middle, or end.
  */
 void uxdevice::text_ellipsize_t::emit(PangoLayout *layout) {
   pango_layout_set_ellipsize(layout, static_cast<PangoEllipsizeMode>(value));
 }
 
 /**
-
-\class text_line_space_t
-\brief space between the lines of text.
-
-\details
-
-
+ * @internal
+ * @fn text_line_space_t::emit
+ * @param PangoLayout *layou
+ * @brief space between the lines of text.
  */
 void uxdevice::text_line_space_t::emit(PangoLayout *layout) {
   pango_layout_set_line_spacing(layout, static_cast<float>(value));
 }
 
 /**
-
-\class text_tab_stops_t
-\brief when tabs occur, this defines the tab stops.
-
-\details
-
-
-*/
+ * @internal
+ * @fn text_tab_stops_t::emit
+ * @param PangoLayout *layout
+ * @brief when tabs occur, this defines the tab stops.
+ */
 void uxdevice::text_tab_stops_t::emit(PangoLayout *layout) {
   PangoTabArray *tabs = pango_tab_array_new(value.size(), true);
 
@@ -193,13 +143,9 @@ void uxdevice::text_tab_stops_t::emit(PangoLayout *layout) {
 }
 
 /**
-
-\class text_font_t::emit
-\brief
-
-\details
-
-
+ * @internal
+ * @fn text_font_t::emit
+ * @param PangoLayout *layout
  */
 void uxdevice::text_font_t::emit(PangoLayout *layout) {
   if (!font_ptr) {
@@ -219,11 +165,14 @@ void uxdevice::text_font_t::emit(PangoLayout *layout) {
       pango_layout_set_font_description(layout, font_ptr);
 }
 
-// since class implements
-// the
-// painter_brush_emitter_t ,
-// specializations may call
-// the base constructor,
+/**
+ * @internal
+ * @fn text_outline_t::emit
+ * @param cairo_t *cr
+ * @brief   since class implements the painter_brush_emitter_t , specializations
+ * may call the base constructor,
+ *
+ */
 void uxdevice::text_outline_t::emit(cairo_t *cr) {
   double dwidth = cairo_get_line_width(cr);
   cairo_set_line_width(cr, _width);
@@ -232,6 +181,15 @@ void uxdevice::text_outline_t::emit(cairo_t *cr) {
   cairo_set_line_width(cr, dwidth);
 }
 
+/**
+ * @internal
+ * @fn text_outline_t::emit
+ * @param cairo_t *cr
+ * @param coordinate_t *a
+ * @brief   since class implements the painter_brush_emitter_t , specializations
+ * may call the base constructor,
+ *
+ */
 void uxdevice::text_outline_t::emit(cairo_t *cr, coordinate_t *a) {
   double dwidth = cairo_get_line_width(cr);
   cairo_set_line_width(cr, _width);
@@ -241,38 +199,33 @@ void uxdevice::text_outline_t::emit(cairo_t *cr, coordinate_t *a) {
 }
 
 /**
-\internal
-\fn emit
-\param cairo_t *cr
-
-\brief shows the text shadow
-
+ * @internal
+ * @fn text_shadow_t::emit
+ * @param cairo_t *cr
+ * @brief   s shows the text shadow
+ *
  */
-void uxdevice::text_shadow_t::emit(cairo_t *cr) {
-  internal_buffer.emit(cr);
-}
+void uxdevice::text_shadow_t::emit(cairo_t *cr) { internal_buffer.emit(cr); }
 
 /**
-\internal
-\fn emit
-\param cairo_t *cr
-\param coordinate_t *a
-
-\brief shows the text shadow
-
+ * @internal
+ * @fn text_shadow_t::emit
+ * @param cairo_t *cr
+ * @param coordinate_t *a
+ * @brief  shows the text shadow
+ *
  */
 void uxdevice::text_shadow_t::emit(cairo_t *cr, coordinate_t *a) {
   internal_buffer.emit(cr, a);
 }
 
 /**
-\internal
-\fn create_text_shadow
-\brief creates an image of the shadowed text
-
-\details
-
-
+ * @internal
+ * @fn text_shadow_t::pipeline_acquire
+ * @param cairo_t *cr
+ * @param coordinate_t *a
+ * @brief
+ *
  */
 void uxdevice::text_shadow_t::pipeline_acquire(cairo_t *cr, coordinate_t *a) {
 
@@ -301,23 +254,24 @@ void uxdevice::text_shadow_t::pipeline_acquire(cairo_t *cr, coordinate_t *a) {
 }
 
 /**
-\internal
-\fn pipeline_has_required_linkages
-\brief determines if the textual drawing parameters for shadow
-are all stored within the pipeline memory.
-
-*/
+ * @internal
+ * @fn text_shadow_t::pipeline_has_required_linkages
+ * @param cairo_t *cr
+ * @param coordinate_t *a
+ * @brief determines if the textual drawing parameters for shadow are all stored
+ * within the pipeline memory.
+ * @return bool
+ */
 bool uxdevice::text_shadow_t::pipeline_has_required_linkages(void) {
   return textual_render_storage_t::pipeline_has_required_linkages();
 }
-/**
-\internal
-\fn text_data_t::emit(layout)
-\brief sets that text of the layout to the one stored withi nthe text_data_t
-  object. The text_data_t object contains a text_data_storage_t which is a
-  std::variant holding the information within a string, string_view or
 
-*/
+/**
+ * @internal
+ * @fn text_data_t::hash_code
+ * @brief
+ * @return std::size_t - the hashed value
+ */
 std::size_t uxdevice::text_data_t::hash_code(void) const noexcept {
   std::size_t __value = std::type_index(typeid(text_data_t)).hash_code();
 
@@ -337,13 +291,13 @@ std::size_t uxdevice::text_data_t::hash_code(void) const noexcept {
 }
 
 /**
-\internal
-\fn text_data_t::emit(layout)
-\brief sets that text of the layout to the one stored withi nthe text_data_t
-  object. The text_data_t object contains a text_data_storage_t which is a
-  std::variant holding the information within a string, string_view or
-
-*/
+ * @internal
+ * @fn text_data_t::emit
+ * @param PangoLayout *layout
+ * @brief sets that text of the layout to the one stored withi nthe text_data_t
+ * object. The text_data_t object contains a text_data_storage_t which is a
+ * std::variant holding the information within a string, string_view or
+ */
 void uxdevice::text_data_t::emit(PangoLayout *layout) {
   std::string_view sinternal = std::string_view(pango_layout_get_text(layout));
   auto text_data_visitor =

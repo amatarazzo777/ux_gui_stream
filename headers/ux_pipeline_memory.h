@@ -18,21 +18,20 @@
 #pragma once
 
 /**
- \author Anthony Matarazzo
- \file uxunitmemory.hpp
- \date 9/19/20
- \version 1.0
- \brief unit memory storage
+ @author Anthony Matarazzo
+ @file ux_pipeline_memory.hpp
+ @date 9/19/20
+ @version 1.0
+ @brief pipeline memory storage and visitation logic
 
  */
 
 /**
- \internal
- \class unit_memory_storage_t
- \brief class exposes template member functions in that class that it is
- inherited in. The mechanism provides typed index storage of objects that may be
- referenced at any time.
-
+ * @internal
+ * @class unit_memory_storage_t
+ * @brief class exposes template member functions in that class that it is
+ * inherited in. The mechanism provides typed index storage of objects that may
+ * be referenced at any time.
  */
 namespace uxdevice {
 typedef std::function<std::size_t(void)> hash_function_t;
@@ -41,9 +40,10 @@ typedef std::tuple<std::size_t, fn_emit_overload_t> pipeline_io_storage_t;
 typedef std::vector<pipeline_io_storage_t> pipeline_t;
 
 /*
- * \class pipeline_memory_object_t
+ * @internal
+ * @class pipeline_memory_object_t
  *
- * object storage
+ * @brief object storage
  */
 class pipeline_memory_object_t {
 public:
@@ -53,13 +53,24 @@ public:
   hash_function_t hash_function = {};
 };
 
+/*
+ * internal
+ * @class pipeline_memory_object_t
+ *
+ * @brief object storage
+ */
 typedef std::unordered_map<std::type_index, pipeline_memory_object_t>
     pipeline_memory_unordered_map_t;
 
+/**
+ * forward class declaration
+ */
 class display_unit_t;
 
 /**
- * \class
+ * @internal
+ * @class pipeline_acquisition_t
+ * @brief
  */
 class pipeline_acquisition_t {
 public:
@@ -97,26 +108,27 @@ public:
   void pipeline_execute(display_context_t *context);
 
   /**
-   \fn pipeline_push
-   \param overload_visitors_t &visitors
-   \brief determines if the pipeline is ready for traversal.
+   * @internal
+   * @fn pipeline_ready
+   * @brief determines if the pipeline is ready for traversal.
    */
   bool pipeline_ready(void) { return !pipeline_io.empty(); }
+
   /**
-   \fn pipeline_finalize
-   \brief prepares the pipeline memory for sequential execution by sorting.
-
+   * @fn pipeline_finalize
+   * @brief prepares the pipeline memory for sequential execution by sorting.
    */
-
   void pipeline_finalize(void) {
 
-    // Using lambda to compare elements.
-    // this function establishes where in the sort order the items are placed.
+    /**
+     * @struct
+     * @brief this structure establishes where in the sort order the items are
+     * placed. return "true" if "p1" is ordered before "p2", for example:
+     */
     struct less_than_key {
       bool operator()(pipeline_io_storage_t const &p1,
                       pipeline_io_storage_t const &p2) {
-        // return "true" if "p1" is ordered
-        // before "p2", for example:
+
         return std::get<std::size_t>(p1) < std::get<std::size_t>(p2);
       }
     };
@@ -131,20 +143,13 @@ public:
 };
 
 /**
- * \class pipeline_memory_t
+ * @class pipeline_memory_t
  */
 template <typename ATTR>
 class pipeline_memory_t : public pipeline_acquisition_t {
 public:
   pipeline_memory_t() {}
   virtual ~pipeline_memory_t() {}
-
-  /**
-   \fn pipeline_execute
-   \param display_context_t *context display context to execute the pipeline on
-   \brief
-   */
-  // virtual void pipeline_execute(display_context_t *context);
 
   /// @brief copy assignment operator
   pipeline_memory_t &operator=(const pipeline_memory_t &other) {
@@ -166,27 +171,27 @@ public:
       : pipeline_acquisition_t(other) {}
 
   /**
-   \fn pipeline_memory_linkages
+   * @fn pipeline_memory_linkages
    */
   void pipeline_memory_linkages(display_context_t *context);
 
   /**
-   \fn pipeline_disable_visit
-   \tparam T
+   * @fn pipeline_disable_visit
+   * @tparam T
    */
   template <typename T> void pipeline_disable_visit(void) {
     storage.erase(std::type_index(typeid(T)));
   }
 
   /**
-   \fn pipeline_memory_store
-   \tparam T
-   \brief
-   Storage of a shared pointer with variations on system defined
-   and user input. This provides effective use of std::any
-   and facilitates the storage of visitor parameter data with the
-   ability to expand to other data types. The usefulness of the
-   using for type alias provides effective means of expansion.
+   * @fn pipeline_memory_store
+   * @tparam T
+   * @brief
+   * Storage of a shared pointer with variations on system defined and user
+   * input. This provides effective use of std::any and facilitates the storage
+   * of visitor parameter data with the ability to expand to other data types.
+   * The usefulness of the using for type alias provides effective means of
+   * expansion.
    */
   template <typename T>
   void pipeline_memory_store(const std::shared_ptr<T> ptr) {
@@ -210,15 +215,13 @@ public:
   }
 
   /**
-   \fn pipeline_memory_store
-   \tparam T
-   \brief
-   Storage of a just data can be any type but only one type position exists for
-   it. This is a visitor parameter the internal system will skip over when
-   processing unless named within the visitor or used within one of the
-   underlying lambda functions within the pipeline.
+   * @fn pipeline_memory_store
+   * @tparam T
+   * @brief Storage of a just data can be any type but only one type position
+   * exists for it. This is a visitor parameter the internal system will skip
+   * over when processing unless named within the visitor or used within one of
+   * the underlying lambda functions within the pipeline.
    */
-  //
   template <typename T> void pipeline_memory_store(const T &o) {
     auto ti = std::type_index(typeid(T));
     storage[ti] =
@@ -226,14 +229,13 @@ public:
   }
 
   /**
-   \fn pipeline_memory_access
-   \tparam T
-   \brief returns the shared pointer of the visitor or
-   just the data if it is not an internal system processing
-   type. That is system processing types are deduced by their
-   inheritance of the  visitor_interfaces_t within this programming
-   construct. The return type is deduced using the decltype(auto)
-   while the type changes based upoon the constexpr if.
+   * @fn pipeline_memory_access
+   * @tparam T
+   * @brief returns the shared pointer of the visitor or just the data if it is
+   * not an internal system processing type. That is system processing types are
+   * deduced by their inheritance of the  visitor_interfaces_t within this
+   * programming construct. The return type is deduced using the decltype(auto)
+   * while the type changes based upoon the constexpr if. *
    */
   template <typename T>
   decltype(auto) pipeline_memory_access(void) const noexcept {
@@ -259,18 +261,18 @@ public:
   }
 
   /**
-   \fn pipeline_memory_reset
-   \tparam T
-   \brief resets the memory accoisted with the type passed in the template
-   parameter,
+   * @fn pipeline_memory_reset
+   * @tparam T
+   * @brief resets the memory associated with the type passed in the template
+   * parameter.
    */
   template <typename T> void pipeline_memory_reset(void) {
     storage.erase(std::type_index(typeid(T)));
     bfinalized = false;
   }
   /**
-   \fn pipeline_memory_hash_code
-  \brief returns the combined hash code for the entire pipeline memory.
+   * @fn pipeline_memory_hash_code
+   * @brief returns the combined hash code for the entire pipeline memory.
    */
   std::size_t pipeline_memory_hash_code(void) const noexcept {
     std::size_t value = {};
@@ -281,9 +283,9 @@ public:
   }
 
   /**
-   \fn pipeline_memory_hash_code
-   \tparam T
-   \brief returns the hash code of a specific type.
+   * @fn pipeline_memory_hash_code
+   * @tparam T
+   * @brief returns the hash code of a specific type.
    */
   template <typename T> std::size_t pipeline_memory_hash_code(void) {
     std::size_t value = {};
@@ -296,10 +298,10 @@ public:
   }
 
   /**
-   \fn pipeline_push
-   \param overload_visitors_t &visitors
-   \brief places a lambda expression onto the pipeline with the order attached.
-   later the order is used to sort the contents.
+   * @fn pipeline_push
+   * @param overload_visitors_t &visitors
+   * @brief places a lambda expression onto the pipeline with the order
+   * attached. later the order is used to sort the contents.
    */
   template <std::size_t N, typename FN> void pipeline_push(FN fn) {
     fn_emit_overload_t vfn = fn;
@@ -308,26 +310,24 @@ public:
   }
 
   /**
-   \fn unit_memory_to_staged_pipeline
-   \param overload_visitors_t &visitors
-   \brief traverses the objects related and emits them
-   to the overloaded provided.
+   * @fn unit_memory_to_staged_pipeline
+   * @param overload_visitors_t &visitors
+   * @brief traverses the objects related and emits them to the overloaded
+   * provided.
    */
   template <typename... Args> void pipeline_push_visit(void) {
     std::list<std::type_index> overloaded_visitors = {
         std::type_index(typeid(Args))...};
 
-    // gather and add all associated items  with interfaces that match.
-    // inserting them into the priority queue establishes order in the stages.
-    // Each of the objects publicly inherit template class pipeline_sort_order
-    // with a constant which is used also here within the priority queue
-    // insertion.
-
-    // iterate the storage,
-    // if the interface for the objects match for visitation,
-    // build and add a pipeline function for it. Here v is the visitor
-    // function passed in which has the parameter information referenced
-    // from the lambda function.
+    /**
+     * Gather and add all associated items  with interfaces that match.
+     * inserting them into the priority queue establishes order in the stages.
+     * Each of the objects publicly inherit template class pipeline_sort_order
+     * with a constant which is used also here within the priority queue
+     * insertion.  iterate the storage, if the interface for the objects match
+     * for visitation, build and add a pipeline function for it. Here v is the
+     * visitor function passed in which has the parameter information referenced
+     * from the lambda function.*/
 
     // for each of the visitors passed.
     for (auto ti : overloaded_visitors)
@@ -335,6 +335,7 @@ public:
       // storage.
       for (auto o : storage)
         // test if object accepts the visitor interface
+        // requested by the template param pack (ti)
         if (o.second.accept_interfaces) {
           auto v = o.second.accept_interfaces->find(ti);
           if (v != o.second.accept_interfaces->end())
@@ -342,13 +343,11 @@ public:
         }
 
     bfinalized = false;
-
-    return;
   }
 
   /**
-   \fn unit_memory_clear
-   \brief
+   * @fn unit_memory_clear
+   * @brief
    */
   void pipeline_memory_reset(void) { storage.clear(); }
 };

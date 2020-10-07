@@ -18,50 +18,40 @@
 #pragma once
 
 /**
-\author Anthony Matarazzo
-\file ux_image_block.hpp
-\date 9/23/20
-\version 1.0
-\brief
-*/
+ * @author Anthony Matarazzo
+ * @file ux_image_block.hpp
+ * @date 9/23/20
+ * @version 1.0
+ * @brief
+ *  API objects
+ *  The following definitions are the exact name that appears within the API.
+ * These class templates provide factories that create objects compatible with
+ * the system. These objects might have invoke and emit methods depending upon
+ * the emit abstract interfaces named for inheritance. The base services for
+ * these objects to be functional for the display are provided. These objects
+ * have all of the move and copy operators implemented for ease and efficiency
+ * of use. There are several types of objects that may be created and inserted
+ * by using the template parameters. Please refer to the class template for a
+ * more detailed explanation. The following templates are provided for use:
+ *
+ * 		marker_emitter_t
+ * 		painter_brush_emitter_t
+ * 		storage_emitter_t,
+ * 		class_storage_emitter_t
+ */
 
-/********************************************************************************
-
- API objects
-
- *********************************************************************************
-
- The following definitions are the exact name that appears within the API. These
- class templates provide factories that create objects compatible with the
- system. These objects might have invoke and emit methods depending upon the
- emit abstract interfaces named for inheritance. The base services for these
- objects to be functional for the display are provided. These objects have all
- of the move and copy operators implemented for ease and efficiency of use.
- There are several types of objects that may be created and inserted by using
- the template parameters. Please refer to the class template for a more detailed
- explanation. The following templates are provided for use:
-
-
- marker_emitter_t
- painter_brush_emitter_t
- storage_emitter_t
- class_storage_emitter_t
-
-
-
- *********************************************************************************/
+namespace uxdevice {
 
 /**
-
- \class image_block_storage_t
- \brief storage class used by the image_block_t object. The object is
- responsible for encapsulating and dynamically allocating, and releasing memory.
-
- \details
-
-
+ * @class image_block_storage_t
+ *
+ * @brief storage class used by the image_block_t object. The object is
+ * responsible for encapsulating and dynamically allocating, and releasing
+ * memory.
+ *
+ * @details
+ *
  */
-namespace uxdevice {
 class image_block_storage_t : virtual public hash_members_t,
                               virtual public system_error_t,
                               public display_visual_t,
@@ -118,24 +108,22 @@ public:
   std::string description = {};
   draw_buffer_t image_block = {};
 };
-} // namespace uxdevice
-
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::image_block_storage_t);
 
 /**
- \class
- \brief
+ * @class image_block_t
+ * @brief
  */
-namespace uxdevice {
-using image_block_t = class image_block_t
-    : public class_storage_emitter_t<image_block_t,
-          image_block_storage_t,
+class image_block_t
+    : public class_storage_emitter_t<
+          image_block_t, image_block_storage_t,
           visitor_interfaces_t<abstract_emit_context_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
-
   void emit(display_context_t *context);
 };
+
 } // namespace uxdevice
+
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::image_block_storage_t);
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::image_block_t);

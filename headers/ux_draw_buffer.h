@@ -18,21 +18,21 @@
 #pragma once
 
 /**
-\author Anthony Matarazzo
-\file uxdrawbuffer.hpp
-\date 9/19/20
-\version 1.0
-\brief off screen cairo complete buffer
+@author Anthony Matarazzo
+@file ux_draw_buffer.hpp
+@date 9/19/20
+@version 1.0
+@brief off screen cairo complete buffer
 
 */
 
 namespace uxdevice {
+
 /**
-/class draw_buffer_t
-/brief primate offscreen buffer wrapping cairo
-
+ * @internal
+ * @enum draw_buffer_format_t
+ * @brief
 */
-
 enum class draw_buffer_format_t {
   none,
   svg,
@@ -42,6 +42,10 @@ enum class draw_buffer_format_t {
 
 };
 
+/**
+ * @class draw_buffer_t
+ * @brief offscreen buffer wrapping cairo
+*/
 class draw_buffer_t : public abstract_emit_cr_a_t<order_render>,
                       virtual public system_error_t,
                       virtual hash_members_t {

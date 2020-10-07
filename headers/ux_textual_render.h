@@ -18,26 +18,24 @@
 #pragma once
 
 /**
-\author Anthony Matarazzo
-\file ux_textual_render.hpp
-\date 9/19/20
-\version 1.0
-\brief
+ * @author Anthony Matarazzo
+ * @file ux_textual_render.h
+ * @date 9/19/20
+ * @version 1.0
+ * @brief
+ */
 
-*/
+namespace uxdevice {
 
 /**
-
- \class
- textual_render_storage_t
- \brief class used to store parameters and options for a textual render. The
- object is created as the side effect of inserting text, char *, std string or a
- std::shared_ptr<std::string>. The class inherits from display_visual_t
- which notes the ink rectangle of the object. The display_visual_t class
- also exposes an intersection method for the render system to decide which
- function to invoke, a standard draw or a clipped draw.
+ * @class textual_render_storage_t
+ * @brief class used to store parameters and options for a textual render. The
+ * object is created as the side effect of inserting text, char *, std string or
+ * a std::shared_ptr<std::string>. The class inherits from display_visual_t
+ * which notes the ink rectangle of the object. The display_visual_t class also
+ * exposes an intersection method for the render system to decide which function
+ * to invoke, a standard draw or a clipped draw.
  */
-namespace uxdevice {
 class textual_render_storage_t
     : virtual public display_visual_t,
       virtual public pipeline_memory_t<visitor_textual_render_t>,
@@ -90,15 +88,12 @@ public:
   PangoRectangle ink_rect = PangoRectangle();
   PangoRectangle logical_rect = PangoRectangle();
 };
-} // namespace uxdevice
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::textual_render_storage_t);
 
 /**
- \class
- \brief
+ * @class textual_render_t
+ * @brief
  */
-namespace uxdevice {
-using textual_render_t = class textual_render_t
+class textual_render_t
     : public class_storage_emitter_t<
           textual_render_t, textual_render_storage_t,
           visitor_interfaces_t<abstract_emit_context_t<order_render>>> {
@@ -107,5 +102,8 @@ public:
 
   void emit(display_context_t *context);
 };
+
 } // namespace uxdevice
+
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::textual_render_storage_t);
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::textual_render_t);

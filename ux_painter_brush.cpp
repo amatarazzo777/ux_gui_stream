@@ -17,24 +17,33 @@
  */
 
 /**
-\author Anthony Matarazzo
-\file uxpaint.hpp
-\date 5/12/20
-\version 1.0
- \details CLass provides the painting object interface which invokes the
- appropriate cairo API. The notable virtual method is the emit function
- which applies the cairo text_color_t setting.
-
-*/
-#include "ux_device.hpp"
+ * @author Anthony Matarazzo
+ * @file ux_painter_brush.cpp
+ * @date 5/12/20
+ * @version 1.0
+ * @details Class provides the painting object interface which invokes the
+ * appropriate cairo API. The notable virtual method is the emit function which
+ * applies the cairo text_color_t setting.
+ */
+#include <ux_device.h>
 
 /**
-\brief color stops interface
-*/
+ * @internal
+ * @fn color_stop_t
+ * @param u_int32_t _c
+ * @brief
+ */
 uxdevice::color_stop_t::color_stop_t(u_int32_t _c) : color_stop_t(-1, _c) {
   bAutoOffset = true;
 }
 
+/**
+ * @internal
+ * @fn color_stop_t
+ * @param double _o
+ * @param u_int32_t _c
+ * @brief
+ */
 uxdevice::color_stop_t::color_stop_t(double _o, u_int32_t _c) {
   bRGBA = false;
   bAutoOffset = false;
@@ -45,27 +54,76 @@ uxdevice::color_stop_t::color_stop_t(double _o, u_int32_t _c) {
   a = 1.0;
 }
 
+/**
+ * @internal
+ * @fn color_stop_t
+ * @param double _r
+ * @param double _g
+ * @param double _b
+ * @brief
+ */
 uxdevice::color_stop_t::color_stop_t(double _r, double _g, double _b)
     : bAutoOffset(true), bRGBA(false), offset(-1), r(_r), g(_g), b(_b), a(1) {}
 
+/**
+ * @internal
+ * @fn color_stop_t
+ * @param double _offset
+ * @param double _g
+ * @param double _b
+ * @param double _b
+ * @brief
+ */
 uxdevice::color_stop_t::color_stop_t(double _offset, double _r, double _g,
                                      double _b)
     : bAutoOffset(false), bRGBA(false), offset(_offset), r(_r), g(_g), b(_b),
       a(1) {}
 
+/**
+ * @internal
+ * @fn color_stop_t
+ * @param double _offset
+ * @param double _g
+ * @param double _b
+ * @param double _b
+ * @param double _a
+ * @brief
+ */
 uxdevice::color_stop_t::color_stop_t(double _offset, double _r, double _g,
                                      double _b, double _a)
     : bAutoOffset(false), bRGBA(true), offset(_offset), r(_r), g(_g), b(_b),
       a(_a) {}
 
+/**
+ * @internal
+ * @fn color_stop_t
+ * @param const std::string &_s
+ * @brief
+ */
 uxdevice::color_stop_t::color_stop_t(const std::string &_s)
     : color_stop_t(-1, _s) {
   bAutoOffset = true;
 }
+
+/**
+ * @internal
+ * @fn color_stop_t
+ * @param const std::string &_s
+ * @param double _a
+ * @brief
+ */
 uxdevice::color_stop_t::color_stop_t(const std::string &_s, double _a)
     : color_stop_t(-1, _s, _a) {
   bAutoOffset = true;
 }
+
+/**
+ * @internal
+ * @fn color_stop_t
+ * @param double _o
+ * @param const std::string &_s
+ * @brief
+ */
 uxdevice::color_stop_t::color_stop_t(double _o, const std::string &_s) {
   bAutoOffset = false;
   bRGBA = false;
@@ -73,6 +131,14 @@ uxdevice::color_stop_t::color_stop_t(double _o, const std::string &_s) {
   parse_color(_s);
 }
 
+/**
+ * @internal
+ * @fn color_stop_t
+ * @param double _o
+ * @param const std::string &_s
+ * double _a
+ * @brief
+ */
 uxdevice::color_stop_t::color_stop_t(double _o, const std::string &_s,
                                      double _a) {
   bAutoOffset = false;
@@ -82,6 +148,13 @@ uxdevice::color_stop_t::color_stop_t(double _o, const std::string &_s,
   parse_color(_s);
 }
 
+/**
+ * @internal
+ * @fn color_stop_t
+ * @param const std::string &_s
+ * double _a
+ * @brief
+ */
 void uxdevice::color_stop_t::parse_color(const std::string &_s) {
   PangoColor pango_color;
   if (pango_color_parse(&pango_color, _s.data())) {
@@ -92,13 +165,13 @@ void uxdevice::color_stop_t::parse_color(const std::string &_s) {
 }
 
 /**
-\fn create
-\brief The routine handles the creation of the pattern or surface.
-Patterns can be an image_block_t file, a description of a linear, actual
-parameters of linear, a description of a radial, the actual radial parameters
-stored. SVG inline or a base64 data set.
-
-*/
+ * @internal
+ * @fn create
+ * @brief The routine handles the creation of the pattern or surface. Patterns
+ * can be an image_block_t file, a description of a linear, actual parameters of
+ * linear, a description of a radial, the actual radial parameters stored. SVG
+ * inline or a base64 data set.
+ */
 bool uxdevice::painter_brush_t::create(void) {
 
   // already created,
@@ -144,13 +217,12 @@ bool uxdevice::painter_brush_t::create(void) {
   if (data_storage->is_processed)
     return data_storage->is_processed;
 
-  // still more processing to do, -- create gradients
-  // the parsing above for gradients populates this data.
-  // so this logic is used in duel form. When gradients may be
-  // named as a string, or provided in complete API form.
-  // the logic below fills in the offset values automatically distributing
-  // equally across the noted offset. offsets are provided from 0 - 1
-  // and name the point within the line.
+  /** @brief still more processing to do, -- create gradients the parsing above
+   * for gradients populates this data. so this logic is used in duel form. When
+   * gradients may be named as a string, or provided in complete API form. the
+   * logic below fills in the offset values automatically distributing equally
+   * across the noted offset. offsets are provided from 0 - 1 and name the point
+   * within the line.*/
 
   color_stops_t *ptr_cs = {};
   cairo_pattern_t *ptr_cp = {};
@@ -248,13 +320,12 @@ bool uxdevice::painter_brush_t::create(void) {
 }
 
 /**
-\internal
-\fn emit
-\param cairo_t *cr
-\brief The paint is loaded if need be. the paint is
-set for the passed surface.
-
-*/
+ * @internal
+ * @fn emit
+ * @param cairo_t *cr
+ * @brief The paint is loaded if need be. the paint is set for the passed
+ * surface.
+ */
 void uxdevice::painter_brush_t::emit(cairo_t *cr) {
   if (!data_storage->is_processed)
     create();
@@ -264,14 +335,13 @@ void uxdevice::painter_brush_t::emit(cairo_t *cr) {
 }
 
 /**
-\internal
-\fn emit
-\param cairo_t *cr
-\param coordinate_t *a
-\brief The paint is loaded if need be. the paint is
-set for the passed surface.
-
-*/
+ * @internal
+ * @fn emit
+ * @param cairo_t *cr
+ * @param coordinate_t *a
+ * @brief The paint is loaded if need be. the paint is set for the passed
+ * surface.
+ */
 void uxdevice::painter_brush_t::emit(cairo_t *cr, coordinate_t *a) {
   if (!data_storage->is_processed) {
     create();

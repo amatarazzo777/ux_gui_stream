@@ -15,26 +15,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
-/**
-\author Anthony Matarazzo
-\file uxdisplayunits.hpp
-\date 9/7/20
-\version 1.0
-\brief
-*/
-/**
-\author Anthony Matarazzo
-\file ux_event.hpp
-\date 5/12/20
-\version 1.0
- \details  paint class
-
-*/
 #pragma once
 
+/**
+@author Anthony Matarazzo
+@file ux_matrix.hpp
+@date 9/7/20
+@version 1.0
+@brief
+*/
+
 namespace uxdevice {
-using matrix_t = class matrix_t : virtual public hash_members_t {
+
+/**
+ * @class
+ * @brief
+ */
+class matrix_t : virtual public hash_members_t {
 public:
   matrix_t() { cairo_matrix_init_identity(&_matrix); }
   virtual ~matrix_t() {}

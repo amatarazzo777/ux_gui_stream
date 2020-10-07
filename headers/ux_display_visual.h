@@ -17,39 +17,22 @@
  */
 
 /**
-\author Anthony Matarazzo
-\file uxdisplayunits.hpp
-\date 9/7/20
-\version 1.0
-\brief
-*/
-/**
-\author Anthony Matarazzo
-\file uxdisplaycontext.hpp
-\date 5/12/20
-\version 1.0
- \details CLass holds the display window context, gui drawing, cairo
- context, and provides an interface for threads running to
- invalidate part of the surface, resize the surface. The
- unit_memory_t class is within the public members and holds
- the state of the last used data parameters.
-
-*/
+ * @author Anthony Matarazzo
+ * @file ux_display_visual.hpp
+ * @date 9/7/20
+ * @version 1.0
+ * @details
+ */
 #pragma once
 
-/**
-\internal
-\class display_visual_t
-\brief base class for objects that produce image drawing commands
-The is_output is overridden to return true. As well the object uses
-the intersection to determine if a particular derrived drawing object
-is on screen.
-
-\details
-
-
- */
 namespace uxdevice {
+
+/**
+@internal
+@class context_cairo_region_t
+@brief
+@details
+ */
 class context_cairo_region_t {
 public:
   context_cairo_region_t() = delete;
@@ -87,8 +70,25 @@ public:
   bool bOSsurface = false;
 };
 
+/**
+ * @internal
+ * @typedef draw_logic_t
+ * @brief
+ */
 typedef std::function<void(void)> draw_logic_t;
 
+/**
+@internal
+@class display_visual_t
+@brief base class for objects that produce image drawing commands
+The is_output is overridden to return true. As well the object uses
+the intersection to determine if a particular derrived drawing object
+is on screen.
+
+@details
+
+
+ */
 class display_visual_t : virtual public hash_members_t {
 public:
   /// @brief default constructor

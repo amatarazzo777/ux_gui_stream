@@ -15,33 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
-/**
-\author Anthony Matarazzo
-\file ux_event.hpp
-\date 9/7/20
-\version 1.0
- \details  event class
-
-*/
 #pragma once
 
+/**
+ * @author Anthony Matarazzo
+ * @file ux_event.hpp
+ * @date 9/7/20
+ * @version 1.0
+ *  @details  event class
+ */
+
 namespace uxdevice {
-/**
-\enum eventType
-\brief the eventType enumeration contains a sequenced value for all of the
-events that can be dispatched by the system.
-*/
 
 /**
-\class event
-
-\brief the event class provides the communication between the event system and
-the caller. There is one event class for all of the distinct events. Simply
-different constructors are selected based upon the necessity of information
-given within the parameters.
-*/
-using event_t = class event_t {
+ * @class event
+ * @brief the event class provides the communication between the event system
+ * and the caller. There is one event class for all of the distinct events.
+ * Simply different constructors are selected based upon the necessity of
+ * information given within the parameters.
+ */
+class event_t {
 public:
   event_t(const std::type_index &et) : type(et) {}
   event_t(const std::type_index &et, const char &k) : type(et), key(k) {}
@@ -81,8 +74,10 @@ public:
   short distance = 0;
 };
 
-/// \typedef event_handler_t is used to note and declare a lambda function for
-/// the specified event.
+/**
+ * @typedef event_handler_t is used to note and declare a lambda function for
+ * the specified event.
+ */
 typedef std::function<void(const event_t &et)> event_handler_t;
 
 } // namespace uxdevice

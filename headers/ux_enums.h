@@ -16,23 +16,22 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
-\author Anthony Matarazzo
-\file uxdisplayunits.hpp
-\date 9/7/20
-\version 1.0
-\brief
-*/
-/**
-\author Anthony Matarazzo
-\file ux_enums.hpp
-\date 5/12/20
-\version 1.0
- \details  options for parameters
-
-*/
 #pragma once
+
+/**
+ * @author Anthony Matarazzo
+ * @file ux_enums.hpp
+ * @date 5/12/20
+ * @version 1.0
+ * @details  options for parameters
+ */
+
 namespace uxdevice {
+
+/**
+ * @enum antialias_options_t
+ * @grief
+ */
 enum class antialias_options_t {
   def = CAIRO_ANTIALIAS_DEFAULT,
 
@@ -47,6 +46,10 @@ enum class antialias_options_t {
   best = CAIRO_ANTIALIAS_BEST
 };
 
+/**
+ * @enum filter_options_t
+ * @grief
+ */
 enum class filter_options_t {
   fast = CAIRO_FILTER_FAST,
   good = CAIRO_FILTER_GOOD,
@@ -56,6 +59,10 @@ enum class filter_options_t {
   gaussian = CAIRO_FILTER_GAUSSIAN
 };
 
+/**
+ * @enum extend_options_t
+ * @grief
+ */
 enum class extend_options_t {
   off = CAIRO_EXTEND_NONE,
   repeat = CAIRO_EXTEND_REPEAT,
@@ -63,18 +70,30 @@ enum class extend_options_t {
   pad = CAIRO_EXTEND_PAD
 };
 
+/**
+ * @enum line_cap_options_t
+ * @grief
+ */
 enum class line_cap_options_t {
   butt = CAIRO_LINE_CAP_BUTT,
   round = CAIRO_LINE_CAP_ROUND,
   square = CAIRO_LINE_CAP_SQUARE
 };
 
+/**
+ * @enum line_join_options_t
+ * @grief
+ */
 enum class line_join_options_t {
   miter = CAIRO_LINE_JOIN_MITER,
   round = CAIRO_LINE_JOIN_ROUND,
   bevel = CAIRO_LINE_JOIN_BEVEL
 };
 
+/**
+ * @enum graphic_operator_options_t
+ * @grief
+ */
 enum class graphic_operator_options_t {
   op_clear = CAIRO_OPERATOR_CLEAR,
   op_source = CAIRO_OPERATOR_SOURCE,
@@ -107,12 +126,21 @@ enum class graphic_operator_options_t {
   op_hsl_luminosity = CAIRO_OPERATOR_HSL_LUMINOSITY
 };
 
+/**
+ * @enum text_alignment_options_t
+ * @grief
+ */
 enum class text_alignment_options_t {
   left = PangoAlignment::PANGO_ALIGN_LEFT,
   center = PangoAlignment::PANGO_ALIGN_CENTER,
   right = PangoAlignment::PANGO_ALIGN_RIGHT,
   justified = 4
 };
+
+/**
+ * @enum text_ellipsize_options_t
+ * @grief
+ */
 enum class text_ellipsize_options_t {
   off = PANGO_ELLIPSIZE_NONE,
   start = PANGO_ELLIPSIZE_START,
@@ -120,6 +148,10 @@ enum class text_ellipsize_options_t {
   end = PANGO_ELLIPSIZE_END
 };
 
+/**
+ * @enum content_options_t
+ * @grief
+ */
 enum class content_options_t {
   color = CAIRO_CONTENT_COLOR,
   alpha = CAIRO_CONTENT_ALPHA,

@@ -17,58 +17,47 @@
  */
 
 /**
-\author Anthony Matarazzo
-\file ux_image_block_unit.hpp
-\date 9/25/20
-\version 1.0
+ * @author Anthony Matarazzo
+ * @file ux_image_block_unit.cpp
+ * @date 9/25/20
+ * @version 1.0
+ * @brief
+ * @details
+ */
 
-\brief
-\details
-
-
-*/
-
-#include "ux_device.hpp"
+#include <ux_device.h>
 
 /**
-\internal
-\fn pipeline_acquire
-\param cairo_t *cr
-\param coordinate_t *a
-\brief create the image rendering pipeline
-
-    \details The cached rendering function has not been established,
-    create the image rendering pipeline consisting of individualized lambda
-    functions. This functionality can provide image processing capabilities
-    to produce visual effects. Using the emplace back to invoke operations
-    on the image->block_ptr;
-
+ * @internal
+ * @fn pipeline_acquire
+ * @param cairo_t *cr
+ * @param coordinate_t *a
+ * @brief create the image rendering pipeline
+ * @details The cached rendering function has not been established, create the
+ * image rendering pipeline consisting of individualized lambda functions. This
+ * functionality can provide image processing capabilities to produce visual
+ * effects. Using the emplace back to invoke operations on the image->block_ptr;
  */
 void uxdevice::image_block_storage_t::pipeline_acquire(cairo_t *cr,
                                                        coordinate_t *a) {
-  // compute pipeline that includes rendering commands. The rendering commands
-  // are sequenced and appropriate fill, preserve order is maintained.
+
+  /** compute pipeline that includes rendering commands. The rendering commands
+   * are sequenced and appropriate fill, preserve order is maintained.*/
   pipeline_push_visit<fn_emit_cr_t, fn_emit_cr_a_t>();
 
-  /// @brief additional processing can also be inserted here. or
-  /// may be inserted as a new unit_memory emitter accepting a visitor type.
+  /** @brief additional processing can also be inserted here. or may be inserted
+   * as a new unit_memory emitter accepting a visitor type.*/
 
   // add result to buffer
   pipeline_push<order_render>(fn_emit_cr_a_t{
       [&](cairo_t *cr, coordinate_t *a) { image_block.emit(cr, a); }});
 }
+
 /**
-\internal
-\fn pipeline
-
-\brief create the image rendering pipeline
-
-    \details The cached rendering function has not been established,
-    create the image rendering pipeline consisting of individualized lambda
-    functions. This functionality can provide image processing capabilities
-    to produce visual effects. Using the emplace back to invoke operations
-    on the image->block_ptr;
-
+ * @internal
+ * @fn image_block_storage_t::pipeline_has_required_linkages
+ * @brief determines if the pipeline has the appropriate linkages or parameters
+ * if you will. A validation function.
  */
 bool uxdevice::image_block_storage_t::pipeline_has_required_linkages() {
   bool has_requirements = true;
@@ -85,18 +74,19 @@ bool uxdevice::image_block_storage_t::pipeline_has_required_linkages() {
 }
 
 /**
-\internal
-\class image_block_t
-\brief
-*/
+ * @internal
+ * @fn image_block_t emit
+ * @param display_context_t *context
+ * @brief
+ */
 void uxdevice::image_block_t::emit(display_context_t *context) {
   using namespace std::placeholders;
 
   if (is_processed)
     return;
 
-  // this copies the shared pointers from the context
-  // to this one, but only named visitor - visitor_image_block_render_t
+  /** this copies the shared pointers from the context to this one, but only
+   * named visitor - visitor_image_block_render_t*/
   pipeline_memory_linkages(context);
 
   if (!is_valid())
@@ -105,9 +95,8 @@ void uxdevice::image_block_t::emit(display_context_t *context) {
   // set the ink area.
   coordinate_t &a = *pipeline_memory_access<coordinate_t>();
 
-  // this function is geared for a thread of an image loading.
-  // however, it is not implemented as a thread currently, just named for
-  // future.
+  /** this function is geared for a thread of an image loading. however, it is
+   * not implemented as a thread currently, just named for future.*/
   auto fnthread = [&]() {
     image_block = draw_buffer_t(description, a.w, a.h);
 

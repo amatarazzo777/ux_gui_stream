@@ -17,22 +17,22 @@
  */
 
 /**
-\author Anthony Matarazzo
-\file ux_display_context.cpp
-\date 9/7/20
-\version 1.0
-\brief
-*/
-#include "ux_device.hpp"
+ * @author Anthony Matarazzo
+ * @file ux_display_context.cpp
+ * @date 9/7/20
+ * @version 1.0
+ * @brief
+ */
+#include <ux_device.h>
 
 /**
-\internal
-\brief The routine checks the system for render work which primarily
-arrives to the thread via the regions list. However, when no official work
-exists, the condition variable cvRenderWork is placed in a wait state. The
-condition may be awoke by calling the routine state_notify_complete().
-\return bool - true - work exists, false none.
-*/
+ * @internal
+ * @brief The routine checks the system for render work which primarily arrives
+ * to the thread via the regions list. However, when no official work exists,
+ * the condition variable cvRenderWork is placed in a wait state. The condition
+ * may be awoke by calling the routine state_notify_complete().
+ * @return bool - true - work exists, false none.
+ */
 bool uxdevice::display_context_t::surface_prime() {
   bool bRet = false;
 
@@ -63,10 +63,10 @@ bool uxdevice::display_context_t::surface_prime() {
   return bRet;
 }
 /**
-\internal
-\brief The routine provides the synchronization of the xcb cairo surface
-and the video system of xcb.
-*/
+ * @internal
+ * @brief The routine provides the synchronization of the xcb cairo surface and
+ * the video system of xcb.
+ */
 void uxdevice::display_context_t::flush() {
 
   XCB_SPIN;
@@ -80,9 +80,9 @@ void uxdevice::display_context_t::flush() {
     xcb_flush(connection);
 }
 /**
-\internal
-\brief The routine
-*/
+ * @internal
+ * @brief The routine
+ */
 void uxdevice::display_context_t::device_offset(double x, double y) {
   XCB_SPIN;
   cairo_surface_set_device_offset(xcbSurface, x, y);
@@ -90,9 +90,9 @@ void uxdevice::display_context_t::device_offset(double x, double y) {
   state(0, 0, window_width, window_height);
 }
 /**
-\internal
-\brief The routine
-*/
+ * @internal
+ * @brief The routine
+ */
 void uxdevice::display_context_t::device_scale(double x, double y) {
   XCB_SPIN;
   cairo_surface_set_device_scale(xcbSurface, x, y);
@@ -101,13 +101,12 @@ void uxdevice::display_context_t::device_scale(double x, double y) {
 }
 
 /**
-\internal
-\brief The routine is called by a client to resize the window surface.
-In addition, other work may be applied such as paint, hwoever those go
-into a separate list as the operating system provides these message
-independently, that is Configure window event and a separate paint
-rectangle.
-*/
+ * @internal
+ * @brief The routine is called by a client to resize the window surface. In
+ * addition, other work may be applied such as paint, however those go into a
+ * separate list as the operating system provides these message independently,
+ * that is Configure window event and a separate paint rectangle.
+ */
 void uxdevice::display_context_t::resize_surface(const int w, const int h) {
   SURFACE_REQUESTS_SPIN;
   if (w != window_width || h != window_height)
@@ -116,11 +115,10 @@ void uxdevice::display_context_t::resize_surface(const int w, const int h) {
 }
 
 /**
-\internal
-\brief The routine applies resize requests of a window.
-The underlying cairo surface is sized with the very last
-one.
-*/
+ * @internal
+ * @brief The routine applies resize requests of a window. The underlying cairo
+ * surface is sized with the very last one.
+ */
 void uxdevice::display_context_t::apply_surface_requests(void) {
   SURFACE_REQUESTS_SPIN;
   // take care of surface requests
@@ -141,19 +139,18 @@ void uxdevice::display_context_t::apply_surface_requests(void) {
 }
 
 /**
-\internal
-\brief The routine paints the surface requests. The background brush
- is emitted first then plot routine is called.
-*/
+ * @internal
+ * @brief The routine paints the surface requests. The background brush is
+ * emitted first then plot routine is called.
+ */
 void uxdevice::display_context_t::render(void) {
   clearing_frame = false;
 
-  // rectangle of area needs painting background first.
-  // these are subareas perhaps multiples exist because of resize
-  // coordinate_t. The information is generated from the
-  // paint dispatch event. When the window is opened
-  // render work will contain entire window
-
+  /**
+   * rectangle of area needs painting background first. these are sub areas
+   * perhaps multiples exist because of resize coordinate_t. The information is
+   * generated from the paint dispatch event. When the window is opened render
+   * work will contain entire window */
   apply_surface_requests();
 
   // partitionVisibility();
@@ -169,10 +166,10 @@ void uxdevice::display_context_t::render(void) {
     context_cairo_region_t r = _regions.front();
     _regions.pop_front();
     REGIONS_CLEAR;
-    // os surface requests are ideally full screen block coordinate_t
-    // when multiples exist, such as clear, set surface as well as
-    // objects that fit within the larger bounds,
-    // simply continue as there is no redraw needed
+    /** os surface requests are ideally full screen block coordinate_t when
+     * multiples exist, such as clear, set surface as well as objects that fit
+     * within the larger bounds, simply continue as there is no redraw needed
+     */
     if (current) {
       cairo_region_overlap_t ovrlp =
           cairo_region_contains_rectangle(current, &r.rect);
@@ -183,9 +180,8 @@ void uxdevice::display_context_t::render(void) {
         current = cairo_region_reference(r._ptr);
     }
 
-    // the xcb spin locks the primary cairo context
-    // while drawing operations occur. these blocks
-    // are distinct work items
+    /** the xcb spin locks the primary cairo context while drawing operations
+     * occur. these blocks are distinct work items */
     XCB_SPIN;
     cairo_push_group(cr);
     BRUSH_SPIN;
@@ -224,13 +220,12 @@ void uxdevice::display_context_t::render(void) {
 }
 
 /**
-\internal
-\param std::shared_ptr<display_visual_t> _obj
-\brief The routine adds a drawing output object to the
-appropriate list, on or offscreen. If the item is on screen,
-a region area paint is requested for the object's area.
-
-*/
+ * @internal
+ * @param std::shared_ptr<display_visual_t> _obj
+ * @brief The routine adds a drawing output object to the appropriate list, on
+ * or offscreen. If the item is on screen, a region area paint is requested for
+ * the object's area.
+ */
 void uxdevice::display_context_t::add_visual(
     std::shared_ptr<display_visual_t> _obj) {
   viewport_rectangle = {(double)offsetx, (double)offsety,
@@ -239,9 +234,8 @@ void uxdevice::display_context_t::add_visual(
 
   _obj->intersect(viewport_rectangle);
 
-  // initialize the display_visual_t object to utilize
-  // the drawing pipeline. Both base (fn, clipping) and
-  // cached(fn,clipping) are initialized;
+  /** initialize the display_visual_t object to utilize the drawing pipeline.
+   * Both base (fn, clipping) and cached(fn,clipping) are initialized;*/
   auto ptr_pipeline = std::dynamic_pointer_cast<pipeline_acquisition_t>(_obj);
 
   _obj->fn_base_surface = [&]() {
@@ -274,9 +268,9 @@ void uxdevice::display_context_t::add_visual(
   }
 }
 /**
-\internal
-\brief The routine scans the offscreen list to see if any are now visible.
-*/
+ * @internal
+ * @brief The routine scans the offscreen list to see if any are now visible.
+ */
 void uxdevice::display_context_t::partition_visibility(void) {
   // determine if any off screen elements are visible
   VIEWPORT_OFF_SPIN;
@@ -331,9 +325,9 @@ void uxdevice::display_context_t::partition_visibility(void) {
   VIEWPORT_OFF_CLEAR;
 }
 /**
-\internal
-\brief The routine clears the display context.
-*/
+ * @internal
+ * @brief The routine clears the display context.
+ */
 void uxdevice::display_context_t::clear(void) {
   clearing_frame = true;
 
@@ -357,9 +351,9 @@ void uxdevice::display_context_t::clear(void) {
   state(0, 0, window_width, window_height);
 }
 /**
-\internal
-\brief The routine sets the background surface brush.
-*/
+ * @internal
+ * @brief The routine sets the background surface brush.
+ */
 void uxdevice::display_context_t::surface_brush(painter_brush_t &b) {
   BRUSH_SPIN;
   brush = b;
@@ -367,12 +361,11 @@ void uxdevice::display_context_t::surface_brush(painter_brush_t &b) {
   state(0, 0, window_width, window_height);
 }
 /**
-\internal
-\brief The routine accepts a drawing output object and adds the
-associated render work with the object's coordinate_t.
-note stateNotifyComplete must be called after this to inform the renderer
-there is work.
-*/
+ * @internal
+ * @brief The routine accepts a drawing output object and adds the associated
+ * render work with the object's coordinate_t. note stateNotifyComplete must be
+ * called after this to inform the renderer there is work.
+ */
 void uxdevice::display_context_t::state(std::shared_ptr<display_visual_t> obj) {
   REGIONS_SPIN;
   std::size_t onum = reinterpret_cast<std::size_t>(obj.get());
@@ -383,22 +376,22 @@ void uxdevice::display_context_t::state(std::shared_ptr<display_visual_t> obj) {
   REGIONS_CLEAR;
 }
 /**
-\internal
-\brief The routine adds a generalized region area paint for the rendered to
-find. note stateNotifyComplete must be called after this to inform the renderer
-there is work.
-*/
+ * @internal
+ * @brief The routine adds a generalized region area paint for the rendered to
+ * find. note stateNotifyComplete must be called after this to inform the
+ * renderer there is work.
+ */
 void uxdevice::display_context_t::state(int x, int y, int w, int h) {
   REGIONS_SPIN;
   _regions.emplace_back(context_cairo_region_t{false, x, y, w, h});
   REGIONS_CLEAR;
 }
 /**
-\internal
-\brief The routine adds a surface oriented painting request to the render queue.
-the items are inserted first before any other so that painting
-of a newly resized window area occurs first.
-*/
+ * @internal
+ * @brief The routine adds a surface oriented painting request to the render
+ * queue. the items are inserted first before any other so that painting of a
+ * newly resized window area occurs first.
+ */
 void uxdevice::display_context_t::state_surface(int x, int y, int w, int h) {
   REGIONS_SPIN;
   auto it = std::find_if(_regions.begin(), _regions.end(),
@@ -411,36 +404,27 @@ void uxdevice::display_context_t::state_surface(int x, int y, int w, int h) {
   REGIONS_CLEAR;
 }
 /**
-\internal
-\brief The routine notifies the condition variable that work
-has been requested and should immediately being to render.
-Having this as a separate function provides the ability
-to add work without rendering occurring. However, message
-queue calls this when a resize occurs.
-*/
+ * @internal
+ * @brief The routine notifies the condition variable that work has been
+ * requested and should immediately being to render. Having this as a separate
+ * function provides the ability to add work without rendering occurring.
+ * However, message queue calls this when a resize occurs.
+ */
 void uxdevice::display_context_t::state_notify_complete(void) {
   cvRenderWork.notify_one();
 }
 
 /**
-\internal
-\brief The routine returns whether work is within the system.
-*/
+ * @internal
+ * @brief The routine returns whether work is within the system.
+ */
 bool uxdevice::display_context_t::state(void) {
-  // determine if any on screen elements, or their attribute shared pointers
-  // have changed. if so, create a surface state repaint
-  for (auto n : viewport_on) {
-    //    if (n->is_different_hash())
-    //      state(n);
-  }
 
   REGIONS_SPIN;
   bool ret = !_regions.empty();
   REGIONS_CLEAR;
-
-  // surface requests should be performed,
-  // the render function sets the surface size
-  // and exits if no region work.
+  /** surface requests should be performed, the render function sets the surface
+   * size and exits if no region work.*/
   if (!ret) {
     SURFACE_REQUESTS_SPIN;
     ret = !_surfaceRequests.empty();
@@ -451,16 +435,15 @@ bool uxdevice::display_context_t::state(void) {
 }
 
 /**
- \fn plot
- \param context_cairo_region_t &plotArea
- \details Routine iterates each of objects that draw and tests if
- the rectangle is within the region.
-
-*/
+ * @internal
+ * @fn plot
+ * @param context_cairo_region_t &plotArea
+ * @details Routine iterates each of objects that draw and tests if the
+ * rectangle is within the region.
+ */
 void uxdevice::display_context_t::plot(context_cairo_region_t &plotArea) {
-  // if an object is named as what should be updated.
-  // setting the flag informs that the contents
-  // has been evaluated and ma be removed
+  /** if an object is named as what should be updated. setting the flag informs
+   * that the contents has been evaluated and ma be removed */
   VIEWPORT_ON_SPIN;
   if (viewport_on.empty()) {
     VIEWPORT_ON_CLEAR;

@@ -17,24 +17,21 @@
  */
 #pragma once
 /**
-\author Anthony Matarazzo
-\file uxvariant_visitor.hpp
-\date 9/7/20
-\version 1.0
-\brief
-
-*/
+ * @author Anthony Matarazzo
+ * @file uxvariant_visitor.hpp
+ * @date 9/7/20
+ * @version 1.0
+ * @brief
+ */
 
 /**
-\internal
-\struct hash_members_t
-\tparam ... - variadic parameter expanding to each listed visitor lambda.
-\brief Creates structure for std::visit pattern.
-
-From:
-https://stackoverflow.com/questions/52088928/trying-to-return-the-value-from-stdvariant-using-stdvisit-and-a-lambda-expre
-
-*/
+ * @internal
+ * @struct hash_members_t
+ * @tparam ... - variadic parameter expanding to each listed visitor lambda.
+ * @brief Creates structure for std::visit pattern.
+ * From:
+ * https://stackoverflow.com/questions/52088928/trying-to-return-the-value-from-stdvariant-using-stdvisit-and-a-lambda-expre
+ */
 namespace uxdevice {
 template <class... Fs> struct overload_visitors_t : Fs... {
   using Fs::operator()...;

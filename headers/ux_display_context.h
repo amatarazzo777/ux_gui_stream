@@ -48,10 +48,14 @@ typedef std::list<std::shared_ptr<display_visual_t>> visual_list_t;
 typedef std::list<std::shared_ptr<display_visual_t>>::iterator
     visual_list_iter_t;
 
+/**
+ * @internal
+ * @class
+ * @brief
+ */
 class display_context_t : virtual public hash_members_t,
                           public pipeline_memory_t<visitor_base_t>,
                           virtual system_error_t {
-public:
 public:
   display_context_t(void) {}
 
@@ -81,7 +85,6 @@ public:
     visualType = other.visualType;
     syms = other.syms;
     xcbSurface = other.xcbSurface;
-    preclear = other.preclear;
 
     return *this;
   }
@@ -144,9 +147,33 @@ public:
 #define BRUSH_CLEAR lockBrush.clear(std::memory_order_release)
   painter_brush_t brush = painter_brush_t("white");
 
-  cairo_t *cr = nullptr;
+  cairo_t *cr = {};
 
   cairo_rectangle_t viewport_rectangle = cairo_rectangle_t();
+
+  // if render request time for objects are less than x ms
+  int cache_threshold = 200;
+
+  std::atomic<bool> clearing_frame = false;
+  Display *xdisplay = {};
+  xcb_connection_t *connection = {};
+  xcb_screen_t *screen = {};
+  xcb_drawable_t window = {};
+  xcb_gcontext_t graphics = {};
+  xcb_visualtype_t *visualType = {};
+  xcb_key_symbols_t *syms = {};
+
+  cairo_surface_t *xcbSurface = {};
+  std::atomic_flag lockXCBSurface = ATOMIC_FLAG_INIT;
+#define XCB_SPIN while (lockXCBSurface.test_and_set(std::memory_order_acquire))
+#define XCB_CLEAR lockXCBSurface.clear(std::memory_order_release)
+  void lock(bool b) {
+    if (b) {
+      XCB_SPIN;
+    } else {
+      XCB_CLEAR;
+    }
+  }
 
 private:
   std::list<context_cairo_region_t> _regions = {};
@@ -170,38 +197,10 @@ private:
 #define SURFACE_REQUESTS_CLEAR                                                 \
   lockSurfaceRequests.clear(std::memory_order_release)
 
-  int offsetx = 0, offsety = 0;
+  int offsetx = {}, offsety = {};
   void apply_surface_requests(void);
   std::mutex mutexRenderWork = {};
   std::condition_variable cvRenderWork = {};
 
-public:
-  // if render request time for objects are less than x ms
-  int cache_threshold = 200;
-
-  std::atomic<bool> clearing_frame = false;
-  Display *xdisplay = nullptr;
-  xcb_connection_t *connection = nullptr;
-  xcb_screen_t *screen = nullptr;
-  xcb_drawable_t window = 0;
-  xcb_gcontext_t graphics = 0;
-
-  xcb_visualtype_t *visualType = nullptr;
-
-  // xcb -- keyboard
-  xcb_key_symbols_t *syms = nullptr;
-
-  cairo_surface_t *xcbSurface = nullptr;
-  std::atomic_flag lockXCBSurface = ATOMIC_FLAG_INIT;
-#define XCB_SPIN while (lockXCBSurface.test_and_set(std::memory_order_acquire))
-#define XCB_CLEAR lockXCBSurface.clear(std::memory_order_release)
-  void lock(bool b) {
-    if (b) {
-      XCB_SPIN;
-    } else {
-      XCB_CLEAR;
-    }
-  }
-  bool preclear = false;
 }; // namespace uxdevice
 } // namespace uxdevice

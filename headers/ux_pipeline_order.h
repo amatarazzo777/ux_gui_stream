@@ -18,18 +18,13 @@
 #pragma once
 
 /**
- \author Anthony Matarazzo
- \file ux_pipeline_order.hpp
- \date 9/7/20
- \version 1.0
- \brief The file sets the sort order for the priority queue. These
- values are set inside the ux_display_unit.hpp file within the
- template parameters. One of the order_NNN values is within the
- parameter. When objects within the linkages unit memory are
- queried for interface match of visitor and it is true,
- the push back to the priority queue receives these values.
- This makes the items appear in order.
-
+ * @author Anthony Matarazzo
+ * @file ux_pipeline_order.hpp
+ * @date 9/7/20
+ * @version 1.0
+ * @brief names the stages in the pipeline. Each of the abstract class template
+ * parameters when they are mentioned on the unit definition should name one of
+ * these within its parameter.
  */
 namespace uxdevice {
 const int order_init = 1;

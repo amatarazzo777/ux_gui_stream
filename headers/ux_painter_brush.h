@@ -15,25 +15,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
-/**
-\author Anthony Matarazzo
-\file uxpaint.hpp
-\date 9/7/20
-\version 1.0
-\brief
-*/
-
 #pragma once
 
-namespace uxdevice {
 /**
-\class painter_brush_t
+ * @author Anthony Matarazzo
+ * @file ux_painter_brush.hpp
+ * @date 9/7/20
+ * @version 1.0
+ * @brief
+ */
 
-\brief interface for the paint class.
+namespace uxdevice {
 
-*/
-
+/**
+ * @class painter_brush_t
+ * @brief interface for the paint class.
+ */
 class color_stop_t : virtual public hash_members_t {
 public:
   color_stop_t(u_int32_t _c);
@@ -66,9 +63,6 @@ public:
 };
 typedef std::vector<color_stop_t> color_stops_t;
 typedef std::vector<color_stop_t>::iterator color_stops_iterator_t;
-} // namespace uxdevice
-
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::color_stop_t);
 
 /**
  parse web formats
@@ -89,11 +83,18 @@ radial-gradient(ellipsize at center, #1e5799 0%,#2989d8 50%,#207cca
 51%,#2989d8 51%,#7db9e8 100%);
 
 */
-namespace uxdevice {
 class coordinate_t;
-
+/**
+ * @internal
+ * @class
+ * @brief
+ */
 class painter_brush_t : public matrix_t {
 public:
+  /**
+   * @enum
+   * @brief
+   */
   enum class paint_definition_class_t {
     none,
     descriptive,
@@ -103,6 +104,11 @@ public:
     image_block_pattern
   };
 
+  /**
+   * @internal
+   * @class
+   * @brief
+   */
   class paint_definition_base_t : virtual public hash_members_t {
   public:
     paint_definition_base_t(paint_definition_class_t _ct,
@@ -161,8 +167,18 @@ public:
     bool is_loaded = false;
   };
 
+  /**
+   * @internal
+   * @typedef
+   * @brief
+   */
   typedef std::shared_ptr<paint_definition_base_t> data_storage_t;
 
+  /**
+   * @internal
+   * @class
+   * @brief
+   */
   class descriptive_definition_t : public paint_definition_base_t {
   public:
     descriptive_definition_t() {}
@@ -188,6 +204,11 @@ public:
     }
   };
 
+  /**
+   * @internal
+   * @class
+   * @brief
+   */
   class color_definition_t : public paint_definition_base_t {
   public:
     color_definition_t() {}
@@ -244,6 +265,11 @@ public:
     double a = 1.0;
   };
 
+  /**
+   * @internal
+   * @class
+   * @brief
+   */
   class linear_gradient_definition_t : public paint_definition_base_t {
   public:
     linear_gradient_definition_t() {}
@@ -304,6 +330,11 @@ public:
     cairo_pattern_t *pattern = {};
   };
 
+  /**
+   * @internal
+   * @class
+   * @brief
+   */
   class radial_gradient_definition_t : public paint_definition_base_t {
   public:
     radial_gradient_definition_t() {}
@@ -368,6 +399,11 @@ public:
     cairo_pattern_t *pattern = {};
   };
 
+  /**
+   * @internal
+   * @class
+   * @brief
+   */
   class image_block_pattern_source_definition_t
       : public paint_definition_base_t {
   public:
@@ -438,10 +474,18 @@ public:
     extend_options_t extend = {};
   };
 
-  painter_brush_t() {}
   /**
-  \brief color given as a uint32 value
-  */
+   * @internal
+   * @fn
+   * @brief
+   */
+  painter_brush_t() {}
+
+  /**
+   * @internal
+   * @fn
+   * @brief color given as a uint32 value
+   */
   painter_brush_t(u_int32_t c) {
 
     u_int8_t r = static_cast<u_int8_t>(c >> 16) / 255.0;
@@ -452,35 +496,66 @@ public:
     data_storage =
         std::make_shared<color_definition_t>("u_int32_t RGB", r, g, b, a);
   }
-
+  /**
+   * @internal
+   * @fn
+   * @brief color given as r,g,b
+   */
   painter_brush_t(double r, double g, double b)
       : data_storage(
             std::make_shared<color_definition_t>("RGB", r, g, b, 1.0)) {}
 
+  /**
+   * @internal
+   * @fn
+   * @brief color given as r,g,b,a
+   */
   painter_brush_t(double r, double g, double b, double a)
       : data_storage(std::make_shared<color_definition_t>("RGBA", r, g, b, a)) {
   }
 
-  // color given as a description
+  /**
+   * @internal
+   * @fn
+   * @brief color given as a description
+   */
   painter_brush_t(const std::string_view n)
       : data_storage(
             std::make_shared<descriptive_definition_t>(std::string(n))) {}
 
-  // color given as a description
+  /**
+   * @internal
+   * @fn
+   * @brief color given as a description
+   */
   painter_brush_t(std::string &n)
       : data_storage(std::make_shared<descriptive_definition_t>(n)) {}
 
+  /**
+   * @internal
+   * @fn
+   * @brief color given as a description
+   */
   painter_brush_t(std::string &n, double width, double height)
       : data_storage(std::make_shared<image_block_pattern_source_definition_t>(
             n, width, height)) {}
 
+  /**
+   * @internal
+   * @fn
+   * @brief color given as a linear gradient
+   */
   painter_brush_t(double x0, double y0, double x1, double y1,
                   const color_stops_t &cs)
       : data_storage(std::make_shared<linear_gradient_definition_t>(
             "linear_gradient", x0, y0, x1, y1, cs, filter_options_t::fast,
             extend_options_t::off)) {}
 
-  // specify a radial gradient
+  /**
+   * @internal
+   * @fn
+   * @brief color given as a radial gradient
+   */
   painter_brush_t(double cx0, double cy0, double radius0, double cx1,
                   double cy1, double radius1, const color_stops_t &cs)
       : data_storage(std::make_shared<radial_gradient_definition_t>(
@@ -535,22 +610,17 @@ public:
 
 } // namespace uxdevice
 
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::color_stop_t);
 UX_REGISTER_STD_HASH_SPECIALIZATION(
     uxdevice::painter_brush_t::paint_definition_base_t);
-
 UX_REGISTER_STD_HASH_SPECIALIZATION(
     uxdevice::painter_brush_t::descriptive_definition_t);
-
 UX_REGISTER_STD_HASH_SPECIALIZATION(
     uxdevice::painter_brush_t::color_definition_t);
-
 UX_REGISTER_STD_HASH_SPECIALIZATION(
     uxdevice::painter_brush_t::linear_gradient_definition_t);
-
 UX_REGISTER_STD_HASH_SPECIALIZATION(
     uxdevice::painter_brush_t::radial_gradient_definition_t);
-
 UX_REGISTER_STD_HASH_SPECIALIZATION(
     uxdevice::painter_brush_t::image_block_pattern_source_definition_t);
-
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::painter_brush_t);

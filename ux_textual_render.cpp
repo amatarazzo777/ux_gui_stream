@@ -17,25 +17,21 @@
  */
 
 /**
-\author Anthony Matarazzo
-\file ux_textual_render.cpp
-\date Sep 24, 2020
-\version 1.0
-\brief
-*/
+ * @author Anthony Matarazzo
+ * @file ux_textual_render.cpp
+ * @date Sep 24, 2020
+ * @version 1.0
+ * @brief
+ */
 
-#include "ux_device.hpp"
+#include <ux_device.h>
 
 /**
-
-\fn textual_render_storage_t::hash_code(void)
-
-\brief hash code of the textual rendering. used to detect changes
-that might occur within all of the dependent rendering parameters,
-
-\details
-
-
+ * @internal
+ * @fn textual_render_storage_t::hash_code(void)
+ * @brief hash code of the textual rendering. used to detect changes that might
+ * occur within all of the dependent rendering parameters,
+ * @return std::size_t the hash value
  */
 std::size_t uxdevice::textual_render_storage_t::hash_code(void) const noexcept {
   std::size_t __value = {};
@@ -47,32 +43,27 @@ std::size_t uxdevice::textual_render_storage_t::hash_code(void) const noexcept {
 }
 
 /**
-\internal
-\fn pipeline
-
-\brief directly calls if exists or decides based upon rendering parameters set
-and then calls function. The static
-
+ * @internal
+ * @fn textual_render_storage_t::pipeline_acquire
+ * @param cairo_t *cr
+ * @param coordinate_t *a
+ * @brief
  */
 void uxdevice::textual_render_storage_t::pipeline_acquire(cairo_t *cr,
                                                           coordinate_t *a) {
-  /**
-    @details The cached rendering function has not been established,
-    create the text rendering pipeline consisting of individualized lambda
-    functions.
-  */
+  /**  @details The cached rendering function has not been established, create
+   * the text rendering pipeline consisting of individualized lambda functions.
+   */
 
   /** @brief
    *
    * these steps are common in the first part of the textual rendering  The
-   visitor of the pango, and cairo operate in a sorted fashion to execute
-   themselves within a rule based set of order. refinements within the stream
-   can occur as successive execution happens but this is not facilitated
-   by current code (pipeline_optimize is suffice). Initialization for example,
-   and build up of graphics composite layers.
-
+   * visitor of the pango, and cairo operate in a sorted fashion to execute
+   * themselves within a rule based set of order. refinements within the stream
+   * can occur as successive execution happens but this is not facilitated by
+   * current code (pipeline_optimize is suffice). Initialization for example,
+   * and build up of graphics composite layers.
    */
-
 
   pipeline_push<order_init>(fn_emit_cr_t{[&](auto cr) {
     if (!layout)
@@ -80,10 +71,9 @@ void uxdevice::textual_render_storage_t::pipeline_acquire(cairo_t *cr,
   }});
 
   pipeline_push<order_layout_option>(fn_emit_cr_t{[&](auto cr) {
-    // get the serial number of all the current attributes.
-    // if any of the emitter functions change the layout
-    // the serial number changes. the push visit below
-    // accomplishes this
+    /** @brief get the serial number of all the current attributes. if any of
+     * the emitter functions change the layout the serial number changes. the
+     * push visit below accomplishes this*/
     layout_serial = pango_layout_get_serial(layout);
   }});
 
@@ -118,20 +108,18 @@ void uxdevice::textual_render_storage_t::pipeline_acquire(cairo_t *cr,
     }
   }});
 
-  // compute pipeline that includes rendering commands. The rendering
-  // commands are sequenced and appropriate fill, preserve order is
-  // maintained.
+  /** compute pipeline that includes rendering commands. The rendering commands
+   * are sequenced and appropriate fill, preserve order is maintained.*/
   pipeline_push_visit<fn_emit_cr_a_t>();
 
   return;
 }
 
 /**
-\internal
-\fn pipeline_has_required_linkages
-
-\brief
-
+ * @internal
+ * @fn textual_render_storage_t::pipeline_has_required_linkages
+ * @brief
+ * @return bool
  */
 bool uxdevice::textual_render_storage_t::pipeline_has_required_linkages(void) {
   if (!((pipeline_memory_access<text_color_t>() ||
@@ -151,15 +139,10 @@ bool uxdevice::textual_render_storage_t::pipeline_has_required_linkages(void) {
 }
 
 /**
-\internal
-\fn emit
-\param display_context_t &context
-
-\brief creates linkages to the drawing functions and rendering parameters
-
-\details
-
-
+ * @internal
+ * @fn textual_render_t::emit
+ * @param display_context_t *context
+ * @brief creates linkages to the drawing functions and rendering parameters
  */
 void uxdevice::textual_render_t::emit(display_context_t *context) {
   using namespace std::placeholders;
@@ -174,9 +157,5 @@ void uxdevice::textual_render_t::emit(display_context_t *context) {
   // this adds a parameter for the specific object
   pipeline_memory_store<PangoLayout *>(layout);
 
-
   is_processed = true;
 }
-
-
-
