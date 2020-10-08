@@ -1,7 +1,7 @@
 /*
- * This file is part of the PLATFORM_OBJ distribution
- * {https://github.com/amatarazzo777/platform_obj). Copyright (c) 2020 Anthony
- * Matarazzo.
+ * This file is part of the ux_gui_stream distribution
+ * (https://github.com/amatarazzo777/ux_gui_stream).
+ * Copyright (c) 2020 Anthony Matarazzo.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -700,28 +700,19 @@ SOFTWARE.
 
 */
 void uxdevice::draw_buffer_t::blur_image(const unsigned int radius) {
-  cairo_surface_t *blurred = blur_image(radius);
+  cairo_surface_t *blurred = build_blur_image(radius);
   cairo_surface_destroy(rendered);
   rendered = blurred;
-  double width = {};
-  double height = {};
 }
 
 /**
  * @internal
- * @fn box_blur_horizontal
- * @param std::uint8_t *dst
- * @param const std::uint8_t *src
- * @param unsigned dstStride
- * @param unsigned srcStride
- * @param unsigned width
- * @param unsigned height
- * @param unsigned boxSize
- * @param unsigned boxOffset
- * @param unsigned channel
+ * @fn blur_image
+ * @param unsigned int radius
  * @brief
  */
-cairo_surface_t *uxdevice::draw_buffer_t::blur_image(unsigned int radius) {
+cairo_surface_t *
+uxdevice::draw_buffer_t::build_blur_image(unsigned int radius) {
   std::array<double, 2> stdDeviation = {static_cast<double>(radius),
                                         static_cast<double>(radius)};
   cairo_surface_t *ret = cairo_image_surface_blur(rendered, stdDeviation);
@@ -831,7 +822,8 @@ cairo_surface_t *uxdevice::draw_buffer_t::cairo_image_surface_blur(
 
   std::array<unsigned, 2> d;
   for (unsigned i = 0; i != 2; ++i) {
-    d[i] = unsigned(float(stdDeviation[i]) * 3 * std::sqrt(2 * PI) / 4 + 0.5f);
+    d[i] = unsigned(float(stdDeviation[i]) * 3 * std::sqrt(2 * (22 / 7)) / 4 +
+                    0.5f);
   }
 
   cairo_surface_t *ret = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);

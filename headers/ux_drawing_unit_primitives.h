@@ -1,7 +1,7 @@
 /*
- * This file is part of the PLATFORM_OBJ distribution
- * {https://github.com/amatarazzo777/platform_obj). Copyright (c) 2020 Anthony
- * Matarazzo.
+ * This file is part of the ux_gui_stream distribution
+ * (https://github.com/amatarazzo777/ux_gui_stream).
+ * Copyright (c) 2020 Anthony Matarazzo.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ namespace uxdevice {
 class function_object_t
     : public storage_emitter_t<
           function_object_t, cairo_function_t,
-          visitor_interfaces_t<abstract_emit_cr_t<order_render>>> {
+          accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -258,8 +258,9 @@ public:
 class antialias_t
     : public storage_emitter_t<
           antialias_t, antialias_options_t,
-          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>>,
-          visitor_image_block_t, visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+          visitor_targets_t<textual_render_normal_bits,
+                            textual_render_path_bits, image_block_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
   void emit(cairo_t *cr);
@@ -272,8 +273,8 @@ public:
 class line_width_t
     : public storage_emitter_t<
           line_width_t, double,
-          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>>,
-          visitor_image_block_t, visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+          visitor_targets_t<textual_render_path_bits, image_block_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -287,8 +288,8 @@ public:
 class line_cap_t
     : public storage_emitter_t<
           line_cap_t, line_cap_options_t,
-          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>>,
-          visitor_image_block_t, visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+          visitor_targets_t<textual_render_path_bits, image_block_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -302,8 +303,8 @@ public:
 class line_join_t
     : public storage_emitter_t<
           line_join_t, line_join_options_t,
-          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>>,
-          visitor_image_block_t, visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+          visitor_targets_t<textual_render_path_bits, image_block_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -317,8 +318,8 @@ public:
 class miter_limit_t
     : public storage_emitter_t<
           miter_limit_t, double,
-          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>>,
-          visitor_image_block_t, visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+          visitor_targets_t<textual_render_path_bits, image_block_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -332,8 +333,8 @@ public:
 class line_dashes_t
     : public class_storage_emitter_t<
           line_dashes_t, line_dash_storage_t,
-          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>>,
-          visitor_image_block_t, visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+          visitor_targets_t<textual_render_path_bits, image_block_bits>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -347,8 +348,8 @@ public:
 class tollerance_t
     : public storage_emitter_t<
           tollerance_t, double,
-          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>>,
-          visitor_image_block_t, visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+          visitor_targets_t<textual_render_path_bits, image_block_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -362,8 +363,9 @@ public:
 class graphic_operator_t
     : public storage_emitter_t<
           graphic_operator_t, graphic_operator_options_t,
-          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>>,
-          visitor_image_block_t, visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+          visitor_targets_t<textual_render_normal_bits,
+                            textual_render_path_bits, image_block_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -378,7 +380,7 @@ public:
 // functions
 class arc_t : public class_storage_emitter_t<
                   arc_t, arc_storage_t,
-                  visitor_interfaces_t<abstract_emit_cr_t<order_render>>> {
+                  accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -392,8 +394,8 @@ public:
 class negative_arc_t
     : public class_storage_emitter_t<
           negative_arc_t, negative_arc_storage_t,
-          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
-                               abstract_emit_cr_absolute_t<order_render>>> {
+          accepted_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                                abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -407,9 +409,9 @@ public:
 class curve_t
     : public class_storage_emitter_t<
           curve_t, curve_storage_t,
-          visitor_interfaces_t<abstract_emit_context_t<order_render>,
-                               abstract_emit_cr_relative_t<order_render>,
-                               abstract_emit_cr_absolute_t<order_render>>> {
+          accepted_interfaces_t<abstract_emit_context_t<order_render>,
+                                abstract_emit_cr_relative_t<order_render>,
+                                abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
   void emit(display_context_t *context) {
@@ -429,8 +431,8 @@ public:
 class line_t
     : public class_storage_emitter_t<
           line_t, line_storage_t,
-          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
-                               abstract_emit_cr_absolute_t<order_render>>> {
+          accepted_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                                abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
   void emit(display_context_t *context) {
@@ -450,8 +452,8 @@ public:
 class vline_t
     : public storage_emitter_t<
           vline_t, double,
-          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
-                               abstract_emit_cr_absolute_t<order_render>>> {
+          accepted_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                                abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using storage_emitter_t::storage_emitter_t;
   void emit(display_context_t *context) {
@@ -471,8 +473,8 @@ public:
 class hline_t
     : public storage_emitter_t<
           hline_t, double,
-          visitor_interfaces_t<abstract_emit_cr_relative_t<order_render>,
-                               abstract_emit_cr_absolute_t<order_render>>> {
+          accepted_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                                abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using storage_emitter_t::storage_emitter_t;
   void emit(display_context_t *context) {
@@ -492,7 +494,7 @@ public:
 class rectangle_t
     : public class_storage_emitter_t<
           rectangle_t, rectangle_storage_t,
-          visitor_interfaces_t<abstract_emit_cr_t<order_render>>> {
+          accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -506,7 +508,7 @@ public:
 class stroke_path_t
     : public class_storage_emitter_t<
           stroke_path_t, painter_brush_t,
-          visitor_interfaces_t<abstract_emit_cr_t<order_render>>> {
+          accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -520,7 +522,7 @@ public:
 class fill_path_t
     : public class_storage_emitter_t<
           fill_path_t, painter_brush_t,
-          visitor_interfaces_t<abstract_emit_cr_t<order_render>>> {
+          accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -534,7 +536,7 @@ public:
 class stroke_fill_path_t
     : public class_storage_emitter_t<
           stroke_fill_path_t, stroke_fill_path_storage_t,
-          visitor_interfaces_t<abstract_emit_cr_t<order_render>>> {
+          accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -545,10 +547,12 @@ public:
  @class
  @brief
  */
-using mask_t =
-    class mask_t : public class_storage_emitter_t<
-                       mask_t, painter_brush_t,
-                       visitor_interfaces_t<abstract_emit_cr_t<order_render>>> {
+using mask_t = class mask_t
+    : public class_storage_emitter_t<
+          mask_t, painter_brush_t,
+          accepted_interfaces_t<abstract_emit_cr_t<order_render>>,
+          visitor_targets_t<textual_render_normal_bits,
+                            textual_render_path_bits, image_block_bits>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -559,9 +563,12 @@ public:
  @class
  @brief
  */
-class paint_t : public storage_emitter_t<
-                    paint_t, double,
-                    visitor_interfaces_t<abstract_emit_cr_t<order_render>>> {
+class paint_t
+    : public storage_emitter_t<
+          paint_t, double,
+          accepted_interfaces_t<abstract_emit_cr_t<order_render>>,
+          visitor_targets_t<textual_render_normal_bits,
+                            textual_render_path_bits, image_block_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -575,7 +582,7 @@ public:
 class close_path_t
     : public marker_emitter_t<
           close_path_t,
-          visitor_interfaces_t<abstract_emit_cr_t<order_render>>> {
+          accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using marker_emitter_t::marker_emitter_t;
 

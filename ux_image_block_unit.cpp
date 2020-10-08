@@ -1,7 +1,7 @@
 /*
- * This file is part of the PLATFORM_OBJ distribution
- * {https://github.com/amatarazzo777/platform_obj). Copyright (c) 2020 Anthony
- * Matarazzo.
+ * This file is part of the ux_gui_stream distribution
+ * (https://github.com/amatarazzo777/ux_gui_stream).
+ * Copyright (c) 2020 Anthony Matarazzo.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -87,7 +87,7 @@ void uxdevice::image_block_t::emit(display_context_t *context) {
 
   /** this copies the shared pointers from the context to this one, but only
    * named visitor - visitor_image_block_render_t*/
-  pipeline_memory_linkages(context);
+  pipeline_memory_linkages(context, image_block_bits);
 
   if (!is_valid())
     return;

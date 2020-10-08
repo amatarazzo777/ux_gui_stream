@@ -1,7 +1,7 @@
 /*
- * This file is part of the PLATFORM_OBJ distribution
- * {https://github.com/amatarazzo777/platform_obj). Copyright (c) 2020 Anthony
- * Matarazzo.
+ * This file is part of the ux_gui_stream distribution
+ * (https://github.com/amatarazzo777/ux_gui_stream).
+ * Copyright (c) 2020 Anthony Matarazzo.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -236,7 +236,7 @@ void uxdevice::display_context_t::add_visual(
 
   /** initialize the display_visual_t object to utilize the drawing pipeline.
    * Both base (fn, clipping) and cached(fn,clipping) are initialized;*/
-  auto ptr_pipeline = std::dynamic_pointer_cast<pipeline_acquisition_t>(_obj);
+  auto ptr_pipeline = std::dynamic_pointer_cast<pipeline_memory_t>(_obj);
 
   _obj->fn_base_surface = [&]() {
     _obj->fn_draw = [&]() { ptr_pipeline->pipeline_execute(this); };

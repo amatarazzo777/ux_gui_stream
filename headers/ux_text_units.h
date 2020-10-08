@@ -1,8 +1,7 @@
-
 /*
- * This file is part of the PLATFORM_OBJ distribution
- * {https://github.com/amatarazzo777/platform_obj). Copyright (c) 2020 Anthony
- * Matarazzo.
+ * This file is part of the ux_gui_stream distribution
+ * (https://github.com/amatarazzo777/ux_gui_stream).
+ * Copyright (c) 2020 Anthony Matarazzo.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -94,8 +93,9 @@ public:
 class text_font_t
     : public class_storage_emitter_t<
           text_font_t, text_font_storage_t,
-          visitor_interfaces_t<abstract_emit_layout_t<order_render_option>>,
-          visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_layout_t<order_render_option>>,
+          visitor_targets_t<textual_render_normal_bits,
+                            textual_render_path_bits>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
   void emit(PangoLayout *layout);
@@ -108,9 +108,8 @@ public:
 class text_render_normal_t
     : public marker_emitter_t<
           text_render_normal_t,
-          visitor_interfaces_t<abstract_emit_context_t<order_init>,
-                               abstract_emit_cr_layout_t<order_render>>,
-          visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_context_t<order_init>,
+                                abstract_emit_cr_layout_t<order_render>>> {
 public:
   using marker_emitter_t::marker_emitter_t;
 
@@ -125,9 +124,8 @@ public:
 class text_render_path_t
     : public marker_emitter_t<
           text_render_path_t,
-          visitor_interfaces_t<abstract_emit_context_t<order_init>,
-                               abstract_emit_cr_layout_t<order_render>>,
-          visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_context_t<order_init>,
+                                abstract_emit_cr_layout_t<order_render>>> {
 public:
   using marker_emitter_t::marker_emitter_t;
 
@@ -142,9 +140,9 @@ public:
 class text_color_t
     : public painter_brush_emitter_t<
           text_color_t,
-          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>,
-                               abstract_emit_cr_a_t<order_render_option>>,
-          visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_cr_t<order_render_option>,
+                                abstract_emit_cr_a_t<order_render_option>>,
+          visitor_targets_t<textual_render_normal_bits>> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
   void emit(cairo_t *cr) { painter_brush_emitter_t::emit(cr); }
@@ -160,9 +158,9 @@ public:
 class text_outline_t
     : public painter_brush_emitter_t<
           text_outline_t,
-          visitor_interfaces_t<abstract_emit_cr_t<order_render>,
-                               abstract_emit_cr_a_t<order_render>>,
-          visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_cr_t<order_render>,
+                                abstract_emit_cr_a_t<order_render>>,
+          visitor_targets_t<textual_render_path_bits>> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
 
@@ -188,8 +186,9 @@ public:
  */
 class text_fill_t
     : public painter_brush_emitter_t<
-          text_fill_t, visitor_interfaces_t<abstract_emit_cr_a_t<order_render>>,
-          visitor_textual_render_t> {
+          text_fill_t,
+          accepted_interfaces_t<abstract_emit_cr_a_t<order_render>>,
+          visitor_targets_t<textual_render_path_bits>> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
 
@@ -211,8 +210,9 @@ public:
 class text_alignment_t
     : public storage_emitter_t<
           text_alignment_t, text_alignment_options_t,
-          visitor_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
-          visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+          visitor_targets_t<textual_render_normal_bits,
+                            textual_render_path_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -226,8 +226,41 @@ public:
 class text_indent_t
     : public storage_emitter_t<
           text_indent_t, double,
-          visitor_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
-          visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+          visitor_targets_t<textual_render_normal_bits,
+                            textual_render_path_bits>> {
+public:
+  using storage_emitter_t::storage_emitter_t;
+
+  void emit(PangoLayout *layout);
+};
+
+/**
+ * @class text_ellipsize_t
+ * @brief
+ */
+class text_ellipsize_t
+    : public storage_emitter_t<
+          text_ellipsize_t, text_ellipsize_options_t,
+          accepted_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+          visitor_targets_t<textual_render_normal_bits,
+                            textual_render_path_bits>> {
+public:
+  using storage_emitter_t::storage_emitter_t;
+
+  void emit(PangoLayout *layout);
+};
+
+/**
+ * @class
+ * @brief
+ */
+class text_line_space_t
+    : public storage_emitter_t<
+          text_line_space_t, double,
+          accepted_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+          visitor_targets_t<textual_render_normal_bits,
+                            textual_render_path_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -256,44 +289,15 @@ public:
 };
 
 /**
- * @class text_ellipsize_t
- * @brief
- */
-class text_ellipsize_t
-    : public storage_emitter_t<
-          text_ellipsize_t, text_ellipsize_options_t,
-          visitor_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
-          visitor_textual_render_t> {
-public:
-  using storage_emitter_t::storage_emitter_t;
-
-  void emit(PangoLayout *layout);
-};
-
-/**
- * @class
- * @brief
- */
-class text_line_space_t
-    : public storage_emitter_t<
-          text_line_space_t, double,
-          visitor_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
-          visitor_textual_render_t> {
-public:
-  using storage_emitter_t::storage_emitter_t;
-
-  void emit(PangoLayout *layout);
-};
-
-/**
  @class text_tab_stops_t
  @brief
  */
 class text_tab_stops_t
     : public class_storage_emitter_t<
           text_tab_stops_t, text_tab_stops_storage_t,
-          visitor_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
-          visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+          visitor_targets_t<textual_render_normal_bits,
+                            textual_render_path_bits>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -316,8 +320,9 @@ typedef std::variant<std::string, std::shared_ptr<std::string>,
 class text_data_t
     : public storage_emitter_t<
           text_data_t, text_data_storage_t,
-          visitor_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
-          visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+          visitor_targets_t<textual_render_normal_bits,
+                            textual_render_path_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
   std::size_t hash_code(void) const noexcept;
@@ -331,10 +336,11 @@ public:
 class text_shadow_t
     : public painter_brush_emitter_t<
           text_shadow_t, textual_render_storage_t,
-          visitor_interfaces_t<abstract_emit_cr_t<order_render>,
-                               abstract_emit_cr_a_t<order_render>>,
-          visitor_textual_render_t>,
-      virtual public pipeline_memory_t<visitor_textual_render_t>,
+          accepted_interfaces_t<abstract_emit_cr_t<order_render>,
+                                abstract_emit_cr_a_t<order_render>>,
+          visitor_targets_t<textual_render_normal_bits,
+                            textual_render_path_bits>>,
+      virtual public pipeline_memory_t,
       virtual public display_visual_t {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;

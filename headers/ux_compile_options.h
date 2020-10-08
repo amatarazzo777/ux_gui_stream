@@ -1,8 +1,7 @@
-
 /*
- * This file is part of the PLATFORM_OBJ distribution
- * {https://github.com/amatarazzo777/platform_obj). Copyright (c) 2020 Anthony
- * Matarazzo.
+ * This file is part of the ux_gui_stream distribution
+ * (https://github.com/amatarazzo777/ux_gui_stream).
+ * Copyright (c) 2020 Anthony Matarazzo.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,7 +64,7 @@ options when compiling the text_color_t.
 \brief The stack blue algorithm of shadow creation is used. Use either
  USE_STACKBLUR or USE_SVGREN. Both cannot be used at the same time.
 */
-#define USE_STACKBLUR
+//#define USE_STACKBLUR
 
 /**
 \def USE_SVGREN
@@ -74,7 +73,7 @@ matrix is applied. Much slower but may look a bit better. Use either
  USE_STACKBLUR or USE_SVGREN. Both cannot be used at the same time.
 */
 
-//#define USE_SVGREN
+#define USE_SVGREN
 
 // catch for dual defines. must comment out one of the options.
 #ifdef USE_STACKBLUR

@@ -1,7 +1,7 @@
 /*
- * This file is part of the PLATFORM_OBJ distribution
- * {https://github.com/amatarazzo777/platform_obj). Copyright (c) 2020 Anthony
- * Matarazzo.
+ * This file is part of the ux_gui_stream distribution
+ * (https://github.com/amatarazzo777/ux_gui_stream).
+ * Copyright (c) 2020 Anthony Matarazzo.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,12 +18,11 @@
 #pragma once
 
 /**
- @author Anthony Matarazzo
- @file ux_device.hpp
- @date 9/7/20
- @version 1.0
- @brief interface for the platform.
-
+ * @author Anthony Matarazzo
+ * @file ux_device.hpp
+ * @date 9/7/20
+ * @version 1.0
+ * @brief interface for the platform.
  */
 
 /**
@@ -37,7 +36,7 @@
 #include <ux_base.h>
 #include <ux_error.h>
 #include <ux_variant_visitor.h>
-#include <ux_abstracts.h>
+#include <ux_visitor_interface.h>
 #include <ux_hash.h>
 
 #include <ux_enums.h>
@@ -98,30 +97,26 @@ namespace uxdevice {
 
 class event;
 
-using bounds = class bounds {
+class bounds {
 public:
   double x = 0, y = 0, w = 0, h = 0;
 };
 
-using point = class point {
+class point {
 public:
   double x = 0, y = 0;
 };
 
 /**
-
- \internal
-
- \def UX_DECLARE_STREAM_INTERFACE
-
- @brief the macro creates the stream interface for both constant references
- and shared pointers as well as establishes the prototype for the insertion
- function. The implementation is not standard and will need definition.
- This is the route for formatting objects that accept numerical data and
- process to human readable values. Modern implementations include the
- processing of size information. Yet within the c++ implementation, the data
- structures that report and hold information is elaborate.
-
+ * @internal
+ * @def UX_DECLARE_STREAM_INTERFACE
+ * @brief the macro creates the stream interface for both constant references
+ * and shared pointers as well as establishes the prototype for the insertion
+ * function. The implementation is not standard and will need definition. This
+ * is the route for formatting objects that accept numerical data and process to
+ * human readable values. Modern implementations include the processing of size
+ * information. Yet within the c++ implementation, the data structures that
+ * report and hold information is elaborate.
  */
 
 #define UX_DECLARE_STREAM_INTERFACE(CLASS_NAME)                                \
@@ -141,20 +136,15 @@ private:                                                                       \
   surface_area_t &stream_input(const std::shared_ptr<CLASS_NAME> _val);
 
 /**
- @typedef coordinate_list_t
- @brief An std::list used to communicate coordinate for the window.
- varying pairs may be given. two or four.
-
-
+ * @typedef coordinate_list_t
+ * @brief An std::list used to communicate coordinate for the window. varying
+ * pairs may be given. two or four.
  */
 typedef std::list<short int> coordinate_list_t;
 
 /**
- @class surface_area_t
-
- @brief The main interface object of the system.
-
-
+ * @class surface_area_t
+ * @brief The main interface object of the system.
  */
 class surface_area_t : public system_error_t {
 public:
@@ -216,14 +206,13 @@ public:
   }
 
   /**
-   @fn template << operator.
-   @brief The operator is a template function that also checks the base class
-   inheritance for the type of object as well as its exposed methods. The base
-   class inheritance signifies operations that occur specific to the object
-   type. The constexpr if states decide this at compile time which creates a
-   routine specific for the class and its described characteristics.
-
-
+   * @fn operator<<
+   * @tparam T
+   * @brief The operator is a template function that also checks the base class
+   * inheritance for the type of object as well as its exposed methods. The base
+   * class inheritance signifies operations that occur specific to the object
+   * type. The constexpr if states decide this at compile time which creates a
+   * routine specific for the class and its described characteristics.
    */
   template <typename T> surface_area_t &operator<<(const T &data) {
     // event listeners are intercepted here.
@@ -259,9 +248,8 @@ public:
   }
 
   /**
-   @fn operator<<
-   @brief
-
+   * @fn operator<<
+   * @brief
    */
   template <typename T>
   surface_area_t &operator<<(const std::shared_ptr<T> obj) {
@@ -295,37 +283,31 @@ public:
     return *this;
   }
 
-  /*
-   Declare interface only.  uxdevice.cpp contains implementation.
-   These are the stream interface with a function prototype for the invoke().
-   The uxdevice.cpp file contains the implementation.
-
-   surface_area_t &uxdevice::surface_area_t::stream_input(
-   const CLASS_NAME _val)
-
+  /**
+   * Declare interface only.  uxdevice.cpp contains implementation. These are
+   * the stream interface with a function prototype for the invoke(). The
+   * uxdevice.cpp file contains the implementation.  surface_area_t
+   * &uxdevice::surface_area_t::stream_input( const CLASS_NAME _val) is the
+   * prototype developed.
    */
 
   UX_DECLARE_STREAM_INTERFACE(std::string)
   UX_DECLARE_STREAM_INTERFACE(std::stringstream)
   UX_DECLARE_STREAM_INTERFACE(std::string_view)
 
-  /* declares the interface and implementation for these
-   objects
-   when these are invoked, the pipeline_memory class is also updated.
-   When rendering objects are created, text, image or other, these
-   these shared pointers are used as a reference local member initialized
-   at invoke() public member. The parameters and options are validated as
-   well.
-   */
+  /** declares the interface and implementation for these objects when these are
+   * invoked, the pipeline_memory class is also updated. When rendering objects
+   * are created, text, image or other, these these shared pointers are used as
+   * a reference local member initialized at invoke() public member. The
+   * parameters and options are validated as well. */
 
   /**
-   @fn in
-   @tparam T - object to insert using the stream operator.
-   @tparam Args - list of them, param pack expansion calls recursively to
-   operator.
-   @brief An alternative input function to stream syntax.
-   e.g.
-   vis.in(text_font_t{"Arial 20px"}, coordindate_t{0,0}, "Hello");
+   * @fn in
+   * @tparam T - object to insert using the stream operator.
+   * @tparam Args - list of them, param pack expansion calls recursively to
+   * operator.
+   * @brief An alternative input function to stream syntax.
+   *  e.g. vis.in(text_font_t{"Arial 20px"}, coordindate_t{0,0}, "Hello");
    */
 public:
   template <typename T> void in(const T &obj) { operator<<(obj); }
@@ -424,7 +406,6 @@ private:
                    const event_handler_t &dispatch_events);
   void close_window(void);
   void set_surface_defaults(void);
-  bool relative_coordinate = false;
   void maintain_index(const std::shared_ptr<display_unit_t> obj);
 
 private:
@@ -439,10 +420,6 @@ private:
 
   // interface between client and API rendering threads.
   std::atomic_flag DL_readwrite = ATOMIC_FLAG_INIT;
-
-#define UX_DISPLAY_LIST_SPIN                                                   \
-  while (DL_readwrite.test_and_set(std::memory_order_acquire))
-#define UX_DISPLAY_LIST_CLEAR DL_readwrite.clear(std::memory_order_release)
 
   /**
    * @fn display_list
@@ -463,10 +440,11 @@ private:
    */
   template <class T, typename... Args>
   std::shared_ptr<T> display_list(const std::shared_ptr<T> ptr) {
-    UX_DISPLAY_LIST_SPIN;
-    display_list_storage.emplace_back(ptr);
-    UX_DISPLAY_LIST_CLEAR;
+    while (DL_readwrite.test_and_set(std::memory_order_acquire)) {
+    }
 
+    display_list_storage.emplace_back(ptr);
+    DL_readwrite.clear(std::memory_order_release);
     return ptr;
   }
 
@@ -475,9 +453,10 @@ private:
    * @brief
    */
   void display_list_clear(void) {
-    UX_DISPLAY_LIST_SPIN;
+    while (DL_readwrite.test_and_set(std::memory_order_acquire)) {
+    }
     display_list_storage.clear();
-    UX_DISPLAY_LIST_CLEAR;
+    DL_readwrite.clear(std::memory_order_release);
   }
 
   std::unordered_map<indirect_index_storage_t, std::shared_ptr<display_unit_t>>
@@ -501,6 +480,5 @@ private:
 
   std::list<event_handler_t> &get_event_vector(std::type_index evt_type);
 };
-
 
 } // namespace uxdevice

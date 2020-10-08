@@ -1,7 +1,7 @@
 /*
- * This file is part of the PLATFORM_OBJ distribution
- * {https://github.com/amatarazzo777/platform_obj). Copyright (c) 2020 Anthony
- * Matarazzo.
+ * This file is part of the ux_gui_stream distribution
+ * (https://github.com/amatarazzo777/ux_gui_stream).
+ * Copyright (c) 2020 Anthony Matarazzo.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,28 +32,17 @@
 /**
  * @internal
  * @fn unit_memory_linkages
- * @tparam ATTR - the visitor attribute
- * @brief The function copies the applicable units from the context. The ATTR
- * should be one of the visitor attributes defined in ux_abstracts.hpp
+ * @brief The function copies the applicable units from the context. The
+ * link_visitor_target should be one of the visitor bit patterns defined in
+ * ux_visitor_interface.h
  */
-template <typename ATTR>
-void uxdevice::pipeline_memory_t<ATTR>::pipeline_memory_linkages(
-    display_context_t *context) {
+
+void uxdevice::pipeline_memory_t::pipeline_memory_linkages(
+    display_context_t *context, std::size_t link_visitor_target) {
   for (auto n : context->storage)
-    if (n.first == std::type_index(typeid(ATTR)))
+    if (n.second.visitor_target_bits & link_visitor_target)
       storage[n.first] = n.second;
 }
-
-/**
- * @internal
- * @brief These explicit template instantiations are provided to resolve the
- * pipeline_memory_linkages function for link. The function appears in the cpp
- * file rather than the header to resolve a circular reference to "context"
- * object. Separating the code to a cpp allows this.  This list should be
- * maintained:
- */
-template class uxdevice::pipeline_memory_t<uxdevice::visitor_textual_render_t>;
-template class uxdevice::pipeline_memory_t<uxdevice::visitor_image_block_t>;
 
 /**
  * @internal
@@ -63,8 +52,7 @@ template class uxdevice::pipeline_memory_t<uxdevice::visitor_image_block_t>;
  * pipeline_memory_access routine and pass the type requested to the public
  * member of the object.
  * */
-void uxdevice::pipeline_acquisition_t::pipeline_execute(
-    display_context_t *context) {
+void uxdevice::pipeline_memory_t::pipeline_execute(display_context_t *context) {
 
   /** @brief All types have to be declared here in the visitor The compile
    * errors are very difficult to relate to this. Each of the std::functions

@@ -1,7 +1,7 @@
 /*
- * This file is part of the PLATFORM_OBJ distribution
- * {https://github.com/amatarazzo777/platform_obj). Copyright (c) 2020 Anthony
- * Matarazzo.
+ * This file is part of the ux_gui_stream distribution
+ * (https://github.com/amatarazzo777/ux_gui_stream).
+ * Copyright (c) 2020 Anthony Matarazzo.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ namespace uxdevice {
 class surface_area_brush_t
     : public painter_brush_emitter_t<
           surface_area_brush_t,
-          visitor_interfaces_t<abstract_emit_context_t<order_init>>> {
+          accepted_interfaces_t<abstract_emit_context_t<order_init>>> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
 
@@ -61,7 +61,7 @@ public:
 class surface_area_title_t
     : public storage_emitter_t<
           surface_area_title_t, std::string,
-          visitor_interfaces_t<abstract_emit_context_t<order_init>>> {
+          accepted_interfaces_t<abstract_emit_context_t<order_init>>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 

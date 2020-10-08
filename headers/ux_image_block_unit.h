@@ -1,7 +1,7 @@
 /*
- * This file is part of the PLATFORM_OBJ distribution
- * {https://github.com/amatarazzo777/platform_obj). Copyright (c) 2020 Anthony
- * Matarazzo.
+ * This file is part of the ux_gui_stream distribution
+ * (https://github.com/amatarazzo777/ux_gui_stream).
+ * Copyright (c) 2020 Anthony Matarazzo.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ namespace uxdevice {
 class image_block_storage_t : virtual public hash_members_t,
                               virtual public system_error_t,
                               public display_visual_t,
-                              public pipeline_memory_t<visitor_image_block_t> {
+                              public pipeline_memory_t {
 public:
   /// @brief default
   /// constructor
@@ -116,7 +116,7 @@ public:
 class image_block_t
     : public class_storage_emitter_t<
           image_block_t, image_block_storage_t,
-          visitor_interfaces_t<abstract_emit_context_t<order_render>>> {
+          accepted_interfaces_t<abstract_emit_context_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 

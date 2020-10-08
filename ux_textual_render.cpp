@@ -1,7 +1,7 @@
 /*
- * This file is part of the PLATFORM_OBJ distribution
- * {https://github.com/amatarazzo777/platform_obj). Copyright (c) 2020 Anthony
- * Matarazzo.
+ * This file is part of the ux_gui_stream distribution
+ * (https://github.com/amatarazzo777/ux_gui_stream).
+ * Copyright (c) 2020 Anthony Matarazzo.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -152,7 +152,11 @@ void uxdevice::textual_render_t::emit(display_context_t *context) {
 
   // this copies the shared pointers from the context
   // to this one, but only named visitor - visitor_textual_render_t
-  pipeline_memory_linkages(context);
+
+  if (context->pipeline_memory_access<text_render_normal_t>())
+    pipeline_memory_linkages(context, textual_render_normal_bits);
+  else if (context->pipeline_memory_access<text_render_path_t>())
+    pipeline_memory_linkages(context, textual_render_path_bits);
 
   // this adds a parameter for the specific object
   pipeline_memory_store<PangoLayout *>(layout);

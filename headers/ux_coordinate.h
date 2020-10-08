@@ -1,7 +1,7 @@
 /*
- * This file is part of the PLATFORM_OBJ distribution
- * {https://github.com/amatarazzo777/platform_obj). Copyright (c) 2020 Anthony
- * Matarazzo.
+ * This file is part of the ux_gui_stream distribution
+ * (https://github.com/amatarazzo777/ux_gui_stream).
+ * Copyright (c) 2020 Anthony Matarazzo.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,10 +66,12 @@ public:
 class coordinate_t
     : public class_storage_emitter_t<
           coordinate_t, coordinate_storage_t,
-          visitor_interfaces_t<abstract_emit_cr_t<order_render_option>,
-                               abstract_emit_cr_relative_t<order_render_option>,
-                               abstract_emit_layout_t<order_render_option>>,
-          visitor_textual_render_t, visitor_image_block_t> {
+          accepted_interfaces_t<
+              abstract_emit_cr_t<order_render_option>,
+              abstract_emit_cr_relative_t<order_render_option>,
+              abstract_emit_layout_t<order_render_option>>,
+          visitor_targets_t<textual_render_normal_bits,
+                            textual_render_path_bits, image_block_bits>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
   void emit(cairo_t *cr) { emit_absolute(cr); }
@@ -85,8 +87,9 @@ public:
 class relative_coordinate_t
     : public marker_emitter_t<
           relative_coordinate_t,
-          visitor_interfaces_t<abstract_emit_context_t<order_init>>,
-          visitor_image_block_t, visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_context_t<order_init>>,
+          visitor_targets_t<textual_render_normal_bits,
+                            textual_render_path_bits, image_block_bits>> {
 public:
   using marker_emitter_t::marker_emitter_t;
 
@@ -100,8 +103,9 @@ public:
 class absolute_coordinate_t
     : public marker_emitter_t<
           absolute_coordinate_t,
-          visitor_interfaces_t<abstract_emit_context_t<order_init>>,
-          visitor_image_block_t, visitor_textual_render_t> {
+          accepted_interfaces_t<abstract_emit_context_t<order_init>>,
+          visitor_targets_t<textual_render_normal_bits,
+                            textual_render_path_bits, image_block_bits>> {
 public:
   using marker_emitter_t::marker_emitter_t;
 

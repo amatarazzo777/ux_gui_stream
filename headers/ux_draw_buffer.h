@@ -1,7 +1,7 @@
 /*
- * This file is part of the PLATFORM_OBJ distribution
- * {https://github.com/amatarazzo777/platform_obj). Copyright (c) 2020 Anthony
- * Matarazzo.
+ * This file is part of the ux_gui_stream distribution
+ * (https://github.com/amatarazzo777/ux_gui_stream).
+ * Copyright (c) 2020 Anthony Matarazzo.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ namespace uxdevice {
  * @internal
  * @enum draw_buffer_format_t
  * @brief
-*/
+ */
 enum class draw_buffer_format_t {
   none,
   svg,
@@ -45,7 +45,7 @@ enum class draw_buffer_format_t {
 /**
  * @class draw_buffer_t
  * @brief offscreen buffer wrapping cairo
-*/
+ */
 class draw_buffer_t : public abstract_emit_cr_a_t<order_render>,
                       virtual public system_error_t,
                       virtual hash_members_t {
@@ -152,10 +152,10 @@ public:
   // box blur by Ivan Gagis <igagis@gmail.com>
   // svgren project.
 public:
-  void blur_image(unsigned int radius);
+  void blur_image(const unsigned int radius);
 
 private:
-  cairo_surface_t *blur_image(const unsigned int radius);
+  cairo_surface_t *build_blur_image(const unsigned int radius);
   void box_blur_horizontal(std::uint8_t *dst, const std::uint8_t *src,
                            unsigned dstStride, unsigned srcStride,
                            unsigned width, unsigned height, unsigned boxSize,
@@ -166,7 +166,8 @@ private:
                          unsigned height, unsigned boxSize, unsigned boxOffset,
                          unsigned channel);
 
-  cairo_surface_t *cairo_image_surface_blur(std::array<double, 2> stdDeviation);
+  cairo_surface_t *cairo_image_surface_blur(cairo_surface_t *img,
+                                            std::array<double, 2> stdDeviation);
 
 #endif // defined
 

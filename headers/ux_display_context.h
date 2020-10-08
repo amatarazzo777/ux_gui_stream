@@ -1,7 +1,7 @@
 /*
- * This file is part of the PLATFORM_OBJ distribution
- * {https://github.com/amatarazzo777/platform_obj). Copyright (c) 2020 Anthony
- * Matarazzo.
+ * This file is part of the ux_gui_stream distribution
+ * (https://github.com/amatarazzo777/ux_gui_stream).
+ * Copyright (c) 2020 Anthony Matarazzo.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ typedef std::list<std::shared_ptr<display_visual_t>>::iterator
  * @brief
  */
 class display_context_t : virtual public hash_members_t,
-                          public pipeline_memory_t<visitor_base_t>,
+                          public pipeline_memory_t,
                           virtual system_error_t {
 public:
   display_context_t(void) {}
