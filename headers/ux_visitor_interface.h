@@ -22,7 +22,7 @@
  * @file ux_visitor_interface.h
  * @date 9/23/20
  * @version 1.0
- * @details This file encapsulates the definitions of visitor interfaces
+ * @details This file encapsulates the definition of visitor interfaces
  * for each of the objects. There are several pieces that fit together, however
  * the system is dynamic in that new visitor interface prototypes can be
  * easily added. These are expressed in typedefs starting with the prefix "fn_".
@@ -93,8 +93,8 @@ typedef std::function<void(PangoLayout *)> fn_emit_layout_t;
 /**
  * @internal
  * @typedef fn_emit_layout_a_t
- * @brief emit to the pango layout with a rectangular coordinate tied. The
- * translation to pango units is done here.
+ * @brief emit to the pango layout with a rectangular "area" coordinate tied.
+ * The translation to pango units is done here.
  */
 typedef std::function<void(PangoLayout *, coordinate_t *)> fn_emit_layout_a_t;
 
@@ -167,10 +167,12 @@ public:
  * @brief class used within the unit declaration parameters
  * to note abstracts that are published. All constructors are executed
  * with an instance pointer of the interfaces object. The called constructors
- * are expected to place a the template parameterized std::size_t constant
- * naming the pipeline sort order and an unbound function abstract leaving it
- * std::monostate. Later this is bound to the correct instance above this layer
- * in logic by the function init_dispatch.
+ * are expected to place the template parameterized std::size_t constant
+ * naming the pipeline sort order and an unbound function abstract into the
+ * unordered map accepted interfaces. The function is left as std::monostate on
+ * the constructor call. Later this is bound to the correct instance above this
+ * layer in logic by the function init_dispatch. init_dispatch is pass the
+ * system base class type.
  */
 template <typename... Args>
 class accepted_interfaces_t : public accepted_interfaces_base_t,
@@ -473,7 +475,7 @@ public:
   visitor_targets_t() : visitor_bits_t(combine_targets(Args...)) {}
   virtual ~visitor_targets_t() {}
   template <typename... TARGET_BITS>
-  std::size_t combine_targets(TARGET_BITS const &&... target_bits) {
+  constexpr std::size_t combine_targets(TARGET_BITS const &&... target_bits) {
     return (... | target_bits);
   }
 };
