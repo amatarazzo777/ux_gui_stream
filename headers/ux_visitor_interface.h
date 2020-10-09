@@ -470,6 +470,14 @@ public:
   virtual ~visitor_bits_t() {}
   std::size_t associated_bits = {};
 };
+
+/**
+ * @class visitor_targets_t
+ * @brief reduces the bit patterns sent to an ored version at compile time.
+ * This makes for a single movq at runtime.
+ *
+ * @tparam Args
+ */
 template <std::size_t... Args> class visitor_targets_t : public visitor_bits_t {
 public:
   visitor_targets_t() : visitor_bits_t(combine_targets(Args...)) {}
