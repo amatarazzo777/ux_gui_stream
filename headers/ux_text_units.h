@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+
 /**
  @author Anthony Matarazzo
  @file ux_text_units.h
@@ -23,6 +23,30 @@
  @version 1.0
  @brief
  */
+#include <ux_compile_options.h>
+#include <ux_base.h>
+#include <ux_error.h>
+#include <ux_variant_visitor.h>
+#include <ux_visitor_interface.h>
+#include <ux_hash.h>
+
+#include <ux_enums.h>
+
+#include <ux_matrix.h>
+#include <ux_draw_buffer.h>
+#include <ux_painter_brush.h>
+
+#include <ux_pipeline_memory.h>
+
+#include <ux_display_visual.h>
+#include <ux_display_context.h>
+#include <ux_display_unit_base.h>
+
+#include <ux_coordinate.h>
+
+#include <ux_textual_render.h>
+
+#pragma once
 
 namespace uxdevice {
 
@@ -39,15 +63,15 @@ public:
   // class.
   text_font_storage_t() : description{}, font_ptr(nullptr) {}
   text_font_storage_t(const std::string &_description)
-      : description(_description), font_ptr(nullptr) {}
+    : description(_description), font_ptr(nullptr) {}
 
   /// @brief move constructor
   text_font_storage_t(text_font_storage_t &&other) noexcept
-      : description(other.description), font_ptr(other.font_ptr) {}
+    : description(other.description), font_ptr(other.font_ptr) {}
 
   /// @brief copy constructor
   text_font_storage_t(const text_font_storage_t &other)
-      : description(other.description), font_ptr(nullptr) {}
+    : description(other.description), font_ptr(nullptr) {}
 
   virtual ~text_font_storage_t() {
     if (font_ptr)
@@ -91,11 +115,10 @@ public:
  * @brief
  */
 class text_font_t
-    : public class_storage_emitter_t<
-          text_font_t, text_font_storage_t,
-          accepted_interfaces_t<abstract_emit_layout_t<order_render_option>>,
-          visitor_targets_t<textual_render_normal_bits,
-                            textual_render_path_bits>> {
+  : public class_storage_emitter_t<
+      text_font_t, text_font_storage_t,
+      accepted_interfaces_t<abstract_emit_layout_t<order_render_option>>,
+      visitor_targets_t<textual_render_normal_bits, textual_render_path_bits>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
   void emit(PangoLayout *layout);
@@ -106,10 +129,10 @@ public:
  * @brief
  */
 class text_render_normal_t
-    : public marker_emitter_t<
-          text_render_normal_t,
-          accepted_interfaces_t<abstract_emit_context_t<order_init>,
-                                abstract_emit_cr_layout_t<order_render>>> {
+  : public marker_emitter_t<
+      text_render_normal_t,
+      accepted_interfaces_t<abstract_emit_context_t<order_init>,
+                            abstract_emit_cr_layout_t<order_render>>> {
 public:
   using marker_emitter_t::marker_emitter_t;
 
@@ -122,10 +145,10 @@ public:
  * @brief
  */
 class text_render_path_t
-    : public marker_emitter_t<
-          text_render_path_t,
-          accepted_interfaces_t<abstract_emit_context_t<order_init>,
-                                abstract_emit_cr_layout_t<order_render>>> {
+  : public marker_emitter_t<
+      text_render_path_t,
+      accepted_interfaces_t<abstract_emit_context_t<order_init>,
+                            abstract_emit_cr_layout_t<order_render>>> {
 public:
   using marker_emitter_t::marker_emitter_t;
 
@@ -138,11 +161,11 @@ public:
  @brief
  */
 class text_color_t
-    : public painter_brush_emitter_t<
-          text_color_t,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render_option>,
-                                abstract_emit_cr_a_t<order_render_option>>,
-          visitor_targets_t<textual_render_normal_bits>> {
+  : public painter_brush_emitter_t<
+      text_color_t,
+      accepted_interfaces_t<abstract_emit_cr_t<order_render_option>,
+                            abstract_emit_cr_a_t<order_render_option>>,
+      visitor_targets_t<textual_render_normal_bits>> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
   void emit(cairo_t *cr) { painter_brush_emitter_t::emit(cr); }
@@ -156,11 +179,11 @@ public:
  * @brief
  */
 class text_outline_t
-    : public painter_brush_emitter_t<
-          text_outline_t,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render>,
-                                abstract_emit_cr_a_t<order_render>>,
-          visitor_targets_t<textual_render_path_bits>> {
+  : public painter_brush_emitter_t<
+      text_outline_t,
+      accepted_interfaces_t<abstract_emit_cr_t<order_render>,
+                            abstract_emit_cr_a_t<order_render>>,
+      visitor_targets_t<textual_render_path_bits>> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
 
@@ -185,10 +208,9 @@ public:
  * @brief
  */
 class text_fill_t
-    : public painter_brush_emitter_t<
-          text_fill_t,
-          accepted_interfaces_t<abstract_emit_cr_a_t<order_render>>,
-          visitor_targets_t<textual_render_path_bits>> {
+  : public painter_brush_emitter_t<
+      text_fill_t, accepted_interfaces_t<abstract_emit_cr_a_t<order_render>>,
+      visitor_targets_t<textual_render_path_bits>> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
 
@@ -208,11 +230,10 @@ public:
  @brief
  */
 class text_alignment_t
-    : public storage_emitter_t<
-          text_alignment_t, text_alignment_options_t,
-          accepted_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
-          visitor_targets_t<textual_render_normal_bits,
-                            textual_render_path_bits>> {
+  : public storage_emitter_t<
+      text_alignment_t, text_alignment_options_t,
+      accepted_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+      visitor_targets_t<textual_render_normal_bits, textual_render_path_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -224,11 +245,10 @@ public:
  * @brief
  */
 class text_indent_t
-    : public storage_emitter_t<
-          text_indent_t, double,
-          accepted_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
-          visitor_targets_t<textual_render_normal_bits,
-                            textual_render_path_bits>> {
+  : public storage_emitter_t<
+      text_indent_t, double,
+      accepted_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+      visitor_targets_t<textual_render_normal_bits, textual_render_path_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -240,11 +260,10 @@ public:
  * @brief
  */
 class text_ellipsize_t
-    : public storage_emitter_t<
-          text_ellipsize_t, text_ellipsize_options_t,
-          accepted_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
-          visitor_targets_t<textual_render_normal_bits,
-                            textual_render_path_bits>> {
+  : public storage_emitter_t<
+      text_ellipsize_t, text_ellipsize_options_t,
+      accepted_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+      visitor_targets_t<textual_render_normal_bits, textual_render_path_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -256,11 +275,10 @@ public:
  * @brief
  */
 class text_line_space_t
-    : public storage_emitter_t<
-          text_line_space_t, double,
-          accepted_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
-          visitor_targets_t<textual_render_normal_bits,
-                            textual_render_path_bits>> {
+  : public storage_emitter_t<
+      text_line_space_t, double,
+      accepted_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+      visitor_targets_t<textual_render_normal_bits, textual_render_path_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -293,11 +311,10 @@ public:
  @brief
  */
 class text_tab_stops_t
-    : public class_storage_emitter_t<
-          text_tab_stops_t, text_tab_stops_storage_t,
-          accepted_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
-          visitor_targets_t<textual_render_normal_bits,
-                            textual_render_path_bits>> {
+  : public class_storage_emitter_t<
+      text_tab_stops_t, text_tab_stops_storage_t,
+      accepted_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+      visitor_targets_t<textual_render_normal_bits, textual_render_path_bits>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -311,18 +328,17 @@ public:
 typedef std::variant<std::string, std::shared_ptr<std::string>,
                      std::string_view, std::shared_ptr<std::string_view>,
                      std::shared_ptr<std::stringstream>>
-    text_data_storage_t;
+  text_data_storage_t;
 
 /**
  * @class
  * @brief
  */
 class text_data_t
-    : public storage_emitter_t<
-          text_data_t, text_data_storage_t,
-          accepted_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
-          visitor_targets_t<textual_render_normal_bits,
-                            textual_render_path_bits>> {
+  : public storage_emitter_t<
+      text_data_t, text_data_storage_t,
+      accepted_interfaces_t<abstract_emit_layout_t<order_layout_option>>,
+      visitor_targets_t<textual_render_normal_bits, textual_render_path_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
   std::size_t hash_code(void) const noexcept;
@@ -334,14 +350,11 @@ public:
  * @brief
  */
 class text_shadow_t
-    : public painter_brush_emitter_t<
-          text_shadow_t, textual_render_storage_t,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render>,
-                                abstract_emit_cr_a_t<order_render>>,
-          visitor_targets_t<textual_render_normal_bits,
-                            textual_render_path_bits>>,
-      virtual public pipeline_memory_t,
-      virtual public display_visual_t {
+  : public painter_brush_emitter_t<
+      text_shadow_t, textual_render_storage_t,
+      accepted_interfaces_t<abstract_emit_cr_t<order_render>,
+                            abstract_emit_cr_a_t<order_render>>,
+      visitor_targets_t<textual_render_normal_bits, textual_render_path_bits>> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
 
@@ -355,24 +368,24 @@ public:
   void emit(cairo_t *cr, coordinate_t *a);
 
   // private functions
-  void pipeline_acquire(cairo_t *cr, coordinate_t *a);
+  void pipeline_acquire(void);
   bool pipeline_has_required_linkages(void);
 };
 
 } // namespace uxdevice
 
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_font_storage_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_font_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_color_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_render_path_t);
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_font_storage_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_font_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_color_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_render_path_t)
 UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_render_normal_t)
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_outline_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_fill_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_alignment_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_indent_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_tab_stops_storage_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_ellipsize_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_line_space_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_tab_stops_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_data_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_shadow_t);
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_outline_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_fill_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_alignment_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_indent_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_tab_stops_storage_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_ellipsize_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_line_space_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_tab_stops_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_data_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::text_shadow_t)

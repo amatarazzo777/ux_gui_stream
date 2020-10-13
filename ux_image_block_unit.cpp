@@ -25,7 +25,7 @@
  * @details
  */
 
-#include <ux_device.h>
+#include <ux_image_block_unit.h>
 
 /**
  * @internal
@@ -38,8 +38,7 @@
  * functionality can provide image processing capabilities to produce visual
  * effects. Using the emplace back to invoke operations on the image->block_ptr;
  */
-void uxdevice::image_block_storage_t::pipeline_acquire(cairo_t *cr,
-                                                       coordinate_t *a) {
+void uxdevice::image_block_storage_t::pipeline_acquire() {
 
   /** compute pipeline that includes rendering commands. The rendering commands
    * are sequenced and appropriate fill, preserve order is maintained.*/
@@ -50,7 +49,7 @@ void uxdevice::image_block_storage_t::pipeline_acquire(cairo_t *cr,
 
   // add result to buffer
   pipeline_push<order_render>(fn_emit_cr_a_t{
-      [&](cairo_t *cr, coordinate_t *a) { image_block.emit(cr, a); }});
+    [&](cairo_t *cr, coordinate_t *a) { image_block.emit(cr, a); }});
 }
 
 /**

@@ -79,4 +79,4 @@ public:
   cairo_matrix_t _matrix = {0, 0, 0, 0, 0, 0};
 };
 } // namespace uxdevice
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::matrix_t);
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::matrix_t)

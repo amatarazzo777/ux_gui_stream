@@ -115,7 +115,7 @@ typedef std::function<void(cairo_t *cr, PangoLayout *)> fn_emit_cr_layout_t;
 typedef std::variant<std::monostate, fn_emit_cr_t, fn_emit_cr_a_t,
                      fn_emit_context_t, fn_emit_layout_t, fn_emit_layout_a_t,
                      fn_emit_cr_layout_t>
-    fn_emit_overload_t;
+  fn_emit_overload_t;
 
 /**
  * @internal
@@ -131,9 +131,33 @@ class visitor_interface_t {
 public:
   visitor_interface_t() {}
   virtual ~visitor_interface_t() {}
+
+  /// @brief move constructor
+  visitor_interface_t(visitor_interface_t &&other) noexcept
+    : fn(std::move(other.fn)), pipeline_order(std::move(other.pipeline_order)) {
+  }
+
+  /// @brief copy constructor
+  visitor_interface_t(const visitor_interface_t &other)
+    : fn(other.fn), pipeline_order(other.pipeline_order) {}
+
+  /// @brief copy assignment
+  visitor_interface_t &operator=(const visitor_interface_t &other) {
+    fn = other.fn;
+    pipeline_order = other.pipeline_order;
+    return *this;
+  }
+
+  /// @brief move assignment
+  visitor_interface_t &operator=(const visitor_interface_t &&other) noexcept {
+    fn = std::move(other.fn);
+    pipeline_order = std::move(other.pipeline_order);
+    return *this;
+  }
+
   fn_emit_overload_t fn = {};
   std::size_t pipeline_order = {};
-  virtual void bind_dispatch(system_base_t *ptr) {}
+  virtual void bind_dispatch(system_base_t *ptr) = 0;
 };
 
 /**
@@ -142,7 +166,7 @@ public:
  * prototype or fn_NAME_P1_P2_t std::function signature.
  */
 typedef std::unordered_map<std::type_index, visitor_interface_t *>
-    accepted_interfaces_storage_t;
+  accepted_interfaces_storage_t;
 
 /**
  * @internal
@@ -157,6 +181,28 @@ class accepted_interfaces_base_t {
 public:
   accepted_interfaces_base_t() {}
   virtual ~accepted_interfaces_base_t() {}
+  /// @brief move constructor
+  accepted_interfaces_base_t(accepted_interfaces_base_t &&other) noexcept
+    : accepted_interfaces(std::move(other.accepted_interfaces)) {}
+
+  /// @brief copy constructor
+  accepted_interfaces_base_t(const accepted_interfaces_base_t &other)
+    : accepted_interfaces(other.accepted_interfaces) {}
+
+  /// @brief copy assignment
+  accepted_interfaces_base_t &
+  operator=(const accepted_interfaces_base_t &other) {
+    accepted_interfaces = other.accepted_interfaces;
+    return *this;
+  }
+
+  /// @brief move assignment
+  accepted_interfaces_base_t &
+  operator=(const accepted_interfaces_base_t &&other) noexcept {
+    accepted_interfaces = std::move(other.accepted_interfaces);
+    return *this;
+  }
+
   accepted_interfaces_storage_t accepted_interfaces = {};
 };
 
@@ -209,6 +255,19 @@ public:
   bool visitor_dispatch_bound = false;
 };
 
+/* @brief names the stages in the pipeline. Each of the abstract class template
+ * parameters when they are mentioned on the unit definition should name one of
+ * these within its parameter.
+ */
+const int order_init = 1;
+const int order_layout_option = 2;
+const int order_render_option = 3;
+
+const int order_before_render = 4;
+const int order_render = 5;
+const int order_after_render = 6;
+const int order_terminate = 7;
+
 /**
  * @details the constructors of these abstract interface classes are called by
  * the visitor_interfaces_t param pack expansion. The interface position within
@@ -243,11 +302,33 @@ public:
 
   void bind_dispatch(system_base_t *ptr) {
     fn = fn_emit_context_t{std::bind(
-        &abstract_emit_context_t::emit,
-        dynamic_cast<abstract_emit_context_t *>(ptr), std::placeholders::_1)};
+      &abstract_emit_context_t::emit,
+      dynamic_cast<abstract_emit_context_t *>(ptr), std::placeholders::_1)};
   }
 
   virtual ~abstract_emit_context_t() {}
+
+  /// @brief move constructor
+  abstract_emit_context_t(abstract_emit_context_t &&other) noexcept
+    : visitor_interface_t(std::move(other)) {}
+
+  /// @brief copy constructor
+  abstract_emit_context_t(const abstract_emit_context_t &other)
+    : visitor_interface_t(other) {}
+
+  /// @brief copy assignment
+  abstract_emit_context_t &operator=(const abstract_emit_context_t &other) {
+    visitor_interface_t::operator=(other);
+    return *this;
+  }
+
+  /// @brief move assignment
+  abstract_emit_context_t &
+  operator=(const abstract_emit_context_t &&other) noexcept {
+    visitor_interface_t::operator=(other);
+    return *this;
+  }
+
   virtual void emit(display_context_t *context) = 0;
 };
 
@@ -291,10 +372,9 @@ public:
   }
 
   void bind_dispatch(system_base_t *ptr) {
-    fn =
-        fn_emit_cr_t{std::bind(&abstract_emit_cr_absolute_t::emit_absolute,
-                               dynamic_cast<abstract_emit_cr_absolute_t *>(ptr),
-                               std::placeholders::_1)};
+    fn = fn_emit_cr_t{std::bind(
+      &abstract_emit_cr_absolute_t::emit_absolute,
+      dynamic_cast<abstract_emit_cr_absolute_t *>(ptr), std::placeholders::_1)};
   }
 
   virtual ~abstract_emit_cr_absolute_t() {}
@@ -317,10 +397,9 @@ public:
   }
 
   void bind_dispatch(system_base_t *ptr) {
-    fn =
-        fn_emit_cr_t{std::bind(&abstract_emit_cr_relative_t::emit_relative,
-                               dynamic_cast<abstract_emit_cr_relative_t *>(ptr),
-                               std::placeholders::_1)};
+    fn = fn_emit_cr_t{std::bind(
+      &abstract_emit_cr_relative_t::emit_relative,
+      dynamic_cast<abstract_emit_cr_relative_t *>(ptr), std::placeholders::_1)};
   }
   virtual ~abstract_emit_cr_relative_t() {}
   virtual void emit_relative(cairo_t *cr) = 0;
@@ -342,8 +421,8 @@ public:
 
   void bind_dispatch(system_base_t *ptr) {
     fn = fn_emit_cr_a_t{std::bind(
-        &abstract_emit_cr_a_t::emit, dynamic_cast<abstract_emit_cr_a_t *>(ptr),
-        std::placeholders::_1, std::placeholders::_2)};
+      &abstract_emit_cr_a_t::emit, dynamic_cast<abstract_emit_cr_a_t *>(ptr),
+      std::placeholders::_1, std::placeholders::_2)};
   }
   virtual ~abstract_emit_cr_a_t() {}
   virtual void emit(cairo_t *cr, coordinate_t *a) = 0;
@@ -388,14 +467,14 @@ public:
   abstract_emit_layout_a_t(accepted_interfaces_base_t *ptr) {
     pipeline_order = ORDER;
     ptr->accepted_interfaces[std::type_index(typeid(fn_emit_layout_a_t))] =
-        this;
+      this;
   }
 
   void bind_dispatch(system_base_t *ptr) {
     fn = fn_emit_layout_a_t{
-        std::bind(&abstract_emit_layout_a_t::emit,
-                  dynamic_cast<abstract_emit_layout_a_t *>(ptr),
-                  std::placeholders::_1, std::placeholders::_2)};
+      std::bind(&abstract_emit_layout_a_t::emit,
+                dynamic_cast<abstract_emit_layout_a_t *>(ptr),
+                std::placeholders::_1, std::placeholders::_2)};
   }
 
   virtual ~abstract_emit_layout_a_t(){};
@@ -415,14 +494,14 @@ public:
   abstract_emit_cr_layout_t(accepted_interfaces_base_t *ptr) {
     pipeline_order = ORDER;
     ptr->accepted_interfaces[std::type_index(typeid(fn_emit_cr_layout_t))] =
-        this;
+      this;
   }
 
   void bind_dispatch(system_base_t *ptr) {
     fn = fn_emit_cr_layout_t{
-        std::bind(&abstract_emit_cr_layout_t::emit,
-                  dynamic_cast<abstract_emit_cr_layout_t *>(ptr),
-                  std::placeholders::_1, std::placeholders::_2)};
+      std::bind(&abstract_emit_cr_layout_t::emit,
+                dynamic_cast<abstract_emit_cr_layout_t *>(ptr),
+                std::placeholders::_1, std::placeholders::_2)};
   }
 
   virtual ~abstract_emit_cr_layout_t() {}
@@ -451,6 +530,7 @@ public:
  * pipeline_acquire function. So these label the objects within the template
  * factory parameters of the unit.
  */
+const std::size_t all_rendering_bits = 0b111111111111;
 const std::size_t textual_render_normal_bits = 0b0001;
 const std::size_t textual_render_path_bits = 0b0010;
 const std::size_t image_block_bits = 0b0100;
@@ -466,9 +546,9 @@ const std::size_t image_block_bits = 0b0100;
  */
 class visitor_bits_t {
 public:
-  visitor_bits_t(std::size_t _bits) : associated_bits(_bits) {}
+  visitor_bits_t(std::size_t _bits) : associated_bits{_bits} {}
   virtual ~visitor_bits_t() {}
-  std::size_t associated_bits = {};
+  const std::size_t associated_bits = {};
 };
 
 /**

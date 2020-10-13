@@ -17,6 +17,25 @@
  */
 #pragma once
 
+#include <ux_base.h>
+#include <ux_error.h>
+#include <ux_visitor_interface.h>
+#include <ux_hash.h>
+
+#include <ux_enums.h>
+
+#include <ux_matrix.h>
+#include <ux_draw_buffer.h>
+#include <ux_painter_brush.h>
+
+#include <ux_pipeline_memory.h>
+
+#include <ux_display_visual.h>
+#include <ux_display_context.h>
+#include <ux_display_unit_base.h>
+
+#include <ux_coordinate.h>
+
 /**
 @author Anthony Matarazzo
 @file ux_drawing_primitives.hpp
@@ -31,9 +50,9 @@ namespace uxdevice {
  @brief
  */
 class function_object_t
-    : public storage_emitter_t<
-          function_object_t, cairo_function_t,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
+  : public storage_emitter_t<
+      function_object_t, cairo_function_t,
+      accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -54,7 +73,7 @@ public:
   arc_storage_t() {}
   arc_storage_t(double _xc, double _yc, double _radius, double _angle1,
                 double _angle2)
-      : xc(_xc), yc(_yc), radius(_radius), angle1(_angle1), angle2(_angle2) {}
+    : xc(_xc), yc(_yc), radius(_radius), angle1(_angle1), angle2(_angle2) {}
   virtual ~arc_storage_t() {}
 
   std::size_t hash_code(void) const noexcept {
@@ -85,7 +104,7 @@ public:
   negative_arc_storage_t() {}
   negative_arc_storage_t(double _xc, double _yc, double _radius, double _angle1,
                          double _angle2)
-      : xc(_xc), yc(_yc), radius(_radius), angle1(_angle1), angle2(_angle2) {}
+    : xc(_xc), yc(_yc), radius(_radius), angle1(_angle1), angle2(_angle2) {}
 
   virtual ~negative_arc_storage_t() {}
 
@@ -116,7 +135,7 @@ class rectangle_storage_t : virtual public hash_members_t {
 public:
   rectangle_storage_t() {}
   rectangle_storage_t(double _x, double _y, double _width, double _height)
-      : x(_x), y(_y), width(_width), height(_height) {}
+    : x(_x), y(_y), width(_width), height(_height) {}
   virtual ~rectangle_storage_t() {}
 
   std::size_t hash_code(void) const noexcept {
@@ -146,7 +165,7 @@ public:
   curve_storage_t() {}
   curve_storage_t(double _x1, double _y1, double _x2, double _y2, double _x3,
                   double _y3)
-      : x1(_x1), y1(_y1), x2(_x2), y2(_y2), x3(_x3), y3(_y3) {}
+    : x1(_x1), y1(_y1), x2(_x2), y2(_y2), x3(_x3), y3(_y3) {}
   virtual ~curve_storage_t() {}
 
   std::size_t hash_code(void) const noexcept {
@@ -207,7 +226,7 @@ public:
   stroke_fill_path_storage_t() {}
 
   stroke_fill_path_storage_t(const painter_brush_t &f, const painter_brush_t &s)
-      : fill_brush(f), stroke_brush(s) {}
+    : fill_brush(f), stroke_brush(s) {}
   virtual ~stroke_fill_path_storage_t() {}
 
   std::size_t hash_code(void) const noexcept {
@@ -234,7 +253,7 @@ class line_dash_storage_t : virtual public hash_members_t {
 public:
   line_dash_storage_t() {}
   line_dash_storage_t(const std::vector<double> &_value, const double &_offset)
-      : value(_value), offset(_offset) {}
+    : value(_value), offset(_offset) {}
 
   virtual ~line_dash_storage_t() {}
 
@@ -256,11 +275,11 @@ public:
  @class
  @brief */
 class antialias_t
-    : public storage_emitter_t<
-          antialias_t, antialias_options_t,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
-          visitor_targets_t<textual_render_normal_bits,
-                            textual_render_path_bits, image_block_bits>> {
+  : public storage_emitter_t<
+      antialias_t, antialias_options_t,
+      accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+      visitor_targets_t<textual_render_normal_bits, textual_render_path_bits,
+                        image_block_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
   void emit(cairo_t *cr);
@@ -271,10 +290,10 @@ public:
  @brief
  */
 class line_width_t
-    : public storage_emitter_t<
-          line_width_t, double,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
-          visitor_targets_t<textual_render_path_bits, image_block_bits>> {
+  : public storage_emitter_t<
+      line_width_t, double,
+      accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+      visitor_targets_t<textual_render_path_bits, image_block_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -286,10 +305,10 @@ public:
  @brief
  */
 class line_cap_t
-    : public storage_emitter_t<
-          line_cap_t, line_cap_options_t,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
-          visitor_targets_t<textual_render_path_bits, image_block_bits>> {
+  : public storage_emitter_t<
+      line_cap_t, line_cap_options_t,
+      accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+      visitor_targets_t<textual_render_path_bits, image_block_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -301,10 +320,10 @@ public:
  @brief
  */
 class line_join_t
-    : public storage_emitter_t<
-          line_join_t, line_join_options_t,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
-          visitor_targets_t<textual_render_path_bits, image_block_bits>> {
+  : public storage_emitter_t<
+      line_join_t, line_join_options_t,
+      accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+      visitor_targets_t<textual_render_path_bits, image_block_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -316,10 +335,10 @@ public:
  @brief
  */
 class miter_limit_t
-    : public storage_emitter_t<
-          miter_limit_t, double,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
-          visitor_targets_t<textual_render_path_bits, image_block_bits>> {
+  : public storage_emitter_t<
+      miter_limit_t, double,
+      accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+      visitor_targets_t<textual_render_path_bits, image_block_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -331,10 +350,10 @@ public:
  @brief
  */
 class line_dashes_t
-    : public class_storage_emitter_t<
-          line_dashes_t, line_dash_storage_t,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
-          visitor_targets_t<textual_render_path_bits, image_block_bits>> {
+  : public class_storage_emitter_t<
+      line_dashes_t, line_dash_storage_t,
+      accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+      visitor_targets_t<textual_render_path_bits, image_block_bits>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -346,10 +365,10 @@ public:
  @brief
  */
 class tollerance_t
-    : public storage_emitter_t<
-          tollerance_t, double,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
-          visitor_targets_t<textual_render_path_bits, image_block_bits>> {
+  : public storage_emitter_t<
+      tollerance_t, double,
+      accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+      visitor_targets_t<textual_render_path_bits, image_block_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -361,11 +380,11 @@ public:
  @brief
  */
 class graphic_operator_t
-    : public storage_emitter_t<
-          graphic_operator_t, graphic_operator_options_t,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
-          visitor_targets_t<textual_render_normal_bits,
-                            textual_render_path_bits, image_block_bits>> {
+  : public storage_emitter_t<
+      graphic_operator_t, graphic_operator_options_t,
+      accepted_interfaces_t<abstract_emit_cr_t<order_render_option>>,
+      visitor_targets_t<textual_render_normal_bits, textual_render_path_bits,
+                        image_block_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -379,8 +398,8 @@ public:
 // primitives - drawing
 // functions
 class arc_t : public class_storage_emitter_t<
-                  arc_t, arc_storage_t,
-                  accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
+                arc_t, arc_storage_t,
+                accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -392,10 +411,10 @@ public:
  @brief
  */
 class negative_arc_t
-    : public class_storage_emitter_t<
-          negative_arc_t, negative_arc_storage_t,
-          accepted_interfaces_t<abstract_emit_cr_relative_t<order_render>,
-                                abstract_emit_cr_absolute_t<order_render>>> {
+  : public class_storage_emitter_t<
+      negative_arc_t, negative_arc_storage_t,
+      accepted_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                            abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -407,11 +426,11 @@ public:
  @brief
  */
 class curve_t
-    : public class_storage_emitter_t<
-          curve_t, curve_storage_t,
-          accepted_interfaces_t<abstract_emit_context_t<order_render>,
-                                abstract_emit_cr_relative_t<order_render>,
-                                abstract_emit_cr_absolute_t<order_render>>> {
+  : public class_storage_emitter_t<
+      curve_t, curve_storage_t,
+      accepted_interfaces_t<abstract_emit_context_t<order_render>,
+                            abstract_emit_cr_relative_t<order_render>,
+                            abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
   void emit(display_context_t *context) {
@@ -429,10 +448,10 @@ public:
  @brief
  */
 class line_t
-    : public class_storage_emitter_t<
-          line_t, line_storage_t,
-          accepted_interfaces_t<abstract_emit_cr_relative_t<order_render>,
-                                abstract_emit_cr_absolute_t<order_render>>> {
+  : public class_storage_emitter_t<
+      line_t, line_storage_t,
+      accepted_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                            abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
   void emit(display_context_t *context) {
@@ -450,10 +469,10 @@ public:
  @brief
  */
 class vline_t
-    : public storage_emitter_t<
-          vline_t, double,
-          accepted_interfaces_t<abstract_emit_cr_relative_t<order_render>,
-                                abstract_emit_cr_absolute_t<order_render>>> {
+  : public storage_emitter_t<
+      vline_t, double,
+      accepted_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                            abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using storage_emitter_t::storage_emitter_t;
   void emit(display_context_t *context) {
@@ -471,10 +490,10 @@ public:
  @brief
  */
 class hline_t
-    : public storage_emitter_t<
-          hline_t, double,
-          accepted_interfaces_t<abstract_emit_cr_relative_t<order_render>,
-                                abstract_emit_cr_absolute_t<order_render>>> {
+  : public storage_emitter_t<
+      hline_t, double,
+      accepted_interfaces_t<abstract_emit_cr_relative_t<order_render>,
+                            abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using storage_emitter_t::storage_emitter_t;
   void emit(display_context_t *context) {
@@ -491,10 +510,9 @@ public:
  @class
  @brief
  */
-class rectangle_t
-    : public class_storage_emitter_t<
-          rectangle_t, rectangle_storage_t,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
+class rectangle_t : public class_storage_emitter_t<
+                      rectangle_t, rectangle_storage_t,
+                      accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -506,9 +524,9 @@ public:
  @brief
  */
 class stroke_path_t
-    : public class_storage_emitter_t<
-          stroke_path_t, painter_brush_t,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
+  : public class_storage_emitter_t<
+      stroke_path_t, painter_brush_t,
+      accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -519,10 +537,9 @@ public:
  @class
  @brief
  */
-class fill_path_t
-    : public class_storage_emitter_t<
-          fill_path_t, painter_brush_t,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
+class fill_path_t : public class_storage_emitter_t<
+                      fill_path_t, painter_brush_t,
+                      accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -534,9 +551,9 @@ public:
  @brief
  */
 class stroke_fill_path_t
-    : public class_storage_emitter_t<
-          stroke_fill_path_t, stroke_fill_path_storage_t,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
+  : public class_storage_emitter_t<
+      stroke_fill_path_t, stroke_fill_path_storage_t,
+      accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -548,11 +565,11 @@ public:
  @brief
  */
 using mask_t = class mask_t
-    : public class_storage_emitter_t<
-          mask_t, painter_brush_t,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render>>,
-          visitor_targets_t<textual_render_normal_bits,
-                            textual_render_path_bits, image_block_bits>> {
+  : public class_storage_emitter_t<
+      mask_t, painter_brush_t,
+      accepted_interfaces_t<abstract_emit_cr_t<order_render>>,
+      visitor_targets_t<textual_render_normal_bits, textual_render_path_bits,
+                        image_block_bits>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -564,11 +581,10 @@ public:
  @brief
  */
 class paint_t
-    : public storage_emitter_t<
-          paint_t, double,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render>>,
-          visitor_targets_t<textual_render_normal_bits,
-                            textual_render_path_bits, image_block_bits>> {
+  : public storage_emitter_t<
+      paint_t, double, accepted_interfaces_t<abstract_emit_cr_t<order_render>>,
+      visitor_targets_t<textual_render_normal_bits, textual_render_path_bits,
+                        image_block_bits>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -580,9 +596,8 @@ public:
  @brief
  */
 class close_path_t
-    : public marker_emitter_t<
-          close_path_t,
-          accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
+  : public marker_emitter_t<
+      close_path_t, accepted_interfaces_t<abstract_emit_cr_t<order_render>>> {
 public:
   using marker_emitter_t::marker_emitter_t;
 
@@ -591,32 +606,32 @@ public:
 
 } // namespace uxdevice
 
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::function_object_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::arc_storage_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::negative_arc_storage_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::rectangle_storage_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::curve_storage_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_storage_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::stroke_fill_path_storage_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_dash_storage_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::antialias_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_width_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_cap_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_join_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::miter_limit_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_dashes_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::tollerance_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::graphic_operator_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::arc_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::negative_arc_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::curve_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::vline_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::hline_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::rectangle_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::stroke_path_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::fill_path_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::stroke_fill_path_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::mask_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::paint_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::close_path_t);
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::function_object_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::arc_storage_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::negative_arc_storage_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::rectangle_storage_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::curve_storage_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_storage_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::stroke_fill_path_storage_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_dash_storage_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::antialias_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_width_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_cap_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_join_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::miter_limit_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_dashes_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::tollerance_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::graphic_operator_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::arc_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::negative_arc_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::curve_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::line_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::vline_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::hline_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::rectangle_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::stroke_path_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::fill_path_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::stroke_fill_path_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::mask_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::paint_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::close_path_t)

@@ -36,6 +36,23 @@
  * 	class_storage_emitter_t
  *
  */
+#include <ux_base.h>
+#include <ux_error.h>
+#include <ux_hash.h>
+#include <ux_enums.h>
+
+#include <ux_visitor_interface.h>
+#include <ux_matrix.h>
+#include <ux_draw_buffer.h>
+#include <ux_painter_brush.h>
+
+#include <ux_pipeline_memory.h>
+
+#include <ux_display_visual.h>
+#include <ux_display_context.h>
+#include <ux_display_unit_base.h>
+
+#include <ux_coordinate.h>
 
 namespace uxdevice {
 
@@ -45,9 +62,9 @@ namespace uxdevice {
  * from painter_brush_emitter_t.
  */
 class surface_area_brush_t
-    : public painter_brush_emitter_t<
-          surface_area_brush_t,
-          accepted_interfaces_t<abstract_emit_context_t<order_init>>> {
+  : public painter_brush_emitter_t<
+      surface_area_brush_t,
+      accepted_interfaces_t<abstract_emit_context_t<order_init>>> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
 
@@ -59,9 +76,9 @@ public:
  * @brief
  */
 class surface_area_title_t
-    : public storage_emitter_t<
-          surface_area_title_t, std::string,
-          accepted_interfaces_t<abstract_emit_context_t<order_init>>> {
+  : public storage_emitter_t<
+      surface_area_title_t, std::string,
+      accepted_interfaces_t<abstract_emit_context_t<order_init>>> {
 public:
   using storage_emitter_t::storage_emitter_t;
 
@@ -70,5 +87,5 @@ public:
 
 } // namespace uxdevice
 
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::surface_area_brush_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::surface_area_title_t);
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::surface_area_brush_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::surface_area_title_t)

@@ -186,19 +186,19 @@ public:
 
 } // namespace uxdevice
 
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_paint_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_focus_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_blur_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_resize_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_keydown_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_keyup_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_keypress_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_mouseenter_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_mousemove_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_mousedown_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_mouseup_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_click_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_dblclick_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_contextmenu_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_wheel_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_mouseleave_t);
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_paint_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_focus_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_blur_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_resize_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_keydown_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_keyup_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_keypress_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_mouseenter_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_mousemove_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_mousedown_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_mouseup_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_click_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_dblclick_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_contextmenu_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_wheel_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::listen_mouseleave_t)

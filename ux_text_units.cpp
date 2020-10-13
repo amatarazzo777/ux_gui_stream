@@ -18,13 +18,13 @@
 
 /**
  * @author Anthony Matarazzo
- * @file ux_text_units.hpp
+ * @file ux_text_units.cpp
  * @date 9/7/20
  * @version 1.0
  * @brief emit implementations for objects.
  */
 
-#include <ux_device.h>
+#include <ux_text_units.h>
 
 /**
  * @internal
@@ -158,7 +158,7 @@ void uxdevice::text_font_t::emit(PangoLayout *layout) {
   }
 
   const PangoFontDescription *internal_description =
-      pango_layout_get_font_description(layout);
+    pango_layout_get_font_description(layout);
   if (!internal_description ||
       !pango_font_description_equal(internal_description, font_ptr))
     if (font_ptr)
@@ -227,29 +227,29 @@ void uxdevice::text_shadow_t::emit(cairo_t *cr, coordinate_t *a) {
  * @brief
  *
  */
-void uxdevice::text_shadow_t::pipeline_acquire(cairo_t *cr, coordinate_t *a) {
+void uxdevice::text_shadow_t::pipeline_acquire() {
 
   pipeline_push<order_render>(fn_emit_cr_a_t{
-      [&](cairo_t *cr, coordinate_t *a) {
-        // draw the text in shadow color
-        if (internal_buffer) {
-          internal_buffer.emit(cr, a);
-          return;
-        }
-        auto coordinate =
-            coordinate_t{0, 0, a->w + x + radius * 2, a->h + y + radius * 2};
-        internal_buffer = draw_buffer_t(coordinate.w, coordinate.h);
-
-        pipeline_disable_visit<text_shadow_t>();
-        pipeline_push<order_render>(
-            fn_emit_cr_a_t{[&](cairo_t *cr, coordinate_t *a) {
-              internal_buffer.flush();
-              internal_buffer.blur_image(radius);
-
-              internal_buffer.emit(cr, a);
-            }});
+    [&](cairo_t *cr, coordinate_t *a) {
+      // draw the text in shadow color
+      if (internal_buffer) {
+        internal_buffer.emit(cr, a);
+        return;
       }
-      // pipeline_execute();
+
+      internal_buffer =
+        draw_buffer_t(a->w + x + radius * 2, a->h + y + radius * 2);
+
+      pipeline_disable_visit<text_shadow_t>();
+      pipeline_push<order_render>(
+        fn_emit_cr_a_t{[&](cairo_t *cr, coordinate_t *a) {
+          internal_buffer.flush();
+          internal_buffer.blur_image(radius);
+
+          internal_buffer.emit(cr, a);
+        }});
+    }
+    // pipeline_execute();
   });
 }
 
@@ -276,14 +276,14 @@ std::size_t uxdevice::text_data_t::hash_code(void) const noexcept {
   std::size_t __value = std::type_index(typeid(text_data_t)).hash_code();
 
   auto text_data_visitor = overload_visitors_t{
-      [&](std::string s) { hash_combine(__value, s); },
-      [&](std::string_view s) { hash_combine(__value, s); },
-      [&](std::shared_ptr<std::string> ps) { hash_combine(__value, *ps); },
-      [&](std::shared_ptr<std::string_view> ps) { hash_combine(__value, *ps); },
-      [&](std::shared_ptr<std::stringstream> ps) {
-        std::string stmp = ps->str();
-        hash_combine(__value, stmp);
-      }};
+    [&](std::string s) { hash_combine(__value, s); },
+    [&](std::string_view s) { hash_combine(__value, s); },
+    [&](std::shared_ptr<std::string> ps) { hash_combine(__value, *ps); },
+    [&](std::shared_ptr<std::string_view> ps) { hash_combine(__value, *ps); },
+    [&](std::shared_ptr<std::stringstream> ps) {
+      std::string stmp = ps->str();
+      hash_combine(__value, stmp);
+    }};
 
   std::visit(text_data_visitor, value);
 
@@ -301,31 +301,31 @@ std::size_t uxdevice::text_data_t::hash_code(void) const noexcept {
 void uxdevice::text_data_t::emit(PangoLayout *layout) {
   std::string_view sinternal = std::string_view(pango_layout_get_text(layout));
   auto text_data_visitor =
-      overload_visitors_t{[&](std::string &s) {
-                            if (s.compare(sinternal) != 0)
-                              pango_layout_set_text(layout, s.data(), -1);
-                          },
+    overload_visitors_t{[&](std::string &s) {
+                          if (s.compare(sinternal) != 0)
+                            pango_layout_set_text(layout, s.data(), -1);
+                        },
 
-                          [&](std::string_view &s) {
-                            if (s.compare(sinternal) != 0)
-                              pango_layout_set_text(layout, s.data(), -1);
-                          },
+                        [&](std::string_view &s) {
+                          if (s.compare(sinternal) != 0)
+                            pango_layout_set_text(layout, s.data(), -1);
+                        },
 
-                          [&](std::shared_ptr<std::string> ps) {
-                            if (ps->compare(sinternal) != 0)
-                              pango_layout_set_text(layout, ps->data(), -1);
-                          },
+                        [&](std::shared_ptr<std::string> ps) {
+                          if (ps->compare(sinternal) != 0)
+                            pango_layout_set_text(layout, ps->data(), -1);
+                        },
 
-                          [&](std::shared_ptr<std::string_view> ps) {
-                            if (ps->compare(sinternal) != 0)
-                              pango_layout_set_text(layout, ps->data(), -1);
-                          },
+                        [&](std::shared_ptr<std::string_view> ps) {
+                          if (ps->compare(sinternal) != 0)
+                            pango_layout_set_text(layout, ps->data(), -1);
+                        },
 
-                          [&](std::shared_ptr<std::stringstream> ps) {
-                            std::string stmp = ps->str();
-                            if (stmp.compare(sinternal) != 0)
-                              pango_layout_set_text(layout, stmp.data(), -1);
-                          }};
+                        [&](std::shared_ptr<std::stringstream> ps) {
+                          std::string stmp = ps->str();
+                          if (stmp.compare(sinternal) != 0)
+                            pango_layout_set_text(layout, stmp.data(), -1);
+                        }};
 
   std::visit(text_data_visitor, value);
 }

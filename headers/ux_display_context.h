@@ -18,14 +18,7 @@
 
 /**
 \author Anthony Matarazzo
-\file uxdisplayunits.hpp
-\date 9/7/20
-\version 1.0
-\brief
-*/
-/**
-\author Anthony Matarazzo
-\file uxdisplaycontext.hpp
+\file ux_display_context.h
 \date 5/12/20
 \version 1.0
  \details CLass holds the display window context, gui drawing, cairo
@@ -37,6 +30,17 @@
 */
 #pragma once
 
+#include <ux_base.h>
+#include <ux_hash.h>
+#include <ux_error.h>
+#include <ux_visitor_interface.h>
+#include <ux_enums.h>
+
+#include <ux_matrix.h>
+#include <ux_draw_buffer.h>
+#include <ux_painter_brush.h>
+#include <ux_pipeline_memory.h>
+#include <ux_display_visual.h>
 /**
  *
  * \typedef visual_list_t
@@ -46,7 +50,7 @@
 namespace uxdevice {
 typedef std::list<std::shared_ptr<display_visual_t>> visual_list_t;
 typedef std::list<std::shared_ptr<display_visual_t>>::iterator
-    visual_list_iter_t;
+  visual_list_iter_t;
 
 /**
  * @internal
@@ -54,19 +58,37 @@ typedef std::list<std::shared_ptr<display_visual_t>>::iterator
  * @brief
  */
 class display_context_t : virtual public hash_members_t,
-                          public pipeline_memory_t,
-                          virtual system_error_t {
+                          virtual system_error_t,
+                          public pipeline_memory_t {
 public:
   display_context_t(void) {}
 
-  display_context_t(const display_context_t &other) { *this = other; }
+  display_context_t(const display_context_t &other)
+    : hash_members_t(other), system_error_t(other), pipeline_memory_t(other),
+      window_x(other.window_x), window_y(other.window_y),
+      window_width(other.window_width), window_height(other.window_height),
+      window_open(other.window_open), cr(cairo_reference(other.cr)),
+      xdisplay(other.xdisplay), connection(other.connection),
+      screen(other.screen), window(other.window), graphics(other.graphics),
+      visualType(other.visualType), syms(other.syms),
+      xcbSurface(other.xcbSurface), _regions(other._regions),
+      _surfaceRequests(other._surfaceRequests) {}
 
   // move constructor
-  display_context_t(display_context_t &&other) noexcept {
-    { *this = other; }
-  }
+  display_context_t(display_context_t &&other) noexcept
+    : hash_members_t(other), system_error_t(other), pipeline_memory_t(other),
+      window_x(other.window_x), window_y(other.window_y),
+      window_width(other.window_width), window_height(other.window_height),
+      window_open(other.window_open), cr(other.cr), xdisplay(other.xdisplay),
+      connection(other.connection), screen(other.screen), window(other.window),
+      graphics(other.graphics), visualType(other.visualType), syms(other.syms),
+      xcbSurface(other.xcbSurface), _regions(other._regions),
+      _surfaceRequests(other._surfaceRequests) {}
 
   display_context_t &operator=(const display_context_t &other) {
+    hash_members_t::operator=(other);
+    system_error_t::operator=(other);
+    pipeline_memory_t::operator=(other);
     window_x = other.window_x;
     window_y = other.window_y;
     window_width = other.window_width;
@@ -124,8 +146,8 @@ public:
   void state_notify_complete(void);
 
   void clear(void);
-  virtual void pipeline_acquire(cairo_t *cr, coordinate_t *a) {};
-  virtual bool pipeline_has_required_linkages(void) { return true;}
+  virtual void pipeline_acquire(){};
+  virtual bool pipeline_has_required_linkages(void) { return true; }
   virtual std::size_t hash_code(void) const noexcept {
     std::size_t __value = {};
     hash_combine(__value, std::type_index(typeid(this)),

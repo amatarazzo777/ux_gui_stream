@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
+
 
 /**
  @author Anthony Matarazzo
@@ -25,6 +25,30 @@
  @brief pipeline memory storage and visitation logic
 
  */
+
+#include <ux_compile_options.h>
+#include <ux_base.h>
+#include <ux_error.h>
+#include <ux_variant_visitor.h>
+#include <ux_visitor_interface.h>
+#include <ux_hash.h>
+
+#include <ux_enums.h>
+
+#include <ux_matrix.h>
+#include <ux_draw_buffer.h>
+#include <ux_painter_brush.h>
+
+#include <ux_pipeline_memory.h>
+
+#include <ux_display_visual.h>
+#include <ux_display_context.h>
+#include <ux_display_unit_base.h>
+
+#include <ux_coordinate.h>
+
+#pragma once
+
 
 /**
  * @internal
@@ -36,10 +60,21 @@
 namespace uxdevice {
 typedef std::function<std::size_t(void)> hash_function_t;
 
+/**
+ * @internal
+ * @typedef pipeline_io_storage_t
+ * @brief pipeline storage object
+ */
+
 typedef std::tuple<std::size_t, fn_emit_overload_t> pipeline_io_storage_t;
+/**
+ * @internal
+ * @typedef pipeline_t
+ * @brief pipeline storage
+ */
 typedef std::vector<pipeline_io_storage_t> pipeline_t;
 
-/*
+/**
  * @internal
  * @class pipeline_memory_object_t
  *
@@ -53,22 +88,53 @@ public:
   hash_function_t hash_function = {};
 };
 
-/*
- * internal
- * @class pipeline_memory_storage_t
+/**
+ * @internal
+ * @typedef pipeline_memory_storage_t
  *
  * @brief object storage in a typed index fashion
  */
 typedef std::unordered_map<std::type_index, pipeline_memory_object_t>
-    pipeline_memory_storage_t;
+  pipeline_memory_storage_t;
 
 /**
- * forward class declaration
+ * @internal
+ * @typedef
+ * @brief holds index of function prototype usage for counting sequence within
+ * the order stage group. The stage group id "order" constant is multiplied to
+ * shift to the left. This number is used in the lower bound of the overall
+ * index sequence placed within the pipeline.
+ */
+typedef std::unordered_map<std::type_index, std::size_t>
+  pipeline_fn_sequence_storage_t;
+
+/**
+ * @internal
+ * @const
+ * @brief the shift multipler. At 1000, about 999 objects may appear to do their
+ * work.
+ */
+const std::size_t pipeline_sequence_multiplier = 1000;
+
+/**
+ * @brief forward class declaration
  */
 class display_unit_t;
 
 /**
+ * @internal
  * @class pipeline_memory_t
+ * @brief Class that provides a storage and build template functions that
+ * iterate based up function prototype signatures already defined. The pipeline
+ * is sorted and a sequential execution of the underlying object member
+ * functions is called using the std::visit for variant.
+ *
+ * The class, however named differently, accepted_interface_t is directly used
+ * within the approach to building and using the objects in this fashion.
+ * If interface signatures match up, they simply placed into the pipeline. The
+ * order at this point is undetermined as the iterator used is over the
+ * unordered_map. When items are inserted, along with the order, they also are
+ * numerically labeled as a subset index.
  */
 class pipeline_memory_t {
 public:
@@ -82,6 +148,7 @@ public:
     pipeline_io = other.pipeline_io;
     return *this;
   }
+
   /// @brief move assignment
   pipeline_memory_t &operator=(pipeline_memory_t &&other) noexcept {
     bfinalized = std::move(other.bfinalized);
@@ -92,17 +159,28 @@ public:
 
   /// @brief move constructor
   pipeline_memory_t(pipeline_memory_t &&other) noexcept
-      : bfinalized(std::move(other.bfinalized)),
-        storage(std::move(other.storage)),
-        pipeline_io(std::move(other.pipeline_io)) {}
+    : bfinalized(std::move(other.bfinalized)),
+      storage(std::move(other.storage)),
+      pipeline_io(std::move(other.pipeline_io)) {}
 
   /// @brief copy constructor
   pipeline_memory_t(const pipeline_memory_t &other)
-      : bfinalized(other.bfinalized), storage(other.storage),
-        pipeline_io(other.pipeline_io) {}
+    : bfinalized(other.bfinalized), storage(other.storage),
+      pipeline_io(other.pipeline_io) {}
 
   /**
+   * @internal
    * @fn pipeline_memory_linkages
+   * @brief function used by object during initialization. It provides a
+   * summary copy view and shared pointer linkages to the items stored within
+   * the context. The matching is done via @ operation within the visitor_target
+   * passed. Simply the object internally names and decides which set it may
+   * want a copy of. The routine iterates the collection and builds a new one
+   * locally. Additionally other objects may be stored within the pipeline that
+   * is used by the object elsewhere. This is done with the lay out visitor. The
+   * object stored within the map by type is within an std::any object so
+   * requesting it is done by updating the visitor prototype and dispatch
+   * lambda.
    */
   void pipeline_memory_linkages(display_context_t *context,
                                 std::size_t visitor_target);
@@ -116,6 +194,7 @@ public:
   }
 
   /**
+   * @internal
    * @fn pipeline_memory_store
    * @tparam T
    * @brief
@@ -151,6 +230,7 @@ public:
   }
 
   /**
+   * @internal
    * @fn pipeline_memory_store
    * @tparam T
    * @brief Storage of a just data can be any type but only one type position
@@ -160,18 +240,19 @@ public:
    */
   template <typename T> void pipeline_memory_store(const T &o) {
     auto ti = std::type_index(typeid(T));
-    storage[ti] = pipeline_memory_object_t{o, 0, nullptr,
-                                           [&]() { return ti.hash_code(); }};
+    storage[ti] =
+      pipeline_memory_object_t{o, 0, nullptr, [&]() { return ti.hash_code(); }};
   }
 
   /**
+   * @internal
    * @fn pipeline_memory_access
    * @tparam T
    * @brief returns the shared pointer of the visitor or just the data if it
    * is not an internal system processing type. That is system processing
    * types are deduced by their inheritance of the  visitor_interfaces_t
    * within this programming construct. The return type is deduced using the
-   * decltype(auto) while the type changes based upoon the constexpr if. *
+   * decltype(auto) while the type changes based upon the constexpr if. *
    */
   template <typename T>
   decltype(auto) pipeline_memory_access(void) const noexcept {
@@ -197,6 +278,7 @@ public:
   }
 
   /**
+   * @internal
    * @fn pipeline_memory_reset
    * @tparam T
    * @brief resets the memory associated with the type passed in the template
@@ -207,6 +289,7 @@ public:
     bfinalized = false;
   }
   /**
+   * @internal
    * @fn pipeline_memory_hash_code
    * @brief returns the combined hash code for the entire pipeline memory.
    */
@@ -219,6 +302,7 @@ public:
   }
 
   /**
+   * @internal
    * @fn pipeline_memory_hash_code
    * @tparam T
    * @brief returns the hash code of a specific type.
@@ -234,6 +318,30 @@ public:
   }
 
   /**
+   * @fn std::size_t pipeline_fn_sequence(void)
+   * @brief maintains unordered map count associated by type index of the
+   * template parameter. It is initialized to 1 if not found, however
+   * incremented if exists.
+   *
+   * @tparam FN
+   * @return the index sequence.
+   */
+  template <typename FN> std::size_t pipeline_fn_sequence(void) {
+    auto ty = std::type_index(typeid(FN));
+    auto it = pipeline_fn_sequence_storage.find(ty);
+    std::size_t ret = {};
+
+    if (it == pipeline_fn_sequence_storage.end()) {
+      pipeline_fn_sequence_storage[ty] = 1;
+      ret = 1;
+    } else {
+      ret = pipeline_fn_sequence_storage[ty]++;
+    }
+    return ret;
+  }
+
+  /**
+   * @internal
    * @fn pipeline_push
    * @param overload_visitors_t &visitors
    * @brief places a lambda expression onto the pipeline with the order
@@ -241,11 +349,14 @@ public:
    */
   template <std::size_t N, typename FN> void pipeline_push(FN fn) {
     fn_emit_overload_t vfn = fn;
-    pipeline_io.emplace_back(std::make_tuple(N, vfn));
+    std::size_t sequence_of_fn_emit =
+      N * pipeline_sequence_multiplier + pipeline_fn_sequence<FN>();
+    pipeline_io.emplace_back(std::make_tuple(sequence_of_fn_emit, vfn));
     bfinalized = false;
   }
 
   /**
+   * @internal
    * @fn unit_memory_to_staged_pipeline
    * @param overload_visitors_t &visitors
    * @brief traverses the objects related and emits them to the overloaded
@@ -253,10 +364,10 @@ public:
    */
   template <typename... Args> void pipeline_push_visit(void) {
     std::list<std::type_index> overloaded_visitors = {
-        std::type_index(typeid(Args))...};
+      std::type_index(typeid(Args))...};
 
     /**
-     * Gather and add all associated items  with interfaces that match.
+     * brief Gather and add all associated items  with interfaces that match.
      * inserting them into the priority queue establishes order in the stages.
      * Each of the objects publicly inherit template class pipeline_sort_order
      * with a constant which is used also here within the priority queue
@@ -273,22 +384,66 @@ public:
         // test if object accepts the visitor interface
         // requested by the template param pack (ti)
         if (o.second.accept_interfaces) {
+
+          // find interface
           auto v = o.second.accept_interfaces->find(ti);
-          if (v != o.second.accept_interfaces->end())
-            pipeline_io.push_back({v->second->pipeline_order, v->second->fn});
+
+          // if interface is supported.
+          if (v != o.second.accept_interfaces->end()) {
+
+            // compute sequence accounting for previous invocations
+            std::size_t sequence_of_fn_emit =
+              v->second->pipeline_order * pipeline_sequence_multiplier +
+              pipeline_fn_sequence<FN>();
+
+            // add to pipeline
+            pipeline_io.emplace_back({sequence_of_fn_emit, v->second->fn});
+          }
         }
 
+    // ensure this will be sorted before executed.
     bfinalized = false;
   }
 
   /**
-   * @fn unit_memory_clear
-   * @brief
+   * @internal
+   * @fn pipeline_memory_clear
+   * @brief A distinct function from the pipeline_memory_erase<T> where
+   * individual items are erased. This function is exptect to be called during a
+   * pipeline reset or clear for initialization. It also clears the function
+   * index sequence associated with visiting index sequence count.
    */
-  void pipeline_memory_reset(void) { storage.clear(); }
+  void pipeline_memory_clear(void) {
+    storage.clear();
+    pipeline_fn_sequence_storage.clear();
+  }
 
-  virtual void pipeline_acquire(cairo_t *cr, coordinate_t *a) = 0;
+  /**
+   * @internal
+   * @fn void pipeline_acquire(void)=0
+   * @brief Interface function must be implemented by object. The function
+   * fills the pipeline using the visit method provided in template below.
+   * An important feature is that single lambda or groups of lambda stored
+   * within the pipeline can be inserted by signature prototype. Once sorted,
+   * this provides a stream line execution of the function storage within the
+   * vector.
+   *
+   */
+  virtual void pipeline_acquire(void) = 0;
+
+  /**
+   * @internal
+   * @fn bool pipeline_has_required_linkages(void)=0
+   * @brief Interface function must be implemented by object. THe function
+   * provides a validation routine before the object is trusted to render and
+   * operate correctly with the parameter and environment. The object makes
+   * the decision.
+   *
+   * @return
+   */
   virtual bool pipeline_has_required_linkages(void) = 0;
+
+  /// @brief performs the sequence of functions
   void pipeline_execute(display_context_t *context);
 
   /**
@@ -321,8 +476,9 @@ public:
     bfinalized = true;
   }
 
+  /// @brief public variables
   bool bfinalized = false;
   pipeline_memory_storage_t storage = {};
   pipeline_t pipeline_io = {};
-}; // namespace uxdevice
+};
 } // namespace uxdevice

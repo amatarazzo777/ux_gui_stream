@@ -33,14 +33,23 @@ namespace uxdevice {
 class system_error_t {
 public:
   system_error_t() {}
-  system_error_t(const system_error_t &other) {}
-
   virtual ~system_error_t() {}
-#define UX_ERRORS_SPIN                                                         \
-  while (lockErrors.test_and_set(std::memory_order_acquire))
+  /// @brief copy constructor
+  system_error_t(const system_error_t &other) : _errors(other._errors) {}
 
-#define UX_ERRORS_CLEAR lockErrors.clear(std::memory_order_release);
+  /// @move constructor
+  system_error_t(system_error_t &&other) : _errors(std::move(other._errors)) {}
 
+  /// @copy assignment operator
+  system_error_t &operator=(const system_error_t &other) {
+    _errors = other._errors;
+    return *this;
+  }
+  /// @move assignment operator
+  system_error_t &operator=(const system_error_t &&other) noexcept {
+    _errors = std::move(other._errors);
+    return *this;
+  }
   /**
    * @internal
    * @fn error_report
@@ -50,14 +59,15 @@ public:
    */
   void error_report(std::string sfile, const std::size_t ln, std::string sfunc,
                     std::string edescription) {
-    UX_ERRORS_SPIN;
+    while (lockErrors.test_and_set(std::memory_order_acquire))
+      ;
     std::stringstream ss;
     ss << sfile << "\n"
        << sfunc << "(" << ln << ") -  " << sfunc << "() :-->\n"
        << edescription << "\n";
     _errors.emplace_back(ss.str());
 
-    UX_ERRORS_CLEAR;
+    lockErrors.clear(std::memory_order_release);
   }
   /**
    * @internal
@@ -68,14 +78,15 @@ public:
    */
   void error_report(std::string_view sfile, const std::size_t ln,
                     std::string_view sfunc, std::string_view edescription) {
-    UX_ERRORS_SPIN;
+    while (lockErrors.test_and_set(std::memory_order_acquire))
+      ;
     std::stringstream ss;
     ss << sfile << "\n"
        << sfunc << "(" << ln << ") -  " << sfunc << "() :-->\n"
        << edescription << "\n";
     _errors.emplace_back(ss.str());
 
-    UX_ERRORS_CLEAR;
+    lockErrors.clear(std::memory_order_release);
   }
 
   /**
@@ -145,12 +156,13 @@ public:
    * @brief
    */
   std::string error_text(void) {
-    UX_ERRORS_SPIN;
+    while (lockErrors.test_and_set(std::memory_order_acquire))
+      ;
     std::string ret;
     for (auto s : _errors)
       ret += s + "\n";
 
-    UX_ERRORS_CLEAR;
+    lockErrors.clear(std::memory_order_release);
     return ret;
   }
 

@@ -42,7 +42,7 @@ uses this type. All classes can provide an indirect numerical or string key.
 The [] operator exposes searching for objects.
  */
 typedef std::variant<std::monostate, std::string, std::size_t>
-    indirect_index_storage_t;
+  indirect_index_storage_t;
 
 /**
  * @typedef cairo_function_t
@@ -69,22 +69,28 @@ public:
 
   /// @brief copy assignment operator
   display_unit_t &operator=(const display_unit_t &other) {
+    hash_members_t::operator=(other);
+    system_error_t::operator=(other);
     is_processed = other.is_processed;
     return *this;
   }
   /// @brief move assignment
   display_unit_t &operator=(display_unit_t &&other) noexcept {
+    hash_members_t::operator=(other);
+    system_error_t::operator=(other);
     is_processed = std::move(other.is_processed);
     return *this;
   }
 
   /// @brief move constructor
   display_unit_t(display_unit_t &&other) noexcept
-      : is_processed(std::move(other.is_processed)) {}
+    : hash_members_t(other), system_error_t(other),
+      is_processed(std::move(other.is_processed)) {}
 
   /// @brief copy constructor
   display_unit_t(const display_unit_t &other)
-      : is_processed(other.is_processed) {}
+    : hash_members_t(other), system_error_t(other),
+      is_processed(other.is_processed) {}
 
   virtual ~display_unit_t() {}
 
@@ -133,11 +139,12 @@ public:
 };
 
 /**
-@internal
-@class typed_index_t
-@tparam
-@brief
-*/
+ * @internal
+ * @class typed_index_t
+ * @tparam T unit type.
+ * @brief class wraps non template key_storage to provide continuation syntax
+ * within the object creation parameters.
+ */
 template <typename T>
 class typed_index_t : public key_storage_t, virtual public hash_members_t {
 public:
@@ -146,103 +153,170 @@ public:
 
   /// @brief copy assignment operator
   typed_index_t &operator=(const typed_index_t &other) {
+    hash_members_t::operator=(other);
     key_storage_t::operator=(other);
     return *this;
   }
   /// @brief move assignment
   typed_index_t &operator=(typed_index_t &&other) noexcept {
+    hash_members_t::operator=(other);
     key_storage_t::operator=(other);
     return *this;
   }
   /// @brief move constructor
-  typed_index_t(typed_index_t &&other) noexcept : key_storage_t(other) {}
+  typed_index_t(typed_index_t &&other) noexcept
+    : hash_members_t(other), key_storage_t(other) {}
 
   /// @brief copy constructor
   typed_index_t(const typed_index_t &other) : key_storage_t(other) {}
 
+  /**
+   * @internal
+   * @fn T index&(const std::string&)
+   * @brief returns reference to requested type. This simply provides a
+   * continuation syntax when using the obj.index() method within the <<
+   * operator or "in" template function.
+   *
+   * @param _k
+   * @return T &
+   */
   T &index(const std::string &_k) {
     key_storage_t::operator=(indirect_index_storage_t(_k));
-    return *static_cast<T *>(this);
+    return *dynamic_cast<T *>(this);
   }
+
+  /**
+   * @internal
+   * @fn T index&(const std::string&)
+   * @brief returns reference to requested type. This simply provides a
+   * continuation syntax when using the obj.index() method within the <<
+   * operator or "in" template function.
+   *
+   * @param _k
+   * @return T &
+   */
   T &index(const std::size_t &_k) {
     key_storage_t::operator=(indirect_index_storage_t(_k));
-    return *static_cast<T *>(this);
+    return *dynamic_cast<T *>(this);
   }
+  /**
+   * @fn std::size_t hash_code(void)const
+   * @brief hash code of object.
+   *
+   * @return std::size_t
+   */
   std::size_t hash_code(void) const noexcept {
     std::size_t __value = {};
-    hash_combine(__value, std::type_index(typeid(display_visual_t)), key);
+    hash_combine(__value, std::type_index(typeid(typed_index_t)), key);
     return __value;
   }
   virtual ~typed_index_t() {}
 };
 
 /**
-@internal
-@class painter_brush_emitter_t
-@tparam T used to note and enable the typed index interface which allows
-continuation syntax when objects are created and an indirect index is applied.
-Such as: text_font_t{"arial 20px"}.index("idxfont")
-Here the .index property returns a strong type of the original.
-
-
-@tparam Args... provides the ability to catch specific functions and their
-prototypes. emit. Attributes may also be listed that apply to specific
-functionality of the system such as labeling items as textual rendering
-related. This is useful when applying attributes that comprise a rendering
-function.
-
-
-@brief creates a painter brush object that is also a display unit.
-class inherits publicly display_unit_t and painter_brush_t. The
-painter_brush_t constructor interface is also inherited which allows
-multiple types of brushes to be defined in several formats,
-
-*/
+ * @internal
+ * @class painter_brush_emitter_t
+ *
+ * @tparam T used to note and enable the typed index interface which allows
+ * continuation syntax when objects are created and an indirect index is
+ * applied. Such as: text_font_t{"arial 20px"}.index("idxfont") Here the .index
+ * property returns a strong type of the original.
+ *
+ * @tparam Args... provides the ability to catch specific functions and their
+ * prototypes. emit. Attributes may also be listed that apply to specific
+ * functionality of the system such as labeling items as textual rendering
+ * related. This is useful when applying attributes that comprise a rendering
+ * function.
+ *
+ * @brief creates a painter brush object that is also a display unit. class
+ * inherits publicly display_unit_t and painter_brush_t. The painter_brush_t
+ * constructor interface is also inherited which allows multiple types of
+ * brushes to be defined in several formats,  */
 template <typename T, typename... Args>
-class painter_brush_emitter_t : public display_unit_t,
+class painter_brush_emitter_t : virtual public hash_members_t,
+                                public system_base_t,
+                                public display_unit_t,
                                 public painter_brush_t,
-                                virtual public hash_members_t,
                                 public typed_index_t<T>,
-                                std::enable_shared_from_this<T>,
-                                public Args...,
-                                public system_base_t {
+                                public Args... {
 
 public:
   using painter_brush_t::painter_brush_t;
   painter_brush_emitter_t() {}
 
-  // copy constructor
+  /// @brief copy constructor
   painter_brush_emitter_t(const painter_brush_emitter_t &other)
-      : display_unit_t(other),
-        painter_brush_t(other), typed_index_t<T>::typed_index_t(other) {}
-  // move constructor
+    : hash_members_t(other), system_error_t(other), system_base_t(other),
+      display_unit_t(other),
+      painter_brush_t(other), typed_index_t<T>::typed_index_t(other) {}
+
+  /// @brief move constructor
   painter_brush_emitter_t(painter_brush_emitter_t &&other) noexcept
-      : display_unit_t(other),
-        painter_brush_t(other), typed_index_t<T>::typed_index_t(other) {}
+    : hash_members_t(other), system_error_t(other), system_base_t(other),
+      display_unit_t(other),
+      painter_brush_t(other), typed_index_t<T>::typed_index_t(other),
+      system_base_t(other) {}
 
-  // copy assignment operator
+  /// @brief copy assignment operator
   painter_brush_emitter_t &operator=(const painter_brush_emitter_t &other) {
-    display_unit_t::operator=(other);
-    typed_index_t<T>::operator=(other);
     hash_members_t::operator=(other);
+    system_base_t::operator=(other);
+    system_error_t::operator=(other);
+    display_unit_t::operator=(other);
     painter_brush_t::operator=(other);
+    typed_index_t<T>::operator=(other);
+
     return *this;
   }
-  // move assignment operator
+  /// @brief move assignment operator
   painter_brush_emitter_t &operator=(painter_brush_emitter_t &&other) noexcept {
-    display_unit_t::operator=(other);
-    typed_index_t<T>::operator=(other);
     hash_members_t::operator=(other);
+    system_base_t::operator=(other);
+    system_error_t::operator=(other);
+    display_unit_t::operator=(other);
     painter_brush_t::operator=(other);
+    typed_index_t<T>::operator=(other);
     return *this;
   }
 
+  /**
+   * @fn  ~painter_brush_emitter_t()
+   * @brief
+   *
+   */
   virtual ~painter_brush_emitter_t() {}
 
+  /**
+   * @fn void emit(display_context_t*)
+   * @brief
+   *
+   * @param context
+   */
   void emit(display_context_t *context) { painter_brush_t::emit(context->cr); }
+
+  /**
+   * @fn void emit(cairo_t*)
+   * @brief
+   *
+   * @param cr
+   */
   void emit(cairo_t *cr) { painter_brush_t::emit(cr); }
+
+  /**
+   * @fn void emit(cairo_t*, coordinate_t*)
+   * @brief
+   *
+   * @param cr
+   * @param a
+   */
   void emit(cairo_t *cr, coordinate_t *a) { painter_brush_t::emit(cr, a); }
 
+  /**
+   * @fn std::size_t hash_code(void)const
+   * @brief
+   *
+   * @return
+   */
   std::size_t hash_code(void) const noexcept {
     std::size_t __value = {};
     hash_combine(__value, std::type_index(typeid(T)),
@@ -258,39 +332,63 @@ public:
 };
 
 /**
-@internal
-@class marker_emitter_t
-
-@tparam T - the name the display unit should assume.
-
-@tparam Args... - lists applicable invoke and emit functions.
-Depending on the particular display unit type, context, pango or cairo
-emit functions may be included from the abstract base functions. When
-these are listed, the interface callback must be defined.
-
-@brief declares a class that marks a unit as an emitter but does not store a
-value. This is useful for switch and state logic. When the item is present, the
-emit method is called. class inherits publicly display_unit_t
-
-*/
+ * @internal
+ * @class marker_emitter_t
+ * @tparam T - the name the display unit should assume.
+ * @tparam Args... - lists applicable invoke and emit functions. Depending on
+ * the particular display unit type, context, pango or cairo emit functions may
+ * be included from the abstract base functions. When these are listed, the
+ * interface callback must be defined.
+ * @brief declares a class that marks a unit as an emitter but does not store a
+ * value. This is useful for switch and state logic. When the item is present,
+ * the emit method is called. class inherits publicly display_unit_t
+ */
 template <typename T, typename... Args>
-class marker_emitter_t : public display_unit_t,
-                         virtual public hash_members_t,
+class marker_emitter_t : virtual public hash_members_t,
+                         public system_base_t,
+                         public display_unit_t,
                          public typed_index_t<T>,
-                         public Args...,
-                         public system_base_t {
+                         public Args... {
 public:
   marker_emitter_t() {}
+  virtual ~marker_emitter_t() {}
 
-  marker_emitter_t &operator=(marker_emitter_t &&other) noexcept {
-    display_unit_t::operator=(other);
-    return *this;
-  }
+  /// @brief copy constructor
+  marker_emitter_t(const marker_emitter_t &other)
+    : hash_members_t(other), system_error_t(other), system_base_t(other),
+      display_unit_t(other), typed_index_t<T>(other) {}
 
+  /// @brief move constructor
+  marker_emitter_t(marker_emitter_t &&other) noexcept
+    : hash_members_t(other), system_error_t(other), system_base_t(other),
+      display_unit_t(other), typed_index_t<T>(other) {}
+
+  /// @brief copy assignment operator
   marker_emitter_t &operator=(const marker_emitter_t &other) {
+    hash_members_t::operator=(other);
+    system_error_t::operator=(other);
+    system_base_t::operator=(other);
     display_unit_t::operator=(other);
+    typed_index_t<T>::operator=(other);
     return *this;
   }
+
+  /// @brief move assignment operator
+  marker_emitter_t &operator=(marker_emitter_t &&other) noexcept {
+    hash_members_t::operator=(other);
+    system_error_t::operator=(other);
+    system_base_t::operator=(other);
+    display_unit_t::operator=(other);
+    typed_index_t<T>::operator=(other);
+    return *this;
+  }
+
+  /**
+   * @fn std::size_t hash_code(void)const
+   * @brief hash of object
+   *
+   * @return std::size_t
+   */
   std::size_t hash_code(void) const noexcept {
     std::size_t __value = {};
     hash_combine(__value, typed_index_t<T>::hash_code(),
@@ -299,34 +397,28 @@ public:
 
     return __value;
   }
-
-  marker_emitter_t(marker_emitter_t &&other) noexcept : display_unit_t(other) {}
-  marker_emitter_t(const marker_emitter_t &other) : display_unit_t(other) {}
-
-  virtual ~marker_emitter_t() {}
 };
 
 /**
-@internal
-
-@class storage_emitter_t
-
-@tparam T - the name the display unit should assume.
-
-@tparam TS - the storage class or trivial type.
-
-@tparam Args... - lists applicable invoke and emit functions.
-Depending on the particular display unit type, context, pango or cairo
-emit functions may be included from the abstract base functions. When
-these are listed, the interface callback must be defined.
-
-@brief provides the flexibility to store associated trivial data such as enum,
-double, etc. The template names this storage area within the object 'value'.
-This can be accessed and controlled from the emit function. A default
-constructor is established which zero initializes the value. As well,
-a constructor accepting the initial value of the given storage  type.
-
-*/
+ * @internal
+ * @class storage_emitter_t
+ *
+ * @tparam T - the name the display unit should assume.
+ *
+ * @tparam TS - the storage class or trivial type.
+ *
+ * @tparam Args... - lists applicable invoke and emit functions. Depending on
+ * the particular display unit type, context, pango or cairo emit functions may
+ * be included from the abstract base functions. When these are listed, the
+ * interface callback must be defined.
+ *
+ * @brief provides the flexibility to store associated trivial data such as
+ * enum, double, etc. The template names this storage area within the object
+ * 'value'. This can be accessed and controlled from the emit function. A
+ * default constructor is established which zero initializes the value. As well,
+ * a constructor accepting the initial value of the given storage  type.
+ *
+ */
 template <typename T, typename TS, typename... Args>
 class storage_emitter_t : virtual public hash_members_t,
                           public display_unit_t,
@@ -336,36 +428,43 @@ class storage_emitter_t : virtual public hash_members_t,
 public:
   storage_emitter_t() : value(TS{}) {}
   storage_emitter_t(const TS &o) : value(o) {}
-
-  // copy constructor
-  storage_emitter_t(const storage_emitter_t &other)
-      : hash_members_t(other), display_unit_t(other), typed_index_t<T>(other),
-        value(other.value) {}
-
-  // move constructor
-  storage_emitter_t(storage_emitter_t &&other) noexcept
-      : hash_members_t(other), display_unit_t(other), typed_index_t<T>(other),
-        value(other.value) {}
-
-  // copy assignment operator
-  storage_emitter_t &operator=(const storage_emitter_t &other) {
-    value = other.value;
-    display_unit_t::operator=(other);
-    typed_index_t<T>::operator=(other);
-    hash_members_t::operator=(other);
-    return *this;
-  }
-
-  // move assignment operator
-  storage_emitter_t &operator=(storage_emitter_t &&other) noexcept {
-    value = other.other;
-    display_unit_t::operator=(other);
-    typed_index_t<T>::operator=(other);
-    hash_members_t::operator=(other);
-    return *this;
-  }
-
   virtual ~storage_emitter_t() {}
+
+  /// @brief copy constructor
+  storage_emitter_t(const storage_emitter_t &other)
+    : hash_members_t(other), system_error_t(other),
+      display_unit_t(other), typed_index_t<T>(other), value(other.value) {}
+
+  /// @brief move constructor
+  storage_emitter_t(storage_emitter_t &&other) noexcept
+    : hash_members_t(other), system_error_t(other),
+      display_unit_t(other), typed_index_t<T>(other), value(other.value) {}
+
+  /// @brief copy assignment operator
+  storage_emitter_t &operator=(const storage_emitter_t &other) {
+    hash_members_t::operator=(other);
+    system_error_t::operator=(other);
+    display_unit_t::operator=(other);
+    typed_index_t<T>::operator=(other);
+    value = other.value;
+    return *this;
+  }
+
+  /// @brief move assignment operator
+  storage_emitter_t &operator=(storage_emitter_t &&other) noexcept {
+    hash_members_t::operator=(other);
+    system_error_t::operator=(other);
+    display_unit_t::operator=(other);
+    typed_index_t<T>::operator=(other);
+    value = other.other;
+    return *this;
+  }
+  /**
+   * @fn std::size_t hash_code(void)const
+   * @brief hash of object
+   *
+   * @return
+   */
   std::size_t hash_code(void) const noexcept {
     std::size_t __value = {};
     hash_combine(__value, typed_index_t<T>::hash_code(),
@@ -378,23 +477,20 @@ public:
 };
 
 /**
-@internal
-@class class_storage_emitter_t
-
-@tparam T - the name the display unit should assume.
-
-@tparam TC - the storage class type. The storage type is publicly
-inherited and all constructors are also inherited. The class must include
-the hash_members_t interface. That is, implement the hash_code()
- member function.
-
-@tparam Args... - inherits the data class interface as public.
-  There constructors are inherited as well as the public methods of the class.
-
-@brief provides the flexibility to create classes that store associated data.
-
-
-*/
+ * @internal
+ * @class class_storage_emitter_t
+ * @brief provides the flexibility to create classes that store associated data.
+ *
+ * @tparam T - the name the display unit should assume.
+ *
+ * @tparam TC - the storage class type. The storage type is publicly inherited
+ * and all constructors are also inherited. The class must include the
+ * hash_members_t interface. That is, implement the hash_code() member function.
+ *
+ * @tparam Args... - inherits the data class interface as public. There
+ * constructors are inherited as well as the public methods of the class.
+ *
+ */
 template <typename T, typename TC, typename... Args>
 class class_storage_emitter_t : public TC,
                                 public typed_index_t<T>,
@@ -405,18 +501,19 @@ class class_storage_emitter_t : public TC,
 public:
   using TC::TC;
   class_storage_emitter_t() {}
+  virtual ~class_storage_emitter_t() {}
 
-  // copy constructor
+  /// @brief copy constructor
   class_storage_emitter_t(const class_storage_emitter_t &other)
-      : hash_members_t(other), TC(other), typed_index_t<T>(other),
-        display_unit_t(other) {}
+    : hash_members_t(other), TC(other), typed_index_t<T>(other),
+      display_unit_t(other) {}
 
-  // move constructor
+  /// @brief move constructor
   class_storage_emitter_t(class_storage_emitter_t &&other) noexcept
-      : hash_members_t(other), TC(other), typed_index_t<T>(other),
-        display_unit_t(other) {}
+    : hash_members_t(other), TC(other), typed_index_t<T>(other),
+      display_unit_t(other) {}
 
-  // copy assignment operator
+  /// @brief copy assignment operator
   class_storage_emitter_t &operator=(const class_storage_emitter_t &other) {
     display_unit_t::operator=(other);
     hash_members_t::operator=(other);
@@ -425,7 +522,7 @@ public:
     return *this;
   }
 
-  // move assignment operator
+  /// @brief move assignment operator
   class_storage_emitter_t &operator=(class_storage_emitter_t &&other) noexcept {
     display_unit_t::operator=(other);
     hash_members_t::operator=(other);
@@ -434,8 +531,12 @@ public:
     return *this;
   }
 
-  virtual ~class_storage_emitter_t() {}
-
+  /**
+   * @fn std::size_t hash_code(void)const
+   * @brief
+   *
+   * @return
+   */
   std::size_t hash_code(void) const noexcept {
     std::size_t __value = {};
     hash_combine(__value, typed_index_t<T>::hash_code(),
@@ -449,9 +550,8 @@ public:
 } // namespace uxdevice
 
 /**
-@internal
-\template specializes the std::hash<uxdevice::indirect_index_display_unit_t>
- * std structure for () operator hashing.
+ * @internal
+ * @brief template specializes the indirect_index_display_unit_t
  */
 template <> struct std::hash<uxdevice::indirect_index_storage_t> {
   std::size_t
@@ -466,6 +566,10 @@ template <> struct std::hash<uxdevice::indirect_index_storage_t> {
   }
 };
 
+/**
+ * @internal
+ * @brief template specializes the cairo_function_t
+ */
 template <> struct std::hash<uxdevice::cairo_function_t> {
   std::size_t operator()(uxdevice::cairo_function_t const &o) const noexcept {
     return reinterpret_cast<std::size_t>(std::addressof(o));

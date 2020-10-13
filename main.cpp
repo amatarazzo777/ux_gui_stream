@@ -376,11 +376,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /* hPrevInstance */,
 #define _C color(gen)
 #define _A opac(gen)
 
+  auto pn=painter_brush_t("green");
+
   // create window at the specified area with the given title and the
   // color of the background is a linear gradient.
   auto vis = surface_area_t(
       {800, 600}, "Information Title",
-      painter_brush_t(0, 0, 300, 0, {{"orange"}, {"darkorange"}}));
+      painter_brush_t(0, 0, 300, 0, {{"orange"}, {.3, "blue"}, {"purple"}}));
 
   // add event listeners.
   vis << listen_keypress_t([&vis](auto &evt) {

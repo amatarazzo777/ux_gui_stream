@@ -24,7 +24,8 @@
  * @brief
  */
 
-#include <ux_device.h>
+#include <ux_textual_render.h>
+
 
 /**
  * @internal
@@ -49,8 +50,7 @@ std::size_t uxdevice::textual_render_storage_t::hash_code(void) const noexcept {
  * @param coordinate_t *a
  * @brief
  */
-void uxdevice::textual_render_storage_t::pipeline_acquire(cairo_t *cr,
-                                                          coordinate_t *a) {
+void uxdevice::textual_render_storage_t::pipeline_acquire() {
   /**  @details The cached rendering function has not been established, create
    * the text rendering pipeline consisting of individualized lambda functions.
    */
@@ -70,7 +70,7 @@ void uxdevice::textual_render_storage_t::pipeline_acquire(cairo_t *cr,
       layout = pango_cairo_create_layout(cr);
   }});
 
-  pipeline_push<order_layout_option>(fn_emit_cr_t{[&](auto cr) {
+  pipeline_push<order_layout_option>(fn_emit_layout_t{[&](auto layout) {
     /** @brief get the serial number of all the current attributes. if any of
      * the emitter functions change the layout the serial number changes. the
      * push visit below accomplishes this*/

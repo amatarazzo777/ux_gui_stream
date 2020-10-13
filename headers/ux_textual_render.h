@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
 
 /**
  * @author Anthony Matarazzo
@@ -24,6 +23,28 @@
  * @version 1.0
  * @brief
  */
+#include <ux_compile_options.h>
+#include <ux_base.h>
+#include <ux_error.h>
+#include <ux_visitor_interface.h>
+#include <ux_hash.h>
+
+#include <ux_enums.h>
+
+#include <ux_matrix.h>
+#include <ux_draw_buffer.h>
+#include <ux_painter_brush.h>
+
+#include <ux_pipeline_memory.h>
+
+#include <ux_display_visual.h>
+#include <ux_display_context.h>
+#include <ux_display_unit_base.h>
+
+#include <ux_coordinate.h>
+#include <ux_text_units.h>
+
+#pragma once
 
 namespace uxdevice {
 
@@ -36,11 +57,10 @@ namespace uxdevice {
  * exposes an intersection method for the render system to decide which function
  * to invoke, a standard draw or a clipped draw.
  */
-class textual_render_storage_t
-    : virtual public display_visual_t,
-      virtual public pipeline_memory_t,
-      virtual public hash_members_t,
-      virtual public system_error_t {
+class textual_render_storage_t : virtual public hash_members_t,
+                                 virtual public system_error_t,
+                                 virtual public display_visual_t,
+                                 virtual public pipeline_memory_t {
 public:
   textual_render_storage_t() {}
 
@@ -51,18 +71,26 @@ public:
 
   /// @brief move constructor
   textual_render_storage_t(textual_render_storage_t &&other) noexcept
-      : layout(other.layout), ink_rect(other.ink_rect),
-        logical_rect(other.logical_rect) {}
+    : hash_members_t(other), system_error_t(other), display_visual_t(other),
+      pipeline_memory_t(other), layout(other.layout), ink_rect(other.ink_rect),
+      logical_rect(other.logical_rect) {}
 
   /// @brief copy constructor
   textual_render_storage_t(const textual_render_storage_t &other)
-      : ink_rect(other.ink_rect), logical_rect(other.logical_rect) {
+    : hash_members_t(other), system_error_t(other), display_visual_t(other),
+      pipeline_memory_t(other), ink_rect(other.ink_rect),
+      logical_rect(other.logical_rect) {
     if (other.layout)
       layout = pango_layout_copy(other.layout);
   }
 
   /// @brief copy assignment
   textual_render_storage_t &operator=(const textual_render_storage_t &other) {
+    hash_members_t::operator=(other);
+    system_error_t::operator=(other);
+    display_visual_t::operator=(other);
+    pipeline_memory_t::operator=(other);
+
     if (other.layout)
       layout = pango_layout_copy(other.layout);
     ink_rect = other.ink_rect;
@@ -73,13 +101,17 @@ public:
   /// @brief move assignment
   textual_render_storage_t &
   operator=(const textual_render_storage_t &&other) noexcept {
+    hash_members_t::operator=(other);
+    system_error_t::operator=(other);
+    display_visual_t::operator=(other);
+    pipeline_memory_t::operator=(other);
     layout = other.layout;
     ink_rect = other.ink_rect;
     logical_rect = other.logical_rect;
     return *this;
   }
 
-  void pipeline_acquire(cairo_t *cr, coordinate_t *a);
+  void pipeline_acquire(void);
   bool pipeline_has_required_linkages(void);
   std::size_t hash_code(void) const noexcept;
 
@@ -94,9 +126,9 @@ public:
  * @brief
  */
 class textual_render_t
-    : public class_storage_emitter_t<
-          textual_render_t, textual_render_storage_t,
-          accepted_interfaces_t<abstract_emit_context_t<order_render>>> {
+  : public class_storage_emitter_t<
+      textual_render_t, textual_render_storage_t,
+      accepted_interfaces_t<abstract_emit_context_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -105,5 +137,5 @@ public:
 
 } // namespace uxdevice
 
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::textual_render_storage_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::textual_render_t);
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::textual_render_storage_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::textual_render_t)

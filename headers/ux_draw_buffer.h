@@ -60,44 +60,54 @@ public:
 
   operator bool() const { return rendered != nullptr; }
 
-  draw_buffer_t(int _width, int _height)
-      : width((double)_width), height((double)_height) {
+  draw_buffer_t(int _width, int _height) {
     rendered = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, _width, _height);
     cr = cairo_create(rendered);
   }
 
-  draw_buffer_t(std::string &description, double _width, int _height)
-      : width(_width), height(_height) {
-    read_image(description, width, height);
+  draw_buffer_t(std::string &description) { read_image(description, 0.0, 0.0); }
+  draw_buffer_t(std::string &description, int _width, int _height) {
+    read_image(description, (double)_width, (double)_height);
   }
-  draw_buffer_t(std::string &description, int _width, int _height)
-      : width((double)_width), height((double)_height) {
-    read_image(description, width, height);
+  draw_buffer_t(std::string &description, double _width, double _height) {
+    read_image(description, _width, _height);
   }
-
   /// @brief move constructor
   draw_buffer_t(draw_buffer_t &&other) noexcept
-      : cr(other.cr), rendered(other.rendered), format(other.format) {}
+      : system_error_t(other), hash_members_t(other),
+        abstract_emit_cr_a_t(other), cr(other.cr), rendered(other.rendered),
+        format(other.format), width(other.width), height(other.height) {}
 
   /// @brief  copy constructor
   draw_buffer_t(const draw_buffer_t &other)
-      : cr(cairo_reference(other.cr)),
-        rendered(cairo_surface_reference(other.rendered)),
-        format(other.format) {}
+      : system_error_t(other), hash_members_t(other),
+        abstract_emit_cr_a_t(other), cr(cairo_reference(other.cr)),
+        rendered(cairo_surface_reference(other.rendered)), format(other.format),
+        width(other.width), height(other.height) {}
 
   /// @brief copy assignment
   draw_buffer_t &operator=(const draw_buffer_t &other) {
+    hash_members_t::operator=(other);
+    system_error_t::operator=(other);
+    abstract_emit_cr_a_t::operator=(other);
     cr = cairo_reference(other.cr);
     rendered = cairo_surface_reference(other.rendered);
     format = other.format;
+    width = other.width;
+    height = other.height;
     return *this;
   }
 
   /// @brief move assignment
   draw_buffer_t &operator=(const draw_buffer_t &&other) noexcept {
+    hash_members_t::operator=(other);
+    system_error_t::operator=(other);
+    abstract_emit_cr_a_t::operator=(other);
     cr = other.cr;
     rendered = other.rendered;
     format = other.format;
+    width = other.width;
+    height = other.height;
     return *this;
   }
 

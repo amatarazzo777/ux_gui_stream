@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#pragma once
 
 /**
  * @author Anthony Matarazzo
@@ -26,10 +25,21 @@
  */
 
 /**
+ * @namespace uxdevice
+ * @brief THe major invocation of API object usage is defined here.
+ * surface_area_t and its constructors are here. The class provides the stream
+ * operations for the system to provide an input mechanism. These are template
+ * functions. Object composition and discrete initializations of the object is
+ * accomplished here as well.
+ *
  * Do not let clang format change the order of includes as order of dependency
  * is established in this serialized list that each of the modules includes. The
  * namespace uxdevice is used.
+ *
+ * The list of includes below is the major build order for the object class
+ * definitions.
  */
+
 // clang-format off
 
 #include <ux_compile_options.h>
@@ -38,50 +48,17 @@
 #include <ux_variant_visitor.h>
 #include <ux_visitor_interface.h>
 #include <ux_hash.h>
-
 #include <ux_enums.h>
-
-// these are the literals which are noted within the abstracts such as emit(...);
-// they are informative of the order in which the published interfaces appear within the
-// rendering pipeline.
-#include <ux_pipeline_order.h>
-
 #include <ux_matrix.h>
 #include <ux_draw_buffer.h>
 #include <ux_painter_brush.h>
-
-/* Pipeline operations occur in staged order.
- * The system provides this flexibility of design by using a
- * visitor and std::sort. Most objects have multiple meanings based upon the
- * type of operations requested. This is accomplished with
- * overloading visitor functionality. A visitor will emit
- * multiple distinct functional call points for the object
- * within the pipeline. The stage is simply a const numeric representing
- * the position in which the operation belongs.
- *
- *
- */
 #include <ux_pipeline_memory.h>
-
-/**
- * The display_visual_t object provides interoperability
- * between the display context and a display render unit. The object
- * which derives this interface should do it publicly. Another portion of the
- * construct is the rendering pipeline. Two abstract virtual functions must be implemented as
- * they are used by the display_context_t: pipeline_acquire() and
- * pipeline_has_required_linkages(). See ux_pipeline_memory.hpp.
- *
- */
 #include <ux_display_visual.h>
 #include <ux_display_context.h>
 #include <ux_display_unit_base.h>
-
 #include <ux_coordinate.h>
-
 #include <ux_event.h>
 #include <ux_event_listeners.h>
-
-// textual object may be reused to show text.
 #include <ux_textual_render.h>
 
 // these files encompass the display unit objects which
@@ -92,6 +69,8 @@
 #include <ux_drawing_unit_primitives.h>
 
 // clang-format on
+
+#pragma once
 
 namespace uxdevice {
 
@@ -172,22 +151,23 @@ public:
 
   // copy constructor
   surface_area_t(const surface_area_t &other)
-      : context(other.context), fnEvents(other.fnEvents),
-        display_list_storage(other.display_list_storage) {
+    : system_error_t(other), context(other.context), fnEvents(other.fnEvents),
+      display_list_storage(other.display_list_storage) {
     if (other.bProcessing)
       bProcessing = true;
   }
 
   // move constructor
   surface_area_t(surface_area_t &&other) noexcept
-      : context(other.context), fnEvents(other.fnEvents),
-        display_list_storage(other.display_list_storage) {
+    : system_error_t(other), context(other.context), fnEvents(other.fnEvents),
+      display_list_storage(other.display_list_storage) {
     if (other.bProcessing)
       bProcessing = true;
   }
 
   // copy assignment operator
   surface_area_t &operator=(const surface_area_t &other) {
+    system_error_t::operator=(other);
     context = other.context;
     fnEvents = other.fnEvents;
     display_list_storage = other.display_list_storage;
@@ -197,6 +177,7 @@ public:
   }
   // move assignment operator
   surface_area_t &operator=(surface_area_t &&other) noexcept {
+    system_error_t::operator=(other);
     context = std::move(other.context);
     fnEvents = std::move(other.fnEvents);
     display_list_storage = std::move(other.display_list_storage);
@@ -333,13 +314,27 @@ public:
     }
     return *ptr;
   }
-
+  /**
+   * @fn display_unit_t operator []&(const std::string&)
+   * @brief
+   *
+   * @param _val
+   * @return
+   */
   display_unit_t &operator[](const std::string &_val) noexcept {
     auto n = mapped_objects.find(indirect_index_storage_t{_val});
     if (n != mapped_objects.end())
       n->second->changed();
     return *n->second;
   }
+  /**
+   * @fn T get&(const std::string&)
+   * @brief
+   *
+   * @tparam T
+   * @param key
+   * @return
+   */
   template <typename T> T &get(const std::string &key) {
     auto n = mapped_objects.find(indirect_index_storage_t{key});
     if (n != mapped_objects.end())
@@ -347,7 +342,13 @@ public:
     return *std::dynamic_pointer_cast<T>(n->second);
   }
 
-  // return display unit associated, update
+  /**
+   * @fn std::string operator []&(std::shared_ptr<std::string>)
+   * @brief return display unit associated, update
+   *
+   * @param _val
+   * @return
+   */
   std::string &operator[](std::shared_ptr<std::string> _val) noexcept {
     auto n = mapped_objects.find(reinterpret_cast<std::size_t>(_val.get()));
     if (n != mapped_objects.end())
@@ -355,6 +356,13 @@ public:
     return *_val;
   }
 
+  /**
+   * @fn display_unit_t group&(const std::string&)
+   * @brief
+   *
+   * @param sgroupname
+   * @return
+   */
   display_unit_t &group(const std::string &sgroupname) {
     auto n = mapped_objects.find(sgroupname);
     return *n->second;
@@ -397,54 +405,61 @@ public:
 private:
   void start_processing(void);
   void draw_caret(const int x, const int y, const int h);
-  void message_loop(void);
+
   void render_loop(void);
   void dispatch_event(const event_t &e);
-  void open_window(const coordinate_list_t &coord,
-                   const std::string &sWindowTitle,
-                   const painter_brush_t &background,
-                   const event_handler_t &dispatch_events);
-  void close_window(void);
+
   void set_surface_defaults(void);
   void maintain_index(const std::shared_ptr<display_unit_t> obj);
 
 private:
-  display_context_t context = display_context_t();
+  std::shared_ptr<window_manager_abstract_t> window_manager = {};
+  std::shared_ptr<display_context_t> context = {};
   std::atomic<bool> bProcessing = false;
 
   event_handler_t fnEvents = nullptr;
 
+  /**
+   * @typedef display_unit_list_t
+   * @brief type that holds the list that is input directly from the user. The
+   * sequence is as it is input.
+   */
   typedef std::list<std::shared_ptr<display_unit_t>> display_unit_list_t;
+
+  /**
+   * @var  display_list_storage
+   * @brief holds the object units information as a display unit base. The base
+   * may be casted to other object types using the std::dynamic_pointer_cast
+   * function template. However, interface objects that use the multithreading
+   * mutex types should be used. see display_list<T>
+   *
+   */
   display_unit_list_t display_list_storage = {};
   display_unit_list_t::iterator itDL_Processed = display_list_storage.begin();
 
   // interface between client and API rendering threads.
-  std::atomic_flag DL_readwrite = ATOMIC_FLAG_INIT;
+  std::mutex display_list_mutex = {};
 
   /**
    * @fn display_list
    * @brief template function to insert into the display list and perform
    * initialization based upon the type. The c++ constexpr conditional compiling
-   * functionality is used to trim the run time and code size.
+   * functionality is used to trim the run time and code size. One accepts a
+   * constant double reference object in a parampack/
    */
   template <class T, typename... Args>
-  std::shared_ptr<T> display_list(const Args &... args) {
-    return display_list<T>(std::make_shared<T>(args...));
+  std::shared_ptr<T> display_list(const Args &&... args) {
+    return display_list<T>(std::make_shared<T>(std::forward<args>(...)));
   }
 
   /**
    * @fn display_list
-   * @brief template function to insert into the display list and perform
-   * initialization based upon the type. The c++ constexpr conditional compiling
-   * functionality is used to trim the run time and code size.
+   * @brief
    */
-  template <class T, typename... Args>
+  template <class T>
   std::shared_ptr<T> display_list(const std::shared_ptr<T> ptr) {
-    while (DL_readwrite.test_and_set(std::memory_order_acquire)) {
-    }
-
+    std::lock_guard<std::mutex> lock(display_list_mutex);
     display_list_storage.emplace_back(ptr);
-    DL_readwrite.clear(std::memory_order_release);
     return ptr;
   }
 
@@ -453,14 +468,12 @@ private:
    * @brief
    */
   void display_list_clear(void) {
-    while (DL_readwrite.test_and_set(std::memory_order_acquire)) {
-    }
+    std::lock_guard<std::mutex> lock(display_list_mutex);
     display_list_storage.clear();
-    DL_readwrite.clear(std::memory_order_release);
   }
 
   std::unordered_map<indirect_index_storage_t, std::shared_ptr<display_unit_t>>
-      mapped_objects = {};
+    mapped_objects = {};
 
   std::list<event_handler_t> onfocus = {};
   std::list<event_handler_t> onblur = {};

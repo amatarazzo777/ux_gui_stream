@@ -27,7 +27,6 @@
  * added. This provides the functionality that only units associated with the
  * visitor attribute are copied.
  */
-#include <ux_device.h>
 
 /**
  * @internal
@@ -38,7 +37,7 @@
  */
 
 void uxdevice::pipeline_memory_t::pipeline_memory_linkages(
-    display_context_t *context, std::size_t link_visitor_target) {
+  display_context_t *context, std::size_t link_visitor_target) {
   for (auto n : context->storage)
     if (n.second.visitor_target_bits & link_visitor_target)
       storage[n.first] = n.second;
@@ -66,28 +65,28 @@ void uxdevice::pipeline_memory_t::pipeline_execute(display_context_t *context) {
    * but that would confuse internal design.  */
   auto fn_visitors = overload_visitors_t{
 
-      [&](const fn_emit_cr_t &fn) { fn(context->cr); },
+    [&](const fn_emit_cr_t &fn) { fn(context->cr); },
 
-      [&](const fn_emit_context_t &fn) { fn(context); },
+    [&](const fn_emit_context_t &fn) { fn(context); },
 
-      [&](const fn_emit_cr_a_t &fn) {
-        fn(context->cr, context->pipeline_memory_access<coordinate_t>().get());
-      },
+    [&](const fn_emit_cr_a_t &fn) {
+      fn(context->cr, context->pipeline_memory_access<coordinate_t>().get());
+    },
 
-      [&](const fn_emit_layout_t &fn) {
-        fn(context->pipeline_memory_access<PangoLayout *>());
-      },
+    [&](const fn_emit_layout_t &fn) {
+      fn(context->pipeline_memory_access<PangoLayout *>());
+    },
 
-      [&](const fn_emit_layout_a_t &fn) {
-        fn(context->pipeline_memory_access<PangoLayout *>(),
-           context->pipeline_memory_access<coordinate_t>().get());
-      },
+    [&](const fn_emit_layout_a_t &fn) {
+      fn(context->pipeline_memory_access<PangoLayout *>(),
+         context->pipeline_memory_access<coordinate_t>().get());
+    },
 
-      [&](const fn_emit_cr_layout_t &fn) {
-        fn(context->cr, context->pipeline_memory_access<PangoLayout *>());
-      },
+    [&](const fn_emit_cr_layout_t &fn) {
+      fn(context->cr, context->pipeline_memory_access<PangoLayout *>());
+    },
 
-      [&](std::monostate) {}};
+    [&](std::monostate) {}};
 
   // arrange pipeline if necessary
   if (!bfinalized)

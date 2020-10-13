@@ -40,6 +40,25 @@
  * 		class_storage_emitter_t
  */
 
+#include <ux_base.h>
+#include <ux_error.h>
+#include <ux_visitor_interface.h>
+#include <ux_hash.h>
+
+#include <ux_enums.h>
+
+#include <ux_matrix.h>
+#include <ux_draw_buffer.h>
+#include <ux_painter_brush.h>
+
+#include <ux_pipeline_memory.h>
+
+#include <ux_display_visual.h>
+#include <ux_display_context.h>
+#include <ux_display_unit_base.h>
+
+#include <ux_coordinate.h>
+
 namespace uxdevice {
 
 /**
@@ -62,33 +81,42 @@ public:
   image_block_storage_t() : pipeline_memory_t{}, description{}, image_block{} {}
 
   image_block_storage_t(const std::string &_description)
-      : description(_description) {}
+    : description(_description) {}
+  /// @brief copy constructor
+  image_block_storage_t(const image_block_storage_t &other)
+    : hash_members_t(std::move(other)), system_error_t(other),
+      display_visual_t(other), pipeline_memory_t(other),
+      description(other.description), image_block(other.image_block) {}
 
-  /// @brief move assignment
-  image_block_storage_t &operator=(image_block_storage_t &&other) noexcept {
-    description = std::move(other.description);
-    image_block = std::move(other.image_block);
-
-    return *this;
-  }
+  /// @brief move constructor
+  image_block_storage_t(image_block_storage_t &&other) noexcept
+    : hash_members_t(std::move(other)), system_error_t(other),
+      display_visual_t(std::move(other)), pipeline_memory_t(std::move(other)),
+      description(std::move(other.description)),
+      image_block(std::move(other.image_block)) {}
 
   /// @brief copy assignment
   /// operator
   image_block_storage_t &operator=(const image_block_storage_t &other) {
+    hash_members_t::operator=(other);
+    system_error_t::operator=(other);
+    display_visual_t::operator=(other);
+    pipeline_memory_t::operator=(other);
     description = other.description;
     image_block = other.image_block;
-
     return *this;
   }
 
-  /// @brief move constructor
-  image_block_storage_t(image_block_storage_t &&other) noexcept
-      : description(std::move(other.description)),
-        image_block(std::move(other.image_block)) {}
-
-  /// @brief copy constructor
-  image_block_storage_t(const image_block_storage_t &other)
-      : description(other.description), image_block(other.image_block) {}
+  /// @brief move assignment
+  image_block_storage_t &operator=(image_block_storage_t &&other) noexcept {
+    hash_members_t::operator=(other);
+    system_error_t::operator=(other);
+    display_visual_t::operator=(other);
+    pipeline_memory_t::operator=(other);
+    description = std::move(other.description);
+    image_block = std::move(other.image_block);
+    return *this;
+  }
 
   virtual ~image_block_storage_t() {}
 
@@ -102,7 +130,7 @@ public:
     return __value;
   }
 
-  void pipeline_acquire(cairo_t *cr, coordinate_t *a);
+  void pipeline_acquire();
   bool pipeline_has_required_linkages(void);
 
   std::string description = {};
@@ -114,9 +142,9 @@ public:
  * @brief
  */
 class image_block_t
-    : public class_storage_emitter_t<
-          image_block_t, image_block_storage_t,
-          accepted_interfaces_t<abstract_emit_context_t<order_render>>> {
+  : public class_storage_emitter_t<
+      image_block_t, image_block_storage_t,
+      accepted_interfaces_t<abstract_emit_context_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
 
@@ -125,5 +153,5 @@ public:
 
 } // namespace uxdevice
 
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::image_block_storage_t);
-UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::image_block_t);
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::image_block_storage_t)
+UX_REGISTER_STD_HASH_SPECIALIZATION(uxdevice::image_block_t)

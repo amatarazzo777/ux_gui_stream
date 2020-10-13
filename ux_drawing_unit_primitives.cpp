@@ -23,7 +23,8 @@
  * @version 1.0
  * @brief
  */
-#include <ux_device.h>
+
+#include <ux_drawing_unit_primitives.h>
 
 /**
  * @internal

@@ -24,7 +24,7 @@
  * @brief emit implementations for objects.
  */
 
-#include <ux_device.h>
+#include <ux_surface_area_units.h>
 
 /**
  * @internal

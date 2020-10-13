@@ -23,7 +23,7 @@
  * @version 1.0
  * @brief
  */
-#include <ux_device.h>
+#include <ux_display_context.h>
 
 /**
  * @internal
@@ -172,7 +172,7 @@ void uxdevice::display_context_t::render(void) {
      */
     if (current) {
       cairo_region_overlap_t ovrlp =
-          cairo_region_contains_rectangle(current, &r.rect);
+        cairo_region_contains_rectangle(current, &r.rect);
       if (ovrlp == CAIRO_REGION_OVERLAP_IN)
         continue;
     } else {
@@ -227,7 +227,7 @@ void uxdevice::display_context_t::render(void) {
  * the object's area.
  */
 void uxdevice::display_context_t::add_visual(
-    std::shared_ptr<display_visual_t> _obj) {
+  std::shared_ptr<display_visual_t> _obj) {
   viewport_rectangle = {(double)offsetx, (double)offsety,
                         (double)offsetx + (double)window_width,
                         (double)offsety + (double)window_height};
@@ -242,8 +242,8 @@ void uxdevice::display_context_t::add_visual(
     _obj->fn_draw = [&]() { ptr_pipeline->pipeline_execute(this); };
     _obj->fn_draw_clipped = [&]() {
       cairo_rectangle(
-          this->cr, _obj->intersection_double.x, _obj->intersection_double.y,
-          _obj->intersection_double.width, _obj->intersection_double.height);
+        this->cr, _obj->intersection_double.x, _obj->intersection_double.y,
+        _obj->intersection_double.width, _obj->intersection_double.height);
       cairo_clip(this->cr);
       ptr_pipeline->pipeline_execute(this);
       cairo_reset_clip(this->cr);
@@ -336,7 +336,7 @@ void uxdevice::display_context_t::clear(void) {
 
   offsetx = 0;
   offsety = 0;
-  pipeline_memory_reset();
+  pipeline_memory_clear();
 
   REGIONS_CLEAR;
 
@@ -371,8 +371,8 @@ void uxdevice::display_context_t::state(std::shared_ptr<display_visual_t> obj) {
   std::size_t onum = reinterpret_cast<std::size_t>(obj.get());
 
   _regions.emplace_back(context_cairo_region_t(
-      onum, obj->ink_rectangle.x, obj->ink_rectangle.y,
-      obj->ink_rectangle.width, obj->ink_rectangle.height));
+    onum, obj->ink_rectangle.x, obj->ink_rectangle.y, obj->ink_rectangle.width,
+    obj->ink_rectangle.height));
   REGIONS_CLEAR;
 }
 /**

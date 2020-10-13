@@ -28,7 +28,8 @@
  * the display unit to call the set_ink() function as the rectangle is needed to
  * determine where and how big the item is on the screen.
  */
-#include <ux_device.h>
+
+#include <ux_display_visual.h>
 
 /**
  * @overload
@@ -53,8 +54,8 @@ void uxdevice::display_visual_t::intersect(cairo_rectangle_t &r) {
     cairo_region_intersect(dst, rectregion);
     cairo_region_get_extents(dst, &intersection_int);
     intersection_double = {
-        (double)intersection_int.x, (double)intersection_int.y,
-        (double)intersection_int.width, (double)intersection_int.height};
+      (double)intersection_int.x, (double)intersection_int.y,
+      (double)intersection_int.width, (double)intersection_int.height};
     cairo_region_destroy(dst);
   }
 
