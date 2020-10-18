@@ -24,8 +24,9 @@
  * @brief implementation of the coordinate_t visit interfaces. The class is used
  * to hold a location and clipping width, height.
  */
+#include <ux_compile_options.h>
 #include <ux_base.h>
-#include <ux_error.h>
+#include <ux_system_error.h>
 #include <ux_hash.h>
 #include <ux_enums.h>
 #include <ux_visitor_interface.h>
@@ -36,7 +37,6 @@
 #include <ux_display_visual.h>
 #include <ux_display_context.h>
 #include <ux_display_unit_base.h>
-
 #include <ux_coordinate.h>
 
 /**

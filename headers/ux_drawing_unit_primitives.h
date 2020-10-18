@@ -17,28 +17,9 @@
  */
 #pragma once
 
-#include <ux_base.h>
-#include <ux_error.h>
-#include <ux_visitor_interface.h>
-#include <ux_hash.h>
-
-#include <ux_enums.h>
-
-#include <ux_matrix.h>
-#include <ux_draw_buffer.h>
-#include <ux_painter_brush.h>
-
-#include <ux_pipeline_memory.h>
-
-#include <ux_display_visual.h>
-#include <ux_display_context.h>
-#include <ux_display_unit_base.h>
-
-#include <ux_coordinate.h>
-
 /**
 @author Anthony Matarazzo
-@file ux_drawing_primitives.hpp
+@file ux_drawing_unit_primitives.h
 @date 9/23/20
 @version 1.0
 @brief

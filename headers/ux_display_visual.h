@@ -32,13 +32,6 @@
 
 #pragma once
 
-#include <ux_base.h>
-#include <ux_hash.h>
-#include <ux_error.h>
-#include <ux_visitor_interface.h>
-#include <ux_draw_buffer.h>
-#include <ux_matrix.h>
-
 namespace uxdevice {
 
 /**
@@ -257,4 +250,22 @@ public:
   cairo_rectangle_int_t intersection_int = cairo_rectangle_int_t();
   cairo_rectangle_t intersection_double = cairo_rectangle_t();
 };
+
+/**
+ * @internal
+ * @typedef display_visual_list_t
+ * @brief used to hold the list of visual. the display context uses this type.
+ *
+ */
+typedef std::list<std::shared_ptr<display_visual_t>> display_visual_list_t;
+
+/**
+ * @internal
+ * @typedef display_visual_list_iter_t
+ * @brief iterator for the display visual type. used in the display context.
+ *
+ */
+typedef std::list<std::shared_ptr<display_visual_t>>::iterator
+  display_visual_list_iter_t;
+
 } // namespace uxdevice

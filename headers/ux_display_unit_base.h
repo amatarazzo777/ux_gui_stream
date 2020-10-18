@@ -286,30 +286,10 @@ public:
    */
   virtual ~painter_brush_emitter_t() {}
 
-  /**
-   * @fn void emit(display_context_t*)
-   * @brief
-   *
-   * @param context
-   */
-  void emit(display_context_t *context) { painter_brush_t::emit(context->cr); }
-
-  /**
-   * @fn void emit(cairo_t*)
-   * @brief
-   *
-   * @param cr
-   */
-  void emit(cairo_t *cr) { painter_brush_t::emit(cr); }
-
-  /**
-   * @fn void emit(cairo_t*, coordinate_t*)
-   * @brief
-   *
-   * @param cr
-   * @param a
-   */
-  void emit(cairo_t *cr, coordinate_t *a) { painter_brush_t::emit(cr, a); }
+  /** @brief interface routines */
+  void emit(display_context_t *context);
+  void emit(cairo_t *cr);
+  void emit(cairo_t *cr, coordinate_t *a);
 
   /**
    * @fn std::size_t hash_code(void)const

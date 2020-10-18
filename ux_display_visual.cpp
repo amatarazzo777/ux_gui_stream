@@ -28,7 +28,13 @@
  * the display unit to call the set_ink() function as the rectangle is needed to
  * determine where and how big the item is on the screen.
  */
-
+#include <ux_compile_options.h>
+#include <ux_base.h>
+#include <ux_hash.h>
+#include <ux_system_error.h>
+#include <ux_visitor_interface.h>
+#include <ux_draw_buffer.h>
+#include <ux_matrix.h>
 #include <ux_display_visual.h>
 
 /**

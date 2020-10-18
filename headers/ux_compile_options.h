@@ -56,7 +56,7 @@ options when compiling the text_color_t.
      text_alignment_t{text_alignment_options_t::left},                         \
      text_ellipsize_t{text_ellipsize_options_t::off}, text_line_space_t{1.0},  \
      text_tab_stops_t{                                                         \
-         std::vector<double>{250, 250, 250, 250, 250, 250, 250, 250}},         \
+       std::vector<double>{250, 250, 250, 250, 250, 250, 250, 250}},           \
      surface_area_title_t{DEFAULT_WINDOW_TITLE});
 
 /**

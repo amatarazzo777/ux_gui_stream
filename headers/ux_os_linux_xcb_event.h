@@ -19,65 +19,104 @@
 
 /**
  * @author Anthony Matarazzo
- * @file ux_event.hpp
+ * @file ux_os_linux_xcb_event.hpp
  * @date 9/7/20
  * @version 1.0
  *  @details  event class
  */
 
 namespace uxdevice {
+class window_manager_t;
 
 /**
- * @class event
- * @brief the event class provides the communication between the event system
- * and the caller. There is one event class for all of the distinct events.
- * Simply different constructors are selected based upon the necessity of
- * information given within the parameters.
+ * @class keyboard_device_event_t
+ * @brief holds and processes keyboard messages.
+ *
  */
-class event_t {
+class keyboard_device_event_t
+  : public keyboard_device_event_base_t<xcb_generic_event_t *,
+                                        xcb_key_press_event_t *,
+                                        xcb_key_release_event_t *> {
 public:
-  event_t(const std::type_index &et) : type(et) {}
-  event_t(const std::type_index &et, const char &k) : type(et), key(k) {}
-  event_t(const std::type_index &et, const unsigned int &vk)
-      : type(et), virtualKey(vk), isVirtualKey(true) {}
+  using keyboard_device_event_base_t::keyboard_device_event_base_t;
+  keyboard_device_event_t() = delete;
+  keyboard_device_event_t(std::type_index ti);
+  ~keyboard_device_event_t();
+  void initialize();
 
-  event_t(const std::type_index &et, const short &mx, const short &my,
-          const short &mb_dis)
-      : type(et), x(mx), y(my) {
-    distance = mb_dis;
-    button = static_cast<char>(mb_dis);
+  /// @brief copy assignment operator
+  keyboard_device_event_t &operator=(const keyboard_device_event_t &other) {
+    return *this;
   }
-  event_t(const std::type_index &et, const short &_w, const short &_h)
-      : type(et), x(_w), y(_h), w(_w), h(_h) {}
 
-  event_t(const std::type_index &et, const short &_x, const short &_y,
-          const short &_w, const short &_h)
-      : type(et), x(_x), y(_y), w(_w), h(_h) {}
-  event_t(const std::type_index &et, const short &_distance)
-      : type(et), distance(_distance) {}
-  ~event_t(){};
+  /// @brief move assignment
+  keyboard_device_event_t &operator=(keyboard_device_event_t &&other) noexcept {
+    return *this;
+  }
 
-public:
-  std::type_index type = std::type_index(typeid(this));
+  /// @brief move constructor
+  keyboard_device_event_t(keyboard_device_event_t &&other) noexcept
+    : keyboard_device_event_base_t(other) {}
 
-  unsigned int virtualKey = 0;
-  std::wstring unicodeKeys = L"";
-  bool isVirtualKey = false;
-  char key = 0x00;
+  /// @brief copy constructor
+  keyboard_device_event_t(const keyboard_device_event_t &other)
+    : keyboard_device_event_base_t(other) {}
 
-  char button = 0;
+  /**@brief must specialize this for interface.
+   * interface abstract returns the visitor map. see the
+   * ux_os_linux_event.cpp file for details.*/
+  event_t get(void);
 
-  short x = 0;
-  short y = 0;
-  short w = 0;
-  short h = 0;
-  short distance = 0;
+private:
+  xcb_key_symbols_t *syms = {};
+  window_manager_t *window_manager = {};
 };
 
 /**
- * @typedef event_handler_t is used to note and declare a lambda function for
- * the specified event.
+ * @class mouse_button_evt_t
+ * @brief
+ *
  */
-typedef std::function<void(const event_t &et)> event_handler_t;
+class mouse_device_event_t
+  : public mouse_device_event_base_t<
+      xcb_generic_event_t *, xcb_button_press_event_t *,
+      xcb_button_release_event_t *, xcb_motion_notify_event_t *> {
+  using mouse_device_event_base_t::mouse_device_event_base_t;
+
+  ~mouse_device_event_t() {}
+
+  /**@brief must specialize this for interface.
+   * interface abstract returns the visitor map. see the
+   * ux_os_linux_event.cpp file for details.*/
+  event_t get(void);
+  window_manager_t *window_manager = {};
+
+}; // namespace uxdevice
+
+/**
+ * @class window_service_event_t
+ * @brief a configuration notification message from xcb is very flexible.
+ * The implementation provides a visitor pattern to generate more specific
+ * message in conditions to ones that may be handled internally such as
+ * resizing, moving or other effects that have a predisposed effect on the
+ * system.
+ *
+ */
+class window_service_event_t
+  : window_service_event_base_t<xcb_generic_event_t *, xcb_expose_event_t *,
+                                xcb_configure_notify_event_t *,
+                                xcb_client_message_event_t *> {
+public:
+  using window_service_event_base_t::window_service_event_base_t;
+
+  virtual ~window_service_event_t() {}
+
+  /**@brief must specialize this for interface.
+   * interface abstract returns the visitor map. see the
+   * ux_os_linux_event.cpp file for details.*/
+  event_t get(void);
+
+  window_manager_t *window_manager = {};
+};
 
 } // namespace uxdevice

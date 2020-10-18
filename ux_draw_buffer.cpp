@@ -50,7 +50,7 @@
  */
 #include <ux_compile_options.h>
 #include <ux_base.h>
-#include <ux_error.h>
+#include <ux_system_error.h>
 #include <ux_visitor_interface.h>
 #include <ux_hash.h>
 

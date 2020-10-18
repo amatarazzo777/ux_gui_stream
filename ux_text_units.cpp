@@ -23,7 +23,28 @@
  * @version 1.0
  * @brief emit implementations for objects.
  */
+#include <ux_compile_options.h>
+#include <ux_base.h>
+#include <ux_system_error.h>
+#include <ux_variant_visitor.h>
+#include <ux_visitor_interface.h>
+#include <ux_hash.h>
 
+#include <ux_enums.h>
+
+#include <ux_matrix.h>
+#include <ux_draw_buffer.h>
+#include <ux_painter_brush.h>
+
+#include <ux_pipeline_memory.h>
+
+#include <ux_display_visual.h>
+#include <ux_display_context.h>
+#include <ux_display_unit_base.h>
+
+#include <ux_coordinate.h>
+
+#include <ux_textual_render.h>
 #include <ux_text_units.h>
 
 /**

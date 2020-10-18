@@ -18,49 +18,48 @@
 
 /**
  * @author Anthony Matarazzo
- * @file ux_surface_area_units.cpp
- * @date 9/7/20
+ * @file ux_os_xcb_linux.h
+ * @date Oct 12, 2020
  * @version 1.0
- * @brief emit implementations for objects.
+ * @details The file implements the os interface which provides the
+ * communication to the os for basic visualization services such as window
+ * manager functions. The message queue processor is defined and implemented
+ * here.
  */
+#include <ux_compile_options.h>
 #include <ux_base.h>
 #include <ux_system_error.h>
+#include <ux_visitor_interface.h>
 #include <ux_hash.h>
 #include <ux_enums.h>
-#include <ux_visitor_interface.h>
 #include <ux_matrix.h>
 #include <ux_draw_buffer.h>
 #include <ux_painter_brush.h>
-#include <ux_pipeline_memory.h>
-#include <ux_os_linux_xcb_event.h>
-#include <ux_os_window_manager_base.h>
-#include <ux_display_visual.h>
-#include <ux_display_context.h>
-#include <ux_display_unit_base.h>
-#include <ux_coordinate.h>
-#include <ux_surface_area_units.h>
 
-/**
- * @internal
- * @fn surface_area_title_t
- * @param display_context_t &context
- * @brief Sets the window title.
- */
-void uxdevice::surface_area_title_t::emit(display_context_t *context) {
-  // set window title
-#if 0
-  xcb_change_property(context->window_manager->connection,
-                      XCB_PROP_MODE_REPLACE, context->window, XCB_ATOM_WM_NAME,
-                      XCB_ATOM_STRING, 8, value.size(), value.data());
-#endif
+#include <ux_os_window_manager_base.h>
+#include <ux_os_linux_xcb_window_manager.h>
+
+  void uxdevice::painter_brush_emitter_t::emit(display_context_t *context) {
+  context->window_manager->draw_fn([&](auto cr) { painter_brush_t::emit(cr); });
 }
 
 /**
- * @internal
- * @fn surface_area_brush_t
- * @param display_context_t &context
- * @brief Sets the background brysh.
+ * @fn void emit(cairo_t*)
+ * @brief
+ *
+ * @param cr
  */
-void uxdevice::surface_area_brush_t::emit(display_context_t *context) {
-  context->surface_brush(*this);
+void uxdevice::painter_brush_emitter_t::emit(cairo_t *cr) {
+  painter_brush_t::emit(cr);
+}
+
+/**
+ * @fn void emit(cairo_t*, coordinate_t*)
+ * @brief
+ *
+ * @param cr
+ * @param a
+ */
+void uxdevice::painter_brush_emitter_t::emit(cairo_t *cr, coordinate_t *a) {
+  painter_brush_t::emit(cr, a);
 }

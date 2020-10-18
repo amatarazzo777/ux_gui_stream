@@ -40,11 +40,10 @@
  * definitions.
  */
 
-// clang-format off
-
+// clang-format on
 #include <ux_compile_options.h>
 #include <ux_base.h>
-#include <ux_error.h>
+#include <ux_system_error.h>
 #include <ux_variant_visitor.h>
 #include <ux_visitor_interface.h>
 #include <ux_hash.h>
@@ -54,11 +53,20 @@
 #include <ux_painter_brush.h>
 #include <ux_pipeline_memory.h>
 #include <ux_display_visual.h>
+
 #include <ux_display_context.h>
 #include <ux_display_unit_base.h>
 #include <ux_coordinate.h>
-#include <ux_event.h>
+
+#include <ux_os_linux_xcb_event.h>
 #include <ux_event_listeners.h>
+#include <ux_os_window_manager_event_base.h>
+#include <ux_os_window_manager_base.h>
+
+/// @brief os dependant
+#include <ux_os_linux_xcb_event.h>
+#include <ux_os_linux_xcb_window_manager.h>
+
 #include <ux_textual_render.h>
 
 // these files encompass the display unit objects which
@@ -68,7 +76,7 @@
 #include <ux_surface_area_units.h>
 #include <ux_drawing_unit_primitives.h>
 
-// clang-format on
+// clang-format off
 
 #pragma once
 
@@ -113,13 +121,6 @@ public:                                                                        \
 private:                                                                       \
   surface_area_t &stream_input(const CLASS_NAME &_val);                        \
   surface_area_t &stream_input(const std::shared_ptr<CLASS_NAME> _val);
-
-/**
- * @typedef coordinate_list_t
- * @brief An std::list used to communicate coordinate for the window. varying
- * pairs may be given. two or four.
- */
-typedef std::list<short int> coordinate_list_t;
 
 /**
  * @class surface_area_t

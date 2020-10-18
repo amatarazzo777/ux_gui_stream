@@ -531,9 +531,10 @@ public:
  * factory parameters of the unit.
  */
 const std::size_t all_rendering_bits = 0b111111111111;
-const std::size_t textual_render_normal_bits = 0b0001;
-const std::size_t textual_render_path_bits = 0b0010;
-const std::size_t image_block_bits = 0b0100;
+const std::size_t object_data_storage_bits = 0b0001;
+const std::size_t textual_render_normal_bits = 0b0010;
+const std::size_t textual_render_path_bits = 0b0100;
+const std::size_t image_block_bits = 0b1000;
 
 /**
  * @internal

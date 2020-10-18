@@ -42,7 +42,7 @@ class listener_t : public typed_index_t<T>, virtual public hash_members_t {
 public:
   listener_t() = delete;
   listener_t(event_handler_t _dispatch)
-      : ti(std::type_index(typeid(T))), dispatch_event(_dispatch) {}
+    : ti(std::type_index(typeid(T))), dispatch_event(_dispatch) {}
 
   std::size_t hash_code(void) const noexcept {
     std::size_t __value = {};
@@ -58,32 +58,58 @@ public:
  @class
  @brief
  */
-class listen_paint_t : public listener_t<listen_paint_t> {};
+class listen_close_window_t : public listener_t<listen_close_window_t> {
+  using listener_t::listener_t;
+  window_service_event_t *d = {};
+};
 
 /**
  @class
  @brief
  */
-class listen_focus_t : public listener_t<listen_focus_t> {};
+class listen_paint_t : public listener_t<listen_paint_t> {
+  using listener_t::listener_t;
+  window_service_event_t *d = {};
+};
 
 /**
  @class
  @brief
  */
-class listen_blur_t : public listener_t<listen_blur_t> {};
+class listen_focus_t : public listener_t<listen_focus_t> {
+  using listener_t::listener_t;
+  window_service_event_t *d = {};
+};
 
 /**
  @class
  @brief
  */
-class listen_resize_t : public listener_t<listen_resize_t> {};
+class listen_blur_t : public listener_t<listen_blur_t> {
+  using listener_t::listener_t;
+  window_service_event_t *d = {};
+};
+
+/**
+ @class
+ @brief
+ */
+class listen_resize_t : public listener_t<listen_resize_t> {
+public:
+  using listener_t::listener_t;
+  window_service_event_t *d = {};
+};
 
 /**
 
  @class
  @brief
  */
-class listen_keydown_t : public listener_t<listen_keydown_t> {};
+class listen_keydown_t : public listener_t<listen_keydown_t> {
+public:
+  using listener_t::listener_t;
+  keyboard_device_event_t *d = {};
+};
 
 /**
  @class
@@ -92,6 +118,9 @@ class listen_keydown_t : public listener_t<listen_keydown_t> {};
 class listen_keyup_t : public listener_t<listen_keyup_t> {
 public:
   using listener_t::listener_t;
+
+public:
+  keyboard_device_event_t *d = {};
 };
 
 /**
@@ -101,6 +130,9 @@ public:
 class listen_keypress_t : public listener_t<listen_keypress_t> {
 public:
   using listener_t::listener_t;
+
+public:
+  keyboard_device_event_t *d = {};
 };
 
 /**
@@ -110,6 +142,9 @@ public:
 class listen_mouseenter_t : public listener_t<listen_mouseenter_t> {
 public:
   using listener_t::listener_t;
+
+public:
+  mouse_device_event_t *d = {};
 };
 
 /**

@@ -35,6 +35,7 @@ and base operating system windowing and event system. disk access, etc.
 
 #include <assert.h>
 #include <atomic>
+#include <bitset>
 #include <cctype>
 #include <climits>
 #include <cmath>

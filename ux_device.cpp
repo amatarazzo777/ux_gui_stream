@@ -28,7 +28,6 @@
  * is called by the window initialization constructors to create two threads,
  * one for the message queue and one for the rendering loop.
  */
-
 #include <ux_device.h>
 
 using namespace std;
@@ -108,13 +107,8 @@ void uxdevice::surface_area_t::start_processing(void) {
     render_loop();
   });
 
-  std::thread thrMessageQueue([=]() {
-    bProcessing = true;
-    message_loop();
-  });
-
   thrRenderer.detach();
-  thrMessageQueue.detach();
+
 }
 
 /**
