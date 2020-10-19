@@ -27,7 +27,18 @@
 #include <ux_compile_options.h>
 #include <ux_base.h>
 #include <ux_system_error.h>
+#include <ux_hash.h>
+#include <ux_visitor_interface.h>
+#include <ux_enums.h>
+#include <ux_matrix.h>
+#include <ux_draw_buffer.h>
+#include <ux_painter_brush.h>
+#include <ux_display_unit_base.h>
+#include <ux_event_listeners.h>
+#include <ux_os_window_manager_event_base.h>
 #include <ux_os_window_manager_base.h>
+#include <ux_os_linux_xcb_event.h>
+#include <ux_os_linux_xcb_window_manager.h>
 
 /**
  * @fn void draw_fn(std::function<void (cairo_t*)>)
@@ -37,7 +48,7 @@
  */
 void uxdevice::window_manager_base_t::draw_fn(
   const std::function<void(cairo_t *)> &fn) {
-  std::lock_guard(cr_mutex);
+  std::lock_guard<std::mutex> guard(cr_mutex);
   fn(cr);
   error_check(cr);
 }
@@ -50,9 +61,10 @@ void uxdevice::window_manager_base_t::draw_fn(
 void uxdevice::window_manager_base_t::video_flush(void) {
   {
     std::lock_guard lock(surface_mutex);
-    if (window_manager->surface) {
-      cairo_surface_flush(window_manager->surface);
-      error_check(window_manager->surface);
+
+    if (surface) {
+      cairo_surface_flush(surface);
+      error_check(surface);
     }
   }
   flush_window();
@@ -67,7 +79,7 @@ void uxdevice::window_manager_base_t::video_flush(void) {
 
 void uxdevice::window_manager_base_t::surface_fn(
   const std::function<void(cairo_surface_t *)> &fn) {
-  std::lock_guard(surface_mutex);
+  std::lock_guard lock(surface_mutex);
   fn(surface);
   error_check(surface);
 }

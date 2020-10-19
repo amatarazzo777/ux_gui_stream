@@ -42,11 +42,13 @@
 #include <ux_painter_brush.h>
 
 #include <ux_pipeline_memory.h>
-#include <ux_os_linux_xcb_event.h>
-#include <ux_os_window_manager_base.h>
+
 #include <ux_display_visual.h>
 #include <ux_display_context.h>
 #include <ux_display_unit_base.h>
+#include <ux_event_listeners.h>
+#include <ux_os_window_manager_event_base.h>
+#include <ux_os_window_manager_base.h>
 
 #include <ux_coordinate.h>
 
@@ -170,7 +172,7 @@ void uxdevice::pipeline_memory_t::pipeline_visit(display_context_t *context) {
  * @fn pipeline_memory_hash_code
  * @brief returns the combined hash code for the entire pipeline memory.
  */
-std::size_t pipeline_memory_hash_code(void) const noexcept {
+std::size_t uxdevice::pipeline_memory_t::pipeline_memory_hash_code(void) const noexcept {
   std::size_t value = {};
   for (auto &n : storage) {
     hash_combine(value, n.second.hash_function());

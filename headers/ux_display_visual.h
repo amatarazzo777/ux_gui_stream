@@ -42,7 +42,7 @@ namespace uxdevice {
  */
 class context_cairo_region_t {
 public:
-  context_cairo_region_t() = delete;
+  context_cairo_region_t(){};
   context_cairo_region_t(bool bOS, int x, int y, int w, int h) {
     rect = {x, y, w, h};
     _rect = {(double)x, (double)y, (double)w, (double)h};
@@ -149,6 +149,7 @@ public:
     return *this;
   }
 
+  void emit(display_context_t *context);
   void emit(cairo_t *cr);
   void intersect(cairo_rectangle_t &r);
   void intersect(context_cairo_region_t &r);

@@ -37,19 +37,20 @@
  *
  */
 namespace uxdevice {
+class window_manager_base_t;
 
 /**
  * @internal
  * @class
  * @brief
  */
-template <typename T>
 class display_context_t : virtual public hash_members_t,
                           virtual system_error_t,
                           public pipeline_memory_t {
 public:
   display_context_t(void) {}
-  display_context_t(std::shared_ptr<T> _wm) : window_manager(_wm) {}
+  display_context_t(std::shared_ptr<window_manager_base_t> _wm)
+    : window_manager(_wm) {}
 
   display_context_t(const display_context_t &other)
     : hash_members_t(other), system_error_t(other), pipeline_memory_t(other),
@@ -96,16 +97,13 @@ public:
   virtual std::size_t hash_code(void) const noexcept {
     std::size_t __value = {};
     hash_combine(__value, std::type_index(typeid(this)),
-                 pipeline_memory_hash_code(), background_brush.hash_code());
+                 pipeline_memory_hash_code());
 
     return __value;
   }
 
 public:
-  std::mutex background_brush_mutex = {};
-  painter_brush_t background_brush = painter_brush_t("white");
-
-  std::shared_ptr<T> window_manager = {};
+  std::shared_ptr<window_manager_base_t> window_manager = {};
 
   cairo_rectangle_t viewport_rectangle = cairo_rectangle_t();
 

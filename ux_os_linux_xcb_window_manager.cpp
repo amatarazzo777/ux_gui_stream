@@ -34,8 +34,11 @@
 #include <ux_matrix.h>
 #include <ux_draw_buffer.h>
 #include <ux_painter_brush.h>
-#include <ux_os_linux_xcb_event.h>
+#include <ux_display_unit_base.h>
+#include <ux_event_listeners.h>
+#include <ux_os_window_manager_event_base.h>
 #include <ux_os_window_manager_base.h>
+#include <ux_os_linux_xcb_event.h>
 #include <ux_os_linux_xcb_window_manager.h>
 
 /**
@@ -59,7 +62,6 @@ uxdevice::os_xcb_linux_t::operator=(const os_xcb_linux_t &other) {
   window = other.window;
   graphics = other.graphics;
   visual_type = other.visual_type;
-  syms = other.syms;
   surface = cairo_surface_reference(other.surface);
   cr = cairo_reference(other.cr);
   return *this;
@@ -86,7 +88,6 @@ uxdevice::os_xcb_linux_t::operator=(os_xcb_linux_t &&other) noexcept {
   window = other.window;
   graphics = other.graphics;
   visual_type = other.visual_type;
-  syms = other.syms;
   surface = other.surface;
   return *this;
 }
@@ -104,7 +105,7 @@ uxdevice::os_xcb_linux_t::operator=(os_xcb_linux_t &&other) noexcept {
  */
 void uxdevice::os_xcb_linux_t::open_window(
   const coordinate_list_t &coord, const std::string &sWindowTitle,
-  const event_handler_t &dispatch_events) {
+  const painter_brush_t &background, const event_handler_t &dispatch_events) {
   auto it = coord.begin();
 
   window_width = *it;
@@ -141,7 +142,6 @@ void uxdevice::os_xcb_linux_t::open_window(
            << "  " << __FILE__ << " " << __func__;
     throw std::runtime_error(sError.str());
   }
-
 
   /* Create black (foreground) graphic context */
   window = screen->root;
@@ -274,7 +274,6 @@ void uxdevice::os_xcb_linux_t::close_window(void) {
     graphics = 0;
   }
 
-
   if (window) {
     xcb_destroy_window(connection, window);
     window = 0;
@@ -304,45 +303,45 @@ void uxdevice::os_xcb_linux_t::flush_window(void) {
  * generic_os_event_queue_message_t is defined in compile options as it is
  * associated with os compile target.
  */
-const uxdevice::os_xcb_linux_t::message_dispatch_t
+const uxdevice::message_dispatch_t<xcb_generic_event_t *>
   uxdevice::os_xcb_linux_t::message_dispatch = {
-    {XCB_MOTION_NOTIFY,
-     [](auto wm, auto e) {
-       wm.dispatch<mouse_device_event_t, xcb_motion_notify_event_t>(e);
-     }},
-
-    {XCB_BUTTON_PRESS,
-     [](auto wm, auto e) {
-       wm.dispatch<mouse_device_event_t, xcb_button_press_event_t>(e);
-     }},
-
-    {XCB_BUTTON_RELEASE,
-     [](auto wm, auto e) {
-       wm.dispatch<mouse_device_event_t, xcb_button_release_event_t>(e);
-     }},
-
     {XCB_KEY_PRESS,
      [](auto wm, auto e) {
-       wm.dispatch<keyboard_device_event_t, xcb_key_press_event_t>(e);
+       wm->dispatch<xcb_keyboard_device_t *, xcb_key_press_event_t *>(e);
      }},
 
     {XCB_KEY_RELEASE,
      [](auto wm, auto e) {
-       wm.dispatch<keyboard_device_event_t, xcb_key_release_event_t>(e);
+       wm->dispatch<xcb_keyboard_device_t *, xcb_key_release_event_t *>(e);
+     }},
+
+    {XCB_BUTTON_PRESS,
+     [](auto wm, auto e) {
+       wm->dispatch<xcb_mouse_device_t *, xcb_button_press_event_t *>(e);
+     }},
+
+    {XCB_BUTTON_RELEASE,
+     [](auto wm, auto e) {
+       wm->dispatch<xcb_mouse_device_t *, xcb_button_release_event_t *>(e);
+     }},
+
+    {XCB_MOTION_NOTIFY,
+     [](auto wm, auto e) {
+       wm->dispatch<xcb_mouse_device_t *, xcb_motion_notify_event_t *>(e);
      }},
 
     {XCB_EXPOSE,
      [](auto wm, auto e) {
-       wm.dispatch<window_service_event_t, xcb_expose_event_t>(e);
+       wm.dispatch<xcb_window_service_t *, xcb_expose_event_t *>(e);
      }},
 
     {XCB_CONFIGURE_NOTIFY,
      [](auto wm, auto e) {
-       wm.dispatch<window_service_event_t, xcb_configure_notify_event_t>(e);
+       wm.dispatch<xcb_window_service_t *, xcb_configure_notify_event_t *>(e);
      }},
 
     {XCB_CLIENT_MESSAGE, [](auto wm, xcb_generic_event_t *e) {
-       wm.dispatch<window_service_event_t, xcb_client_message_event_t>(e);
+       wm.dispatch<xcb_window_service_t *, xcb_client_message_event_t *>(e);
      }}};
 
 /**
@@ -372,17 +371,14 @@ void uxdevice::os_xcb_linux_t::message_loop(void) {
     return;
 
   // setup close window event
-  xcb_intern_atom_cookie_t cookie =
-    xcb_intern_atom(connection, 1, 12, "WM_PROTOCOLS");
-  xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(connection, cookie, 0);
+  cookie = xcb_intern_atom(connection, 1, 12, "WM_PROTOCOLS");
+  reply = xcb_intern_atom_reply(connection, cookie, 0);
 
-  xcb_intern_atom_cookie_t cookie2 =
-    xcb_intern_atom(connection, 0, 16, "WM_DELETE_WINDOW");
-  xcb_intern_atom_reply_t *reply2 =
-    xcb_intern_atom_reply(connection, cookie2, 0);
+  cookie2 = xcb_intern_atom(connection, 0, 16, "WM_DELETE_WINDOW");
+  reply2 = xcb_intern_atom_reply(connection, cookie2, 0);
 
-  xcb_change_property(connection, XCB_PROP_MODE_REPLACE, context.window,
-                      (*reply).atom, 4, 32, 1, &(*reply2).atom);
+  xcb_change_property(connection, XCB_PROP_MODE_REPLACE, window, (*reply).atom,
+                      4, 32, 1, &(*reply2).atom);
 
   /** @brief wait for an event, gather it. as well, gather all messages that may
    * be waiting. Filter duplicate messages that may be received due to
@@ -390,7 +386,7 @@ void uxdevice::os_xcb_linux_t::message_loop(void) {
    * to translate these messages into uxdevice versions.*/
   while (bProcessing && (xcbEvent = xcb_wait_for_event(connection))) {
     {
-      std::lock_guard(xcb_event_queue_mutex);
+      std::lock_guard lock(xcb_event_queue_mutex);
       xcb_event_queue.emplace_back(xcbEvent);
       bvideo_output = false;
 
@@ -422,7 +418,7 @@ void uxdevice::os_xcb_linux_t::event_queue_processor(void) {
     lk.unlock();
 
     {
-      std::lock_guard(xcb_event_queue_mutex);
+      std::lock_guard lock(xcb_event_queue_mutex);
       if (xcb_event_queue.empty())
         bdone = true;
     }
@@ -431,21 +427,22 @@ void uxdevice::os_xcb_linux_t::event_queue_processor(void) {
     while (!bdone) {
       // get message
       {
-        std::lock_guard(xcb_event_queue_mutex);
+        std::lock_guard lock(xcb_event_queue_mutex);
         e = xcb_event_queue.front();
         xcb_event_queue.pop_front();
       }
 
-      // process, depending upon filter, non handled messages may be faster with
-      // a bit range check. this can be enhanced with specific numerical
-      // representation. xcb internals possibly.
+      /** @brief process, depending upon filter, non handled messages may be
+       * faster with a bit range check. this can be enhanced with specific
+       * numerical representation. xcb internals possibly. The it->second()
+       * invocation performs a dispatch using the std::visit function. */
       auto it = message_dispatch.find(e->response_type & ~0x80);
       if (it != message_dispatch.end())
-        it->second(*dynamic_cast<window_manager_t *>(this), e);
+        it->second(dynamic_cast<window_manager_base_t *>(this), e);
       free(e);
       // pop and check for next iteration.
       {
-        std::lock_guard(xcb_event_queue_mutex);
+        std::lock_guard lock(xcb_event_queue_mutex);
         if (xcb_event_queue.empty())
           bdone = true;
         else if (!bProcessing)

@@ -140,10 +140,7 @@ public:
  */
 class text_color_t
   : public painter_brush_emitter_t<
-      text_color_t,
-      accepted_interfaces_t<abstract_emit_cr_t<order_render_option>,
-                            abstract_emit_cr_a_t<order_render_option>>,
-      visitor_targets_t<textual_render_normal_bits>> {
+      text_color_t, visitor_targets_t<textual_render_normal_bits>> {
 public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
   void emit(cairo_t *cr) { painter_brush_emitter_t::emit(cr); }
@@ -193,12 +190,12 @@ public:
   using painter_brush_emitter_t::painter_brush_emitter_t;
 
   void emit(cairo_t *cr) {
-    painter_brush_emitter_t::emit(cr);
+    painter_brush_t::emit(cr);
     cairo_fill_preserve(cr);
   }
 
   void emit(cairo_t *cr, coordinate_t *a) {
-    painter_brush_emitter_t::emit(cr, a);
+    painter_brush_t::emit(cr, a);
     cairo_fill_preserve(cr);
   }
 };

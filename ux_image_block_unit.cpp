@@ -35,11 +35,12 @@
 #include <ux_painter_brush.h>
 #include <ux_pipeline_memory.h>
 #include <ux_display_visual.h>
-#include <ux_display_visual.h>
-#include <ux_os_window_manager_event_base.h>
-#include <ux_os_window_manager_base.h>
+
 #include <ux_display_context.h>
 #include <ux_display_unit_base.h>
+#include <ux_event_listeners.h>
+#include <ux_os_window_manager_event_base.h>
+#include <ux_os_window_manager_base.h>
 #include <ux_coordinate.h>
 #include <ux_image_block_unit.h>
 

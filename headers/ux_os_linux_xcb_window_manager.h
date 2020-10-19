@@ -79,6 +79,7 @@ public:
 
   void open_window(const coordinate_list_t &coord,
                    const std::string &sWindowTitle,
+                   const painter_brush_t &background,
                    const event_handler_t &dispatch_events);
   void close_window(void);
   void flush_window(void);
@@ -87,13 +88,14 @@ public:
    * @var message_translator
    * @brief system domain translator. must be filled by inheriting
    */
-  static const message_dispatch_t message_dispatch;
+  static const message_dispatch_t<xcb_generic_event_t *> message_dispatch;
 
 private:
   void message_loop(void);
+  void event_queue_processor(void);
 
   std::mutex xcb_event_queue_mutex = {};
-  std::list<xcb_generic_event *> xcb_event_queue = {};
+  std::list<xcb_generic_event_t *> xcb_event_queue = {};
   std::mutex xcb_event_queue_condition_mutex = {};
   std::condition_variable xcb_event_queue_condition_variable = {};
 
@@ -105,6 +107,15 @@ private:
   xcb_gcontext_t graphics = {};
   xcb_visualtype_t *visual_type = {};
 
+  /// @brief wm_close message enable
+  xcb_intern_atom_cookie_t cookie = {};
+  xcb_intern_atom_reply_t *reply = {};
+  xcb_intern_atom_cookie_t cookie2 = {};
+  xcb_intern_atom_reply_t *reply2 = {};
+
+  friend xcb_keyboard_device_t;
+  friend xcb_mouse_device_t;
+  friend xcb_window_service_t;
 };
 
 } // namespace uxdevice

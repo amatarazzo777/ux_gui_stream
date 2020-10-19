@@ -34,9 +34,12 @@
 #include <ux_painter_brush.h>
 #include <ux_pipeline_memory.h>
 #include <ux_display_visual.h>
+#include <ux_display_unit_base.h>
+#include <ux_event_listeners.h>
+#include <ux_os_window_manager_event_base.h>
+#include <ux_os_window_manager_base.h>
 
 #include <ux_os_linux_xcb_event.h>
-#include <ux_os_window_manager_base.h>
 #include <ux_os_linux_xcb_window_manager.h>
 
 #include <ux_display_context.h>
@@ -73,10 +76,10 @@ bool uxdevice::display_context_t::surface_prime() {
 
   // no surface allocated yet, TODO refine surface_fn to provide auto return -
   // concepts20
-  if (!window_manager->surface_fn(
-        [&](auto surface) { bRet = surface != nullptr; })) {
+  window_manager->surface_fn([&](auto surface) { bRet = surface != nullptr; });
+
+  if (!bRet)
     return bRet;
-  }
 
   // determine if painting should also occur
   bRet = state();
@@ -100,7 +103,7 @@ bool uxdevice::display_context_t::surface_prime() {
  * @brief The routine provides the synchronization of the xcb cairo surface and
  * the video system of xcb.
  */
-void uxdevice::display_context_t::flush() { window_manager->flush(); }
+void uxdevice::display_context_t::flush() { window_manager->video_flush(); }
 
 /**
  * @internal
@@ -108,9 +111,9 @@ void uxdevice::display_context_t::flush() { window_manager->flush(); }
  */
 void uxdevice::display_context_t::device_offset(double x, double y) {
   window_manager->surface_fn(
-    [&](auto surface) { cairo_surface_set_device_offset(, x, y); });
+    [&](auto surface) { cairo_surface_set_device_offset(surface, x, y); });
 
-  state(0, 0, window_width, window_height);
+  state(0, 0, window_manager->window_width, window_manager->window_height);
 }
 /**
  * @internal
@@ -118,7 +121,7 @@ void uxdevice::display_context_t::device_offset(double x, double y) {
  */
 void uxdevice::display_context_t::device_scale(double x, double y) {
   window_manager->surface_fn(
-    [&](auto surface) { cairo_surface_set_device_scale(, x, y); });
+    [&](auto surface) { cairo_surface_set_device_scale(surface, x, y); });
 
   state(0, 0, window_manager->window_width, window_manager->window_height);
 }
@@ -156,11 +159,11 @@ void uxdevice::display_context_t::apply_surface_requests(void) {
     cairo_xcb_surface_set_size(surface, flat.w, flat.h);
   });
 
-  window_width = flat.w;
-  window_height = flat.h;
+  window_manager->window_width = flat.w;
+  window_manager->window_height = flat.h;
 
-  viewport_rectangle.width = (double)window_width;
-  viewport_rectangle.height = (double)window_height
+  viewport_rectangle.width = (double)flat.w;
+  viewport_rectangle.height = (double)flat.h;
 }
 
 /**
@@ -190,7 +193,7 @@ void uxdevice::display_context_t::render(void) {
 
   /// @brief setup while start.
   {
-    std::lock_guard(regions_mutex);
+    std::lock_guard<std::mutex> lock(regions_storage_mutex);
     bool bEmpty = regions_storage.empty();
     if (!bEmpty) {
       processing_region = regions_storage.front();
@@ -219,22 +222,22 @@ void uxdevice::display_context_t::render(void) {
      */
     if (current) {
       cairo_region_overlap_t ovrlp =
-        cairo_region_contains_rectangle(current, &r.rect);
+        cairo_region_contains_rectangle(current, &processing_region.rect);
       if (ovrlp == CAIRO_REGION_OVERLAP_IN)
         continue;
     } else {
-      if (r.bOSsurface)
-        current = cairo_region_reference(r._ptr);
+      if (processing_region.bOSsurface)
+        current = cairo_region_reference(processing_region._ptr);
     }
 
     /**
-     * @brief the cr_mutex locks the primary cairo context while drawing
-     * operations occur. brush_mutex is the color source (or image). these
-     * blocks are distinct work items such as the one below. It only sets the
-     * brush, and paints a background square. */
+     * @brief the draw_fn locks the primary cairo context while drawing
+     * operations occur which is the lambda expression. brush_mutex is the color
+     * source (or image). these blocks are distinct work items such as the one
+     * below. It only sets the brush, and paints a background square. */
     window_manager->draw_fn([&](auto cr) {
-      std::lock_guard(background_brush_mutex);
-      background_brush.emit(cr);
+      std::lock_guard lock(window_manager->background_brush_mutex);
+      window_manager->background_brush.emit(cr);
       cairo_rectangle(cr, processing_region.rect.x, processing_region.rect.y,
                       processing_region.rect.width,
                       processing_region.rect.height);
@@ -244,7 +247,7 @@ void uxdevice::display_context_t::render(void) {
 
     /// @brief plot has other combinations of mutex locks. E.g. for
     /// regions_mutex, on_screen_mutex, surface_mutex, cr_mutex
-    plot(r);
+    plot(processing_region);
 
     /// @brief alerts cairo that group has ended and this should paint.
     window_manager->draw_fn([](auto cr) {
@@ -263,10 +266,10 @@ void uxdevice::display_context_t::render(void) {
 
     // iteration to setup next plot area
     {
-      std::lock_guard(regions_mutex);
+      std::lock_guard lock(regions_storage_mutex);
       bEmpty = regions_storage.empty();
       if (!bEmpty) {
-        processing_region = cairo_region_copy(regions_storage.front());
+        processing_region = regions_storage.front();
         regions_storage.pop_front();
       }
     }
@@ -310,7 +313,7 @@ void uxdevice::display_context_t::add_visual(
   auto ptr_pipeline = std::dynamic_pointer_cast<pipeline_memory_t>(object_ptr);
 
   object_ptr->fn_base_surface = [&]() {
-    object_ptr->fn_draw = [&]() { ptr_pipeline->pipeline_execute(this); };
+    object_ptr->fn_draw = [&]() { ptr_pipeline->pipeline_visit(this); };
 
     object_ptr->fn_draw_clipped = [&]() {
       window_manager->draw_fn([&](auto cr) {
@@ -318,6 +321,7 @@ void uxdevice::display_context_t::add_visual(
                         object_ptr->intersection_double.y,
                         object_ptr->intersection_double.width,
                         object_ptr->intersection_double.height);
+        ptr_pipeline->pipeline_visit(this);
         cairo_clip(cr);
       });
 
@@ -325,13 +329,13 @@ void uxdevice::display_context_t::add_visual(
        * display_context_t. "this" internally to the object provides the link
        * to pipeline memory visitation. The function uses the window_manager
        * internally to reference cairo_t and other attributes. The
-       * pipeline_execute function is distinct for each visual object as the
-       * drawing operations, order and initialization are encapsulated. */
-      ptr_pipeline->pipeline_execute(this);
+       * ptr_pipeline->pipeline_visit(this); function is distinct for each
+       * visual object as the drawing operations, order and initialization are
+       * encapsulated. */
+      ptr_pipeline->pipeline_visit(this);
 
       window_manager->draw_fn([&](auto cr) { cairo_reset_clip(cr); });
-
-    });
+    };
   };
 
   object_ptr->fn_cache_surface = object_ptr->fn_base_surface;
@@ -341,11 +345,11 @@ void uxdevice::display_context_t::add_visual(
     return; // not adding error objects
 
   if (object_ptr->overlap == CAIRO_REGION_OVERLAP_OUT) {
-    std::lock_guard(viewport_off_mutex);
+    std::lock_guard lock(viewport_off_mutex);
     viewport_off.emplace_back(object_ptr);
 
   } else {
-    std::lock_guard(viewport_on_mutex);
+    std::lock_guard lock(viewport_on_mutex);
     viewport_on.emplace_back(object_ptr);
     state(object_ptr);
   }
@@ -364,7 +368,8 @@ void uxdevice::display_context_t::clear(void) {
   clearing_frame = true;
 
   {
-    std::scoped_lock(regions_storage, viewport_on_mutex, viewport_off_mutex);
+    std::scoped_lock(regions_storage_mutex, viewport_on_mutex,
+                     viewport_off_mutex);
     regions_storage.remove_if([](auto &n) { return !n.bOSsurface; });
     viewport_on.clear();
     viewport_off.clear();
@@ -374,7 +379,7 @@ void uxdevice::display_context_t::clear(void) {
   offsety = 0;
 
   pipeline_memory_clear();
-  state(0, 0, window_width, window_height);
+  state(0, 0, window_manager->window_width, window_manager->window_height);
 }
 /**
  * @internal
@@ -383,11 +388,11 @@ void uxdevice::display_context_t::clear(void) {
 void uxdevice::display_context_t::surface_brush(painter_brush_t &b) {
 
   {
-    std::lock_guard(window_manager->background_brush_mutex);
+    std::lock_guard lock(window_manager->background_brush_mutex);
     window_manager->background_brush = b;
   }
 
-  state(0, 0, window_width, window_height);
+  state(0, 0, window_manager->window_width, window_manager->window_height);
 }
 
 /**
@@ -398,7 +403,7 @@ void uxdevice::display_context_t::surface_brush(painter_brush_t &b) {
  * there is work.
  */
 void uxdevice::display_context_t::state(std::shared_ptr<display_visual_t> obj) {
-  std::lock_guard(regions_mutex);
+  std::lock_guard lock(regions_storage_mutex);
   std::size_t onum = reinterpret_cast<std::size_t>(obj.get());
 
   regions_storage.emplace_back(context_cairo_region_t(
@@ -413,7 +418,7 @@ void uxdevice::display_context_t::state(std::shared_ptr<display_visual_t> obj) {
  * renderer there is work.
  */
 void uxdevice::display_context_t::state(int x, int y, int w, int h) {
-  std::lock_guard(regions_mutex);
+  std::lock_guard lock(regions_storage_mutex);
   regions_storage.emplace_back(context_cairo_region_t{false, x, y, w, h});
 }
 
@@ -424,7 +429,7 @@ void uxdevice::display_context_t::state(int x, int y, int w, int h) {
  * a newly resized window area occurs first.
  */
 void uxdevice::display_context_t::state_surface(int x, int y, int w, int h) {
-  std::lock_guard(regions_mutex);
+  std::lock_guard lock(regions_storage_mutex);
   auto it = std::find_if(regions_storage.begin(), regions_storage.end(),
                          [](auto &n) { return !n.bOSsurface; });
   if (it != regions_storage.end())
@@ -451,7 +456,7 @@ bool uxdevice::display_context_t::state(void) {
   bool ret = {};
 
   {
-    std::lock_guard(regions_mutex);
+    std::lock_guard lock(regions_storage_mutex);
     ret = !regions_storage.empty();
   }
 
@@ -459,7 +464,7 @@ bool uxdevice::display_context_t::state(void) {
    * surface size and exits if no region work.*/
   if (!ret) {
     {
-      std::lock_guard(surface_requests_storage_mutex);
+      std::lock_guard lock(surface_requests_storage_mutex);
       ret = !surface_requests_storage.empty();
     }
   }
@@ -479,14 +484,17 @@ void uxdevice::display_context_t::plot(context_cairo_region_t &plotArea) {
 
   /// @brief exit early if empty.
   {
-    std::lock_guard<std::mutex>(viewport_on_mutex);
+    std::lock_guard<std::mutex> lock(viewport_on_mutex);
     if (viewport_on.empty())
       return;
   }
-  std::shared_ptr<display_visual_t> n = {} /// @brief iterator to item.
+  /// @brief iterator used for sequence of viewport_on
+  display_visual_list_t::iterator itUnit = {};
+  /// @brief iterator to item.
+  std::shared_ptr<display_visual_t> n = {};
   {
-    std::lock_guard(viewport_on_mutex);
-    auto itUnit = viewport_on.begin();
+    std::lock_guard lock(viewport_on_mutex);
+    itUnit = viewport_on.begin();
     n = *itUnit;
   }
 
@@ -515,7 +523,7 @@ void uxdevice::display_context_t::plot(context_cairo_region_t &plotArea) {
 
     /// @TODO iterator might be bad if list is cleared.
     {
-      std::lock_guard(viewport_on_mutex);
+      std::lock_guard lock(viewport_on_mutex);
       itUnit++;
       bDone = itUnit == viewport_on.end();
     }

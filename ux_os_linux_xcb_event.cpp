@@ -42,21 +42,22 @@
 #include <ux_draw_buffer.h>
 #include <ux_painter_brush.h>
 
+#include <ux_display_unit_base.h>
+#include <ux_event_listeners.h>
 #include <ux_os_window_manager_event_base.h>
 #include <ux_os_window_manager_base.h>
+
 #include <ux_os_linux_xcb_event.h>
+#include <ux_os_linux_xcb_window_manager.h>
 
 /**
  * @fn  keyboard_device_event_t()
  * @brief
  *
  */
-uxdevice::keyboard_device_event_t::keyboard_device_event_t(std::type_index ti)
-  : keyboard_device_event_base_t(ti) {
-  ///@brief The alias is a signature that provides meaning to the information
-  /// that is specific to how the system will interpret it. These are names
-  /// within the API such as listen_mousemove_t. The data is kept as unit along
-  /// with the alias.
+uxdevice::xcb_keyboard_device_t::xcb_keyboard_device_t(std::type_index ti)
+  : keyboard_device_base_t(ti) {
+
   syms = xcb_key_symbols_alloc(window_manager->connection);
   if (!syms) {
     std::stringstream sError;
@@ -71,7 +72,7 @@ uxdevice::keyboard_device_event_t::keyboard_device_event_t(std::type_index ti)
  * @brief
  *
  */
-uxdevice::keyboard_device_event_t::~keyboard_device_event_t() {
+uxdevice::xcb_keyboard_device_t::~xcb_keyboard_device_t() {
   if (syms) {
     xcb_key_symbols_free(syms);
     syms = nullptr;
@@ -84,13 +85,12 @@ uxdevice::keyboard_device_event_t::~keyboard_device_event_t() {
  *
  * @return
  */
-uxdevice::event_t uxdevice::keyboard_device_event_t::get(void) {
-  static const overload_visitors_t visit_map = {
+uxdevice::xcb_keyboard_device_t *uxdevice::xcb_keyboard_device_t::get(void) {
+  auto visit_map = overload_visitors_t{
 
     /**
      * @internal
      * @brief handles keypress event
-     * @param window_service_event_t *object
      * @param xcb_configure_notify_event_t *xcb
      */
     [&](xcb_key_press_event_t *xcb) {
@@ -102,7 +102,7 @@ uxdevice::event_t uxdevice::keyboard_device_event_t::get(void) {
 
         // use xwindows to lookup the string
         XKeyEvent keyEvent;
-        keyEvent.display = context->xdisplay;
+        keyEvent.display = window_manager->xdisplay;
         keyEvent.keycode = xcb->detail;
         keyEvent.state = xcb->state;
         keyEvent.root = xcb->root;
@@ -111,140 +111,108 @@ uxdevice::event_t uxdevice::keyboard_device_event_t::get(void) {
         keyEvent.serial = xcb->sequence;
 
         // filter as a keypress event
-        if (XLookupString(&keyEvent, c.data(), c.size(), nullptr, nullptr))
-          return event_t{std::type_index{typeid(listen_keypress_t)}, this};
-
-      } else {
-
-        // send a keydown event
-        return event_t{std::type_index{typeid(listen_keydown_t)}, this};
+        if (XLookupString(&keyEvent, c.data(), c.size(), nullptr, nullptr)) {
+          alias = std::type_index{typeid(listen_keypress_t)};
+        } else {
+          // send a keydown event
+          alias = std::type_index{typeid(listen_keydown_t)};
+        }
       }
     },
 
     /**
      * @internal
      * @brief handles key release event
-     * @param window_service_event_t *object
      * @param xcb_configure_notify_event_t *xcb
      */
     [&](xcb_key_release_event_t *e) {
-      sym = xcb_key_press_lookup_keysym(context.syms, e, 0);
-      return event_t { std::type_index{typeid(listen_keyup_t)}, this }
-    },
-
-    /**
-     * @internal
-     * @brief handles undefined message
-     * @param window_service_event_t *object
-     * @param xcb_configure_notify_event_t *xcb
-     */
-    [&](std::monostate) {
-      return event_t{std::type_index{typeid(event_t)}, this};
+      sym = xcb_key_press_lookup_keysym(syms, e, 0);
+      alias = std::type_index{typeid(listen_keyup_t)};
     }};
-
-  return std::visit(visit_map, data);
+  // std::visit(visit_map, data);
+  return this;
 }
 /**
  * @internal
  * @var keyboard_device_event_t::visit_map
- * @brief processing for different message from os, key up, down, and virtuals.
+ * @brief processing for different message from os, key up, down, and
+ * virtuals.
  */
 
 /**
  * @internal
  * @var mouse_device_event_t
  * @details handles the mouse device visits. The lambda functions below are
- * called based upon the visit for the variant. The variant is defined in the
- * class definition on the event_base_t template parameters. There must be one
- * entry here for each type mention within the parameters as well as handling
- * std::monostate which the base class inserts by default.
+ * called based upon the visit for the variant. The variant is defined in
+ * the class definition on the event_base_t template parameters. There must
+ * be one entry here for each type mention within the parameters as well as
+ * handling std::monostate which the base class inserts by default.
  */
-const uxdevice::mouse_device_event_t::overload_visitors_t event_t get(void) {
+uxdevice::xcb_mouse_device_t *uxdevice::xcb_mouse_device_t::get(void) {
 
   static const overload_visitors_t visit_map = overload_visitors_t{
 
     /**
      * @internal
      * @brief handles mouse move events.
-     * @param window_service_event_t *object
      * @param xcb_configure_notify_event_t *xcb
      */
-    [](xcb_motion_notify_event_t *xcb) {
-      event_t ret = {};
-      object->x = xcb->event_x;
-      object->y = xcb->event_y;
-
-      ret = event_t{std::type_index{typeid(listen_mousemove_t)}, this};
-
-      return ret;
+    [&](xcb_motion_notify_event_t *xcb) {
+      x = xcb->event_x;
+      y = xcb->event_y;
+      alias = std::type_index{typeid(listen_mousemove_t)};
     },
 
     /**
      * @internal
      * @brief handles mouse button press. this also includes wheel for linux
      * which is 4 & 5 index.
-     * @param window_service_event_t *object
      * @param xcb_configure_notify_event_t *xcb
      */
-    [](xcb_button_press_event_t *xcb) {
-      event_t ret = {};
-
+    [&](xcb_button_press_event_t *xcb) {
       // pluck relative items from the xcb event and place into
       // interface.
-      object->x = xcb->event_x;
-      object->y = xcb->event_y;
+      x = xcb->event_x;
+      y = xcb->event_y;
 
       /** @brief interpret these values as up and down wheel.*/
       if (xcb->detail == XCB_BUTTON_INDEX_4 ||
           xcb->detail == XCB_BUTTON_INDEX_5) {
-        object->d = xcb->detail == XCB_BUTTON_INDEX_4 ? 1 : -1;
-
-        ret = event_t{std::type_index{typeid(listen_wheel_t)}, object};
-
+        d = xcb->detail == XCB_BUTTON_INDEX_4 ? 1 : -1;
+        alias = std::type_index{typeid(listen_wheel_t)};
       } else {
-
-        object->d = xcb->detail;
-        ret = event_t{std::type_index{typeid(listen_mousedown_t)}, this};
+        d = xcb->detail;
+        alias = std::type_index{typeid(listen_mousedown_t)};
       }
-
-      return ret;
     },
 
     /**
      * @internal
      * @brief handles mouse button release
-     * @param window_service_event_t *object
      * @param xcb_configure_notify_event_t *xcb
      */
-    [](xcb_button_release_event_t *e) {
+    [&](xcb_button_release_event_t *e) {
       // ignore button 4 and 5 which are wheel events.
       if (e->detail != XCB_BUTTON_INDEX_4 && e->detail != XCB_BUTTON_INDEX_5)
-        return event_t{std::type_index{typeid(listen_mouseup_t)}, this};
-    },
-
-    /**
-     * @internal
-     * @brief handles undefined event
-     * @param window_service_event_t *object
-     * @param xcb_configure_notify_event_t *xcb
-     */
-    [](std::monostate) {
-      return event_t{std::type_index{typeid(event_t)}, std::monostate};
+        alias = std::type_index{typeid(listen_mouseup_t)};
+      else
+        alias = std::type_index{typeid(xcb_mouse_device_t)};
     }};
-  return std::visit(visit_map, data);
+
+  // std::visit(visit_map, data);
+  return this;
 }
 
 /**
  * @var window_service_event_t::visit_map
  * @brief window services such as resize, move, and expose.
  */
-event_t uxdevice::window_service_event_t::get(void) {
+uxdevice::xcb_window_service_t *uxdevice::xcb_window_service_t::get(void) {
   static const overload_visitors_t visit_map = overload_visitors_t{
 
     /**
      * @internal
      * @brief handles expose events which are translated into paint
-     * @param window_service_event_t *object
      * @param xcb_expose_event_t *xcb
      */
     [&](xcb_expose_event_t *xcb) {
@@ -252,14 +220,12 @@ event_t uxdevice::window_service_event_t::get(void) {
       y = xcb->y;
       w = xcb->width;
       h = xcb->height;
-
-      return event_t{std::type_index{typeid(listen_paint_t)}, this};
+      alias = std::type_index{typeid(listen_paint_t)};
     },
 
     /**
      * @internal
      * @brief handles resize event
-     * @param window_service_event_t *object
      * @param xcb_configure_notify_event_t *xcb
      */
     [&](xcb_configure_notify_event_t *xcb) {
@@ -270,32 +236,23 @@ event_t uxdevice::window_service_event_t::get(void) {
         h = xcb->height;
 
         bvideo_output = true;
-        return event_t{std::type_index{typeid(listen_resize_t)}, this};
+        alias = std::type_index{typeid(listen_resize_t)};
       }
     },
 
     /**
      * @internal
      * @brief handles client message such as close window.
-     * @param window_service_event_t *object
      * @param xcb_configure_notify_event_t *xcb
      */
     [&](xcb_client_message_event_t *xcb) {
       // filter subset for this... original from stack over flow
-      if (xcb->data.data32[0] == reply2->atom) {
-        return event_t{std::type_index{typeid(listen_close_window_t)}, this};
+      if (xcb->data.data32[0] == window_manager->reply2->atom) {
+        alias = std::type_index{typeid(listen_close_window_t)};
       }
-    },
-
-    /**
-     * @internal
-     * @brief handles undefined message type
-     * @param window_service_event_t *object
-     * @param xcb_configure_notify_event_t *xcb
-     */
-    [&](std::monostate) {
-      return event_t{std::type_index{typeid(event_t)}, std::monostate};
     }};
 
-  return std::visit(visit_map, data);
+  // std::visit(visit_map, data);
+
+  return this;
 }

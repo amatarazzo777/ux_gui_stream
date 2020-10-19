@@ -26,8 +26,8 @@
 */
 
 namespace uxdevice {
-class event_t;
-class window_manager_t;
+class window_manager_base_t;
+class painter_brush_t;
 
 /**
  * @typedef coordinate_list_t
@@ -42,13 +42,8 @@ typedef std::list<short int> coordinate_list_t;
  */
 template <typename... Args>
 using message_dispatch_t =
-  std::unordered_map<std::size_t, std::function<void(window_manager_t *, ...)>>;
-
-/**
- * @typedef event_handler_t is used to note and declare a lambda function
- * for the specified event.
- */
-typedef std::function<void(const event_t &et)> event_handler_t;
+  std::unordered_map<std::size_t,
+                     std::function<void(window_manager_base_t *, ...)>>;
 
 /**
  * @class window_manager_abstract_t
@@ -60,6 +55,22 @@ class window_manager_base_t : virtual public system_error_t {
 public:
   window_manager_base_t() {}
   virtual ~window_manager_base_t() {}
+
+  /// @brief copy assignment operator
+  window_manager_base_t &operator=(const window_manager_base_t &other) {
+    return *this;
+  }
+
+  /// @brief move assignment
+  window_manager_base_t &operator=(window_manager_base_t &&other) noexcept {
+    return *this;
+  }
+
+  /// @brief move constructor
+  window_manager_base_t(window_manager_base_t &&other) noexcept {}
+
+  /// @brief copy constructor
+  window_manager_base_t(const window_manager_base_t &other) {}
 
   /**
    * @fn void open_window(const coordinate_list_t&, const std::string&, const
@@ -126,6 +137,8 @@ public:
   cairo_surface_t *surface = {};
   std::mutex cr_mutex = {};
   cairo_t *cr = {};
+  std::mutex background_brush_mutex = {};
+  painter_brush_t background_brush = painter_brush_t("white");
 
   /** @internal
    * @brief these variables are common across instances yet they are managed by

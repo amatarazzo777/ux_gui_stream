@@ -286,10 +286,6 @@ public:
    */
   virtual ~painter_brush_emitter_t() {}
 
-  /** @brief interface routines */
-  void emit(display_context_t *context);
-  void emit(cairo_t *cr);
-  void emit(cairo_t *cr, coordinate_t *a);
 
   /**
    * @fn std::size_t hash_code(void)const

@@ -59,8 +59,8 @@ using namespace uxdevice;
  */
 void uxdevice::surface_area_t::render_loop(void) {
   while (bProcessing) {
-    if (context.surface_prime())
-      context.render();
+    if (context->surface_prime())
+      context->render();
 
     if (error_check()) {
       std::string errors = error_text();
@@ -80,9 +80,9 @@ void uxdevice::surface_area_t::render_loop(void) {
 void uxdevice::surface_area_t::dispatch_event(const event_t &evt) {
 
   if (evt.type == std::type_index(typeid(listen_paint_t)))
-    context.state_surface(evt.x, evt.y, evt.w, evt.h);
+    context->state_surface(evt.x, evt.y, evt.w, evt.h);
   else if (evt.type == std::type_index(typeid(listen_resize_t)))
-    context.resize_surface(evt.w, evt.h);
+    context->resize_surface(evt.w, evt.h);
 
   if (fnEvents)
     fnEvents(evt);
@@ -101,14 +101,13 @@ void uxdevice::surface_area_t::start_processing(void) {
   // setup the event dispatcher
   event_handler_t ev = std::bind(&uxdevice::surface_area_t::dispatch_event,
                                  this, std::placeholders::_1);
-  context.cache_threshold = 2000;
+  context->cache_threshold = 2000;
   std::thread thrRenderer([=]() {
     bProcessing = true;
     render_loop();
   });
 
   thrRenderer.detach();
-
 }
 
 /**
@@ -163,11 +162,13 @@ void uxdevice::surface_area_t::dispatch(const event &e) {
  * program name according to cpp macros.
  */
 uxdevice::surface_area_t::surface_area_t() {
-  window_manager = std::make_shared<ux_os_xcb_linux_t>();
+  window_manager = std::dynamic_pointer_cast<window_manager_base_t>(
+    std::make_shared<os_xcb_linux_t>());
   context = std::make_shared<display_context_t>(window_manager);
 
-  context->open_window(coordinate_list_t{}, DEFAULT_WINDOW_TITLE,
-                       painter_brush_t{}, event_handler_t{});
+  context->window_manager->open_window(coordinate_list_t{},
+                                       DEFAULT_WINDOW_TITLE, painter_brush_t{},
+                                       event_handler_t{});
 }
 
 /**
@@ -179,11 +180,11 @@ uxdevice::surface_area_t::surface_area_t() {
  */
 uxdevice::surface_area_t::surface_area_t(
   const std::string &surface_area_title) {
-  window_manager = std::make_shared<ux_os_xcb_linux_t>();
+  window_manager = std::make_shared<os_xcb_linux_t>();
   context = std::make_shared<display_context_t>(window_manager);
 
-  context->open_window(coordinate_list_t{}, surface_area_title,
-                       painter_brush_t{}, event_handler_t{});
+  context->window_manager->open_window(coordinate_list_t{}, surface_area_title,
+                                       painter_brush_t{}, event_handler_t{});
 
   set_surface_defaults();
 }
@@ -197,11 +198,11 @@ uxdevice::surface_area_t::surface_area_t(
  * title given. Default background, without an external window event handler.
  */
 uxdevice::surface_area_t::surface_area_t(const coordinate_list_t &coordinate) {
-  window_manager = std::make_shared<ux_os_xcb_linux_t>();
+  window_manager = std::make_shared<os_xcb_linux_t>();
   context = std::make_shared<display_context_t>(window_manager);
 
-  context->open_window(coordinate, DEFAULT_WINDOW_TITLE, painter_brush_t{},
-                       event_handler_t{});
+  context->window_manager->open_window(coordinate, DEFAULT_WINDOW_TITLE,
+                                       painter_brush_t{}, event_handler_t{});
 }
 /**
  * @overload
@@ -212,11 +213,12 @@ uxdevice::surface_area_t::surface_area_t(const coordinate_list_t &coordinate) {
  */
 uxdevice::surface_area_t::surface_area_t(
   const event_handler_t &dispatch_events) {
-  window_manager = std::make_shared<ux_os_xcb_linux_t>();
+  window_manager = std::make_shared<os_xcb_linux_t>();
   context = std::make_shared<display_context_t>(window_manager);
 
-  context->open_window(coordinate_list_t{}, DEFAULT_WINDOW_TITLE,
-                       painter_brush_t{}, dispatch_events);
+  context->window_manager->open_window(coordinate_list_t{},
+                                       DEFAULT_WINDOW_TITLE, painter_brush_t{},
+                                       dispatch_events);
 }
 
 /**
@@ -228,11 +230,11 @@ uxdevice::surface_area_t::surface_area_t(
  */
 uxdevice::surface_area_t::surface_area_t(
   const coordinate_list_t &coordinate, const std::string &surface_area_title) {
-  window_manager = std::make_shared<ux_os_xcb_linux_t>();
+  window_manager = std::make_shared<os_xcb_linux_t>();
   context = std::make_shared<display_context_t>(window_manager);
 
-  context->open_window(coordinate, surface_area_title, painter_brush_t{},
-                       event_handler_t{});
+  context->window_manager->open_window(coordinate, surface_area_title,
+                                       painter_brush_t{}, event_handler_t{});
 }
 
 /**
@@ -248,11 +250,12 @@ uxdevice::surface_area_t::surface_area_t(
   const coordinate_list_t &coordinate, const std::string &surface_area_title,
   const painter_brush_t &surface_background_brush) {
 
-  window_manager = std::make_shared<ux_os_xcb_linux_t>();
+  window_manager = std::make_shared<os_xcb_linux_t>();
   context = std::make_shared<display_context_t>(window_manager);
 
-  context->open_window(coordinate, surface_area_title, surface_background_brush,
-                       event_handler_t{});
+  context->window_manager->open_window(coordinate, surface_area_title,
+                                       surface_background_brush,
+                                       event_handler_t{});
 }
 
 /**
@@ -274,18 +277,20 @@ uxdevice::surface_area_t::surface_area_t(
   const painter_brush_t &surface_background_brush,
   const event_handler_t &dispatch_events) {
 
-  window_manager = std::make_shared<ux_os_xcb_linux_t>();
+  window_manager = std::make_shared<os_xcb_linux_t>();
   context = std::make_shared<display_context_t>(window_manager);
 
-  context->open_window(coordinate, window_title, surface_background_brush,
-                       dispatch_events);
+  context->window_manager->open_window(
+    coordinate, window_title, surface_background_brush, dispatch_events);
 }
 
 /**
  * @internal
  * @brief Destructor, closes a window on the target OS
  */
-uxdevice::surface_area_t::~surface_area_t(void) { context->close_window(); }
+uxdevice::surface_area_t::~surface_area_t(void) {
+  context->window_manager->close_window();
+}
 
 /**
  * @internal
@@ -305,7 +310,7 @@ void surface_area_t::set_surface_defaults(void) { SYSTEM_DEFAULTS }
  * cleared.  The display and all objects are released.
  */
 void uxdevice::surface_area_t::clear(void) {
-  context.clear();
+  context->clear();
   display_list_clear();
 }
 
@@ -319,7 +324,7 @@ void uxdevice::surface_area_t::clear(void) {
  * issues or more informative cpu usage since the data perception is changed.
  */
 void uxdevice::surface_area_t::notify_complete(void) {
-  context.state_notify_complete();
+  context->state_notify_complete();
 }
 
 /**
@@ -400,6 +405,14 @@ uxdevice::surface_area_t::stream_input(const std::stringstream &_val) {
   in(text_data_t{_val.str()}, textual_render_t{});
   return *this;
 }
+
+/**
+ * @fn surface_area_t stream_input&(const std::shared_ptr<std::stringstream>)
+ * @brief
+ *
+ * @param _val
+ * @return
+ */
 surface_area_t &uxdevice::surface_area_t::stream_input(
   const std::shared_ptr<std::stringstream> _val) {
   in(text_data_t{_val}, textual_render_t{});
@@ -423,7 +436,6 @@ surface_area_t &uxdevice::surface_area_t::stream_input(
 surface_area_t &
 uxdevice::surface_area_t::stream_input(const std::string_view &s) {
   in(text_data_t{s}, textual_render_t{});
-
   return *this;
 }
 
@@ -537,7 +549,7 @@ surface_area_t &uxdevice::surface_area_t::rotate(double angle) {
  * @details
  */
 surface_area_t &uxdevice::surface_area_t::device_offset(double x, double y) {
-  context.device_offset(x, y);
+  context->device_offset(x, y);
   return *this;
 }
 
@@ -549,7 +561,7 @@ surface_area_t &uxdevice::surface_area_t::device_offset(double x, double y) {
  * @details
  */
 surface_area_t &uxdevice::surface_area_t::device_scale(double x, double y) {
-  context.device_scale(x, y);
+  context->device_scale(x, y);
   return *this;
 }
 
@@ -693,13 +705,12 @@ surface_area_t &uxdevice::surface_area_t::user_distance(double &x, double &y) {
 }
 
 /**
- * @fn draw_caret
- * @param const int x
- * @param const int y
- * @param  const int h
- * @param painter_brush_t &b
+ * @fn void draw_caret(const int, const int, const int)
  * @brief
- * @details
+ *
+ * @param x
+ * @param y
+ * @param h
  */
 void uxdevice::surface_area_t::draw_caret(const int x, const int y,
                                           const int h) {}

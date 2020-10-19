@@ -197,7 +197,7 @@ void uxdevice::text_font_t::emit(PangoLayout *layout) {
 void uxdevice::text_outline_t::emit(cairo_t *cr) {
   double dwidth = cairo_get_line_width(cr);
   cairo_set_line_width(cr, _width);
-  painter_brush_emitter_t::emit(cr);
+  painter_brush_t::emit(cr);
   cairo_stroke(cr);
   cairo_set_line_width(cr, dwidth);
 }
@@ -214,7 +214,7 @@ void uxdevice::text_outline_t::emit(cairo_t *cr) {
 void uxdevice::text_outline_t::emit(cairo_t *cr, coordinate_t *a) {
   double dwidth = cairo_get_line_width(cr);
   cairo_set_line_width(cr, _width);
-  painter_brush_emitter_t::emit(cr, a);
+  painter_brush_t::emit(cr, a);
   cairo_stroke(cr);
   cairo_set_line_width(cr, dwidth);
 }
@@ -270,7 +270,7 @@ void uxdevice::text_shadow_t::pipeline_acquire() {
           internal_buffer.emit(cr, a);
         }});
     }
-    // pipeline_execute();
+    // pipeline_visit(this);();
   });
 }
 

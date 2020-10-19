@@ -414,12 +414,7 @@ class curve_t
                             abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
-  void emit(display_context_t *context) {
-    if (context->pipeline_memory_access<relative_coordinate_t>())
-      emit_relative(context->cr);
-    else
-      emit_absolute(context->cr);
-  }
+  void emit(display_context_t *context);
   void emit_relative(cairo_t *cr);
   void emit_absolute(cairo_t *cr);
 };
@@ -435,12 +430,7 @@ class line_t
                             abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using class_storage_emitter_t::class_storage_emitter_t;
-  void emit(display_context_t *context) {
-    if (context->pipeline_memory_access<relative_coordinate_t>())
-      emit_relative(context->cr);
-    else
-      emit_absolute(context->cr);
-  }
+  void emit(display_context_t *context);
   void emit_relative(cairo_t *cr);
   void emit_absolute(cairo_t *cr);
 };
@@ -456,12 +446,7 @@ class vline_t
                             abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using storage_emitter_t::storage_emitter_t;
-  void emit(display_context_t *context) {
-    if (context->pipeline_memory_access<relative_coordinate_t>())
-      emit_relative(context->cr);
-    else
-      emit_absolute(context->cr);
-  }
+  void emit(display_context_t *context);
   void emit_relative(cairo_t *cr);
   void emit_absolute(cairo_t *cr);
 };
@@ -477,12 +462,7 @@ class hline_t
                             abstract_emit_cr_absolute_t<order_render>>> {
 public:
   using storage_emitter_t::storage_emitter_t;
-  void emit(display_context_t *context) {
-    if (context->pipeline_memory_access<relative_coordinate_t>())
-      emit_relative(context->cr);
-    else
-      emit_absolute(context->cr);
-  }
+  void emit(display_context_t *context);
   void emit_relative(cairo_t *cr);
   void emit_absolute(cairo_t *cr);
 };

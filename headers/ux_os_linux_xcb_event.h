@@ -26,72 +26,115 @@
  */
 
 namespace uxdevice {
-class window_manager_t;
+class os_xcb_linux_t;
 
 /**
- * @class keyboard_device_event_t
+ * @typedef xcb_keyboard_event_t
+ * @brief accepted message pointer types. First is the generic input.
+ */
+typedef device_event_base_t<xcb_generic_event_t *,
+                            xcb_key_press_event_t *, xcb_key_release_event_t *>
+  xcb_keyboard_event_t;
+
+/**
+ * @class xcb_keyboard_device_t
  * @brief holds and processes keyboard messages.
  *
  */
-class keyboard_device_event_t
-  : public keyboard_device_event_base_t<xcb_generic_event_t *,
-                                        xcb_key_press_event_t *,
-                                        xcb_key_release_event_t *> {
+class xcb_keyboard_device_t
+  : public keyboard_device_base_t<xcb_keyboard_event_t> {
 public:
-  using keyboard_device_event_base_t::keyboard_device_event_base_t;
-  keyboard_device_event_t() = delete;
-  keyboard_device_event_t(std::type_index ti);
-  ~keyboard_device_event_t();
+  using keyboard_device_base_t::keyboard_device_base_t;
+  xcb_keyboard_device_t() = delete;
+  xcb_keyboard_device_t(std::type_index ti);
+  ~xcb_keyboard_device_t();
   void initialize();
 
   /// @brief copy assignment operator
-  keyboard_device_event_t &operator=(const keyboard_device_event_t &other) {
+  xcb_keyboard_device_t &operator=(const xcb_keyboard_device_t &other) {
+    keyboard_device_base_t::operator=(other);
     return *this;
   }
 
   /// @brief move assignment
-  keyboard_device_event_t &operator=(keyboard_device_event_t &&other) noexcept {
+  xcb_keyboard_device_t &operator=(xcb_keyboard_device_t &&other) noexcept {
+    keyboard_device_base_t::operator=(other);
     return *this;
   }
 
   /// @brief move constructor
-  keyboard_device_event_t(keyboard_device_event_t &&other) noexcept
-    : keyboard_device_event_base_t(other) {}
+  xcb_keyboard_device_t(xcb_keyboard_device_t &&other) noexcept
+    : keyboard_device_base_t(other) {}
 
   /// @brief copy constructor
-  keyboard_device_event_t(const keyboard_device_event_t &other)
-    : keyboard_device_event_base_t(other) {}
+  xcb_keyboard_device_t(const xcb_keyboard_device_t &other)
+    : keyboard_device_base_t(other) {}
 
   /**@brief must specialize this for interface.
    * interface abstract returns the visitor map. see the
    * ux_os_linux_event.cpp file for details.*/
-  event_t get(void);
+  xcb_keyboard_device_t *get(void);
 
 private:
   xcb_key_symbols_t *syms = {};
-  window_manager_t *window_manager = {};
+  std::shared_ptr<os_xcb_linux_t> window_manager = {};
 };
 
 /**
- * @class mouse_button_evt_t
+ * @typedef xcb_mouse_event_t
  * @brief
  *
  */
-class mouse_device_event_t
-  : public mouse_device_event_base_t<
-      xcb_generic_event_t *, xcb_button_press_event_t *,
-      xcb_button_release_event_t *, xcb_motion_notify_event_t *> {
-  using mouse_device_event_base_t::mouse_device_event_base_t;
+typedef device_event_base_t<
+  xcb_generic_event_t *,  xcb_button_press_event_t *,
+  xcb_button_release_event_t *, xcb_motion_notify_event_t *>
+  xcb_mouse_event_t;
 
-  ~mouse_device_event_t() {}
+/**
+ * @class xcb_mouse_device_t
+ * @brief
+ *
+ */
+class xcb_mouse_device_t : public mouse_device_base_t<xcb_mouse_event_t> {
+  using mouse_device_base_t::mouse_device_base_t;
+
+  ~xcb_mouse_device_t() {}
+
+  /// @brief copy assignment operator
+  xcb_mouse_device_t &operator=(const xcb_mouse_device_t &other) {
+    mouse_device_base_t::operator=(other);
+    return *this;
+  }
+
+  /// @brief move assignment
+  xcb_mouse_device_t &operator=(xcb_mouse_device_t &&other) noexcept {
+    mouse_device_base_t::operator=(other);
+    return *this;
+  }
+
+  /// @brief move constructor
+  xcb_mouse_device_t(xcb_mouse_device_t &&other) noexcept
+    : mouse_device_base_t(other) {}
+
+  /// @brief copy constructor
+  xcb_mouse_device_t(const xcb_mouse_device_t &other)
+    : mouse_device_base_t(other) {}
 
   /**@brief must specialize this for interface.
    * interface abstract returns the visitor map. see the
    * ux_os_linux_event.cpp file for details.*/
-  event_t get(void);
-  window_manager_t *window_manager = {};
+  xcb_mouse_device_t *get(void);
+  std::shared_ptr<os_xcb_linux_t> window_manager = {};
+};
 
-}; // namespace uxdevice
+/**
+ * @typedef xcb_window_service_event_t
+ * @brief
+ */
+typedef device_event_base_t<
+  xcb_generic_event_t *, xcb_button_press_event_t *,
+  xcb_button_release_event_t *, xcb_motion_notify_event_t *>
+  xcb_window_service_event_t;
 
 /**
  * @class window_service_event_t
@@ -102,21 +145,37 @@ class mouse_device_event_t
  * system.
  *
  */
-class window_service_event_t
-  : window_service_event_base_t<xcb_generic_event_t *, xcb_expose_event_t *,
-                                xcb_configure_notify_event_t *,
-                                xcb_client_message_event_t *> {
+class xcb_window_service_t : window_service_base_t<xcb_window_service_event_t> {
 public:
-  using window_service_event_base_t::window_service_event_base_t;
+  using window_service_base_t::window_service_base_t;
 
-  virtual ~window_service_event_t() {}
+  virtual ~xcb_window_service_t() {}
+  /// @brief copy assignment operator
+  xcb_window_service_t &operator=(const xcb_window_service_t &other) {
+    window_service_base_t::operator=(other);
+    return *this;
+  }
+
+  /// @brief move assignment
+  xcb_window_service_t &operator=(xcb_window_service_t &&other) noexcept {
+    window_service_base_t::operator=(other);
+    return *this;
+  }
+
+  /// @brief move constructor
+  xcb_window_service_t(xcb_window_service_t &&other) noexcept
+    : window_service_base_t(other) {}
+
+  /// @brief copy constructor
+  xcb_window_service_t(const xcb_window_service_t &other)
+    : window_service_base_t(other) {}
 
   /**@brief must specialize this for interface.
    * interface abstract returns the visitor map. see the
    * ux_os_linux_event.cpp file for details.*/
-  event_t get(void);
+  xcb_window_service_t *get(void);
 
-  window_manager_t *window_manager = {};
+  std::shared_ptr<os_xcb_linux_t> window_manager = {};
 };
 
 } // namespace uxdevice

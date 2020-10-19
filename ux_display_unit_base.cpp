@@ -35,11 +35,18 @@
 #include <ux_matrix.h>
 #include <ux_draw_buffer.h>
 #include <ux_painter_brush.h>
-
+#include <ux_display_visual.h>
+#include <ux_display_unit_base.h>
+#include <ux_pipeline_memory.h>
+#include <ux_display_context.h>
+#include <ux_event_listeners.h>
+#include <ux_os_window_manager_event_base.h>
 #include <ux_os_window_manager_base.h>
-#include <ux_os_linux_xcb_window_manager.h>
+#include <ux_coordinate.h>
 
-  void uxdevice::painter_brush_emitter_t::emit(display_context_t *context) {
+#if 0
+void uxdevice::painter_brush_emitter_t::emit(
+  uxdevice::display_context_t *context) {
   context->window_manager->draw_fn([&](auto cr) { painter_brush_t::emit(cr); });
 }
 
@@ -63,3 +70,4 @@ void uxdevice::painter_brush_emitter_t::emit(cairo_t *cr) {
 void uxdevice::painter_brush_emitter_t::emit(cairo_t *cr, coordinate_t *a) {
   painter_brush_t::emit(cr, a);
 }
+#endif

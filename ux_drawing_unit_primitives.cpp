@@ -41,6 +41,10 @@
 #include <ux_display_context.h>
 #include <ux_display_unit_base.h>
 
+#include <ux_event_listeners.h>
+#include <ux_os_window_manager_event_base.h>
+#include <ux_os_window_manager_base.h>
+
 #include <ux_coordinate.h>
 #include <ux_drawing_unit_primitives.h>
 
@@ -166,6 +170,19 @@ void uxdevice::curve_t::emit_relative(cairo_t *cr) {
 }
 
 /**
+ * @fn void emit(display_context_t*)
+ * @brief
+ *
+ * @param context
+ */
+void uxdevice::curve_t::emit(display_context_t *context) {
+  if (context->pipeline_memory_access<relative_coordinate_t>())
+    emit_relative(context->window_manager->cr);
+  else
+    emit_absolute(context->window_manager->cr);
+}
+
+/**
  * @internal
  * @fn curve_t::emit_absolute
  * @param cairo_t *cr
@@ -174,6 +191,19 @@ void uxdevice::curve_t::emit_relative(cairo_t *cr) {
  */
 void uxdevice::curve_t::emit_absolute(cairo_t *cr) {
   cairo_curve_to(cr, x1, y1, x2, y2, x3, y3);
+}
+
+/**
+ * @fn void emit(display_context_t*)
+ * @brief
+ *
+ * @param context
+ */
+void uxdevice::line_t::emit(display_context_t *context) {
+  if (context->pipeline_memory_access<relative_coordinate_t>())
+    emit_relative(context->window_manager->cr);
+  else
+    emit_absolute(context->window_manager->cr);
 }
 
 /**
@@ -195,6 +225,19 @@ void uxdevice::line_t::emit_relative(cairo_t *cr) {
  * @details
  */
 void uxdevice::line_t::emit_absolute(cairo_t *cr) { cairo_line_to(cr, x, y); }
+
+/**
+ * @fn void emit(display_context_t*)
+ * @brief
+ *
+ * @param context
+ */
+void uxdevice::hline_t::emit(display_context_t *context) {
+  if (context->pipeline_memory_access<relative_coordinate_t>())
+    emit_relative(context->window_manager->cr);
+  else
+    emit_absolute(context->window_manager->cr);
+}
 
 /**
  * @internal
@@ -224,6 +267,19 @@ void uxdevice::hline_t::emit_absolute(cairo_t *cr) {
     cairo_get_current_point(cr, &curx, &cury);
     cairo_line_to(cr, value, cury);
   }
+}
+
+/**
+ * @fn void emit(display_context_t*)
+ * @brief
+ *
+ * @param context
+ */
+void uxdevice::vline_t::emit(display_context_t *context) {
+  if (context->pipeline_memory_access<relative_coordinate_t>())
+    emit_relative(context->window_manager->cr);
+  else
+    emit_absolute(context->window_manager->cr);
 }
 
 /**

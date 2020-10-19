@@ -26,7 +26,7 @@
 
 /**
  * @namespace uxdevice
- * @brief THe major invocation of API object usage is defined here.
+ * @brief The major invocation of API object usage is defined here.
  * surface_area_t and its constructors are here. The class provides the stream
  * operations for the system to provide an input mechanism. These are template
  * functions. Object composition and discrete initializations of the object is
@@ -56,17 +56,11 @@
 
 #include <ux_display_context.h>
 #include <ux_display_unit_base.h>
-#include <ux_coordinate.h>
-
-#include <ux_os_linux_xcb_event.h>
 #include <ux_event_listeners.h>
 #include <ux_os_window_manager_event_base.h>
 #include <ux_os_window_manager_base.h>
 
-/// @brief os dependant
-#include <ux_os_linux_xcb_event.h>
-#include <ux_os_linux_xcb_window_manager.h>
-
+#include <ux_coordinate.h>
 #include <ux_textual_render.h>
 
 // these files encompass the display unit objects which
@@ -76,6 +70,10 @@
 #include <ux_surface_area_units.h>
 #include <ux_drawing_unit_primitives.h>
 
+
+/// @brief os dependant
+#include <ux_os_linux_xcb_event.h>
+#include <ux_os_linux_xcb_window_manager.h>
 // clang-format off
 
 #pragma once
@@ -210,12 +208,12 @@ public:
       // the init_dispatch function accomplishes this.
       if constexpr (std::is_base_of<visitor_base_t, T>::value) {
         obj->init_dispatch();
-        context.pipeline_memory_store<T>(obj);
+        context->pipeline_memory_store<T>(obj);
       }
 
       // if the item is a drawing output object, inform the context of it.
       if constexpr (std::is_base_of<display_visual_t, T>::value)
-        context.add_visual(obj);
+        context->add_visual(obj);
 
       // otherwise the input is another type. Try
       // the default string stream.
@@ -251,12 +249,12 @@ public:
       // the init_dispatch function accomplishes this.
       if constexpr (std::is_base_of<visitor_base_t, T>::value) {
         obj->init_dispatch();
-        context.pipeline_memory_store<T>(obj);
+        context->pipeline_memory_store<T>(obj);
       }
 
       // if the item is a drawing output object, inform the context of it.
       if constexpr (std::is_base_of<display_visual_t, T>::value)
-        context.add_visual(obj);
+        context->add_visual(obj);
 
     } else {
       stream_input(obj);
@@ -292,7 +290,9 @@ public:
    *  e.g. vis.in(text_font_t{"Arial 20px"}, coordindate_t{0,0}, "Hello");
    */
 public:
+  //template <typename T> void in(const T &&obj) { operator<<(obj); }
   template <typename T> void in(const T &obj) { operator<<(obj); }
+
   template <typename T, typename... Args>
   void in(const T &obj, const Args &... args) {
     operator<<(obj);
@@ -414,7 +414,7 @@ private:
   void maintain_index(const std::shared_ptr<display_unit_t> obj);
 
 private:
-  std::shared_ptr<window_manager_abstract_t> window_manager = {};
+  std::shared_ptr<window_manager_base_t> window_manager = {};
   std::shared_ptr<display_context_t> context = {};
   std::atomic<bool> bProcessing = false;
 
@@ -449,10 +449,14 @@ private:
    * constant double reference object in a parampack/
    */
   template <class T, typename... Args>
-  std::shared_ptr<T> display_list(const Args &&... args) {
-    return display_list<T>(std::make_shared<T>(std::forward<args>(...)));
+  std::shared_ptr<T> display_list(const Args &... args) {
+    return display_list<T>(std::make_shared<T>(args...));
   }
+  template <class T, typename... Args>
 
+  std::shared_ptr<T> display_list(const Args &&... args) {
+    return display_list<T>(std::make_shared<T>(args...));
+  }
   /**
    * @fn display_list
    * @brief

@@ -270,7 +270,7 @@ public:
    * @tparam T
    * @return
    */
-  template <typename T> decltype(auto) pipeline_memory_mutex(void) {
+  template <typename T> std::mutex &pipeline_memory_mutex(void) {
     std::shared_ptr<T> ptr = {};
     auto ti = std::type_index(typeid(T));
     auto item = storage.find(ti);
@@ -278,7 +278,7 @@ public:
       throw std::runtime_error(
         "pipeline_memory_mutex accessed before value is initialized. ");
 
-    return std::ref(item->second.data_mutex);
+    return item->second.data_mutex;
   }
 
   /**

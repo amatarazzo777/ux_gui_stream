@@ -110,7 +110,7 @@ typedef std::function<void(cairo_t *cr, PangoLayout *)> fn_emit_cr_layout_t;
  * @typedef fn_emit_overload_t
  * @brief a variant which is used to hold the function. std::visit is used. See
  * the function in ux_pipeline_memory.cpp
- * (uxdevice::pipeline_acquisition_t::pipeline_execute)
+ * (uxdevice::pipeline_memory_t::pipeline_visit)
  */
 typedef std::variant<std::monostate, fn_emit_cr_t, fn_emit_cr_a_t,
                      fn_emit_context_t, fn_emit_layout_t, fn_emit_layout_a_t,
@@ -526,7 +526,7 @@ public:
  * pipeline memory object. Pipeline memory objects typically uses these for
  * rendering things using it as parameters (see pipeline_memory_access). As
  * well, these objects may have "emittable" visitation interfaces which are used
- * within the pipeline_execute function and also available to the internal
+ * within the pipeline_visit function and also available to the internal
  * pipeline_acquire function. So these label the objects within the template
  * factory parameters of the unit.
  */
