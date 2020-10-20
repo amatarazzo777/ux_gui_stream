@@ -41,6 +41,9 @@
 #include <ux_os_linux_xcb_event.h>
 #include <ux_os_linux_xcb_window_manager.h>
 
+using namespace std;
+using namespace uxdevice;
+
 /**
  * @fn uxdevice::os_xcb_linux_t operator =&(const os_xcb_linux_t&)
  * @brief copy assignment operator
@@ -298,53 +301,6 @@ void uxdevice::os_xcb_linux_t::flush_window(void) {
 }
 
 /**
- * @var message_dispatch_t
- * @brief translates between system domain.
- * generic_os_event_queue_message_t is defined in compile options as it is
- * associated with os compile target.
- */
-const uxdevice::message_dispatch_t<xcb_generic_event_t *>
-  uxdevice::os_xcb_linux_t::message_dispatch = {
-    {XCB_KEY_PRESS,
-     [](auto wm, auto e) {
-       wm->dispatch<xcb_keyboard_device_t *, xcb_key_press_event_t *>(e);
-     }},
-
-    {XCB_KEY_RELEASE,
-     [](auto wm, auto e) {
-       wm->dispatch<xcb_keyboard_device_t *, xcb_key_release_event_t *>(e);
-     }},
-
-    {XCB_BUTTON_PRESS,
-     [](auto wm, auto e) {
-       wm->dispatch<xcb_mouse_device_t *, xcb_button_press_event_t *>(e);
-     }},
-
-    {XCB_BUTTON_RELEASE,
-     [](auto wm, auto e) {
-       wm->dispatch<xcb_mouse_device_t *, xcb_button_release_event_t *>(e);
-     }},
-
-    {XCB_MOTION_NOTIFY,
-     [](auto wm, auto e) {
-       wm->dispatch<xcb_mouse_device_t *, xcb_motion_notify_event_t *>(e);
-     }},
-
-    {XCB_EXPOSE,
-     [](auto wm, auto e) {
-       wm.dispatch<xcb_window_service_t *, xcb_expose_event_t *>(e);
-     }},
-
-    {XCB_CONFIGURE_NOTIFY,
-     [](auto wm, auto e) {
-       wm.dispatch<xcb_window_service_t *, xcb_configure_notify_event_t *>(e);
-     }},
-
-    {XCB_CLIENT_MESSAGE, [](auto wm, xcb_generic_event_t *e) {
-       wm.dispatch<xcb_window_service_t *, xcb_client_message_event_t *>(e);
-     }}};
-
-/**
  * @internal
  * @fn message_loop
  * @brief the routine handles the message processing for the specific operating
@@ -383,12 +339,13 @@ void uxdevice::os_xcb_linux_t::message_loop(void) {
   /** @brief wait for an event, gather it. as well, gather all messages that may
    * be waiting. Filter duplicate messages that may be received due to
    * continuous input. When all have been gathered, signal the queue processor
-   * to translate these messages into uxdevice versions.*/
+   * to translate these messages into uxdevice versions and dispatch them. some
+   * priorities in queue processing go to window services to resize surface
+   * first and output the new area background. */
   while (bProcessing && (xcbEvent = xcb_wait_for_event(connection))) {
     {
       std::lock_guard lock(xcb_event_queue_mutex);
       xcb_event_queue.emplace_back(xcbEvent);
-      bvideo_output = false;
 
       // qt5 does this, it queues all of the input messages at once.
       // this makes the processing of painting and reading input faster.
@@ -422,25 +379,21 @@ void uxdevice::os_xcb_linux_t::event_queue_processor(void) {
       if (xcb_event_queue.empty())
         bdone = true;
     }
-    xcb_generic_event_t *e = {};
+    xcb_generic_event_t *xcb = {};
 
     while (!bdone) {
       // get message
       {
         std::lock_guard lock(xcb_event_queue_mutex);
-        e = xcb_event_queue.front();
+        xcb = xcb_event_queue.front();
         xcb_event_queue.pop_front();
       }
+      // invoke the search
+      visit_dispatch(xcb);
+      // free is here - is odd, pointer should be managed at allocation level
+      free(xcb);
 
-      /** @brief process, depending upon filter, non handled messages may be
-       * faster with a bit range check. this can be enhanced with specific
-       * numerical representation. xcb internals possibly. The it->second()
-       * invocation performs a dispatch using the std::visit function. */
-      auto it = message_dispatch.find(e->response_type & ~0x80);
-      if (it != message_dispatch.end())
-        it->second(dynamic_cast<window_manager_base_t *>(this), e);
-      free(e);
-      // pop and check for next iteration.
+      // check for next iteration.
       {
         std::lock_guard lock(xcb_event_queue_mutex);
         if (xcb_event_queue.empty())
@@ -449,5 +402,55 @@ void uxdevice::os_xcb_linux_t::event_queue_processor(void) {
           bdone = true;
       }
     }
+  }
+}
+
+/**
+ * @var message_dispatch_t
+ * @brief translates between system domain.
+ * generic_os_event_queue_message_t is defined in compile options as it is
+ * associated with os compile target.
+ */
+/** @internal
+ * @var message_translator
+ * @brief system domain translator. must be filled by inheriting
+ */
+void uxdevice::os_xcb_linux_t::visit_dispatch(xcb_generic_event_t *xcb) {
+  static const message_dispatch_t message_dispatch = {
+    {XCB_KEY_PRESS,
+     [&]() { dispatch<keyboard_device_xcb_t, key_press_xcb_t>(xcb); }},
+
+    {XCB_KEY_RELEASE,
+     [&]() { dispatch<keyboard_device_xcb_t, key_release_xcb_t>(xcb); }},
+
+    {XCB_BUTTON_PRESS,
+     [&]() { dispatch<mouse_device_xcb_t, button_press_xcb_t>(xcb); }},
+
+    {XCB_BUTTON_RELEASE,
+     [&]() { dispatch<mouse_device_xcb_t, button_release_xcb_t>(xcb); }},
+
+    {XCB_MOTION_NOTIFY,
+     [&]() { dispatch<mouse_device_xcb_t, motion_notify_xcb_t>(xcb); }},
+
+    {XCB_EXPOSE,
+     [&]() { dispatch<window_service_xcb_t, surface_expose_xcb_t>(xcb); }},
+
+    {XCB_CONFIGURE_NOTIFY,
+     [&]() {
+       dispatch<window_service_xcb_t, configure_notify_xcb_t>(xcb);
+     }},
+
+    {XCB_CLIENT_MESSAGE,
+     [&]() { dispatch<window_service_xcb_t, client_message_xcb_t>(xcb); }}
+
+  };
+  /** @brief process, depending upon filter, non handled messages may be
+   * faster with a bit range check. this can be enhanced with specific
+   * numerical representation. xcb internals possibly. The it->second()
+   * invocation performs a dispatch using the std::visit function. */
+  auto it = message_dispatch.find(xcb->response_type & ~0x80);
+  if (it != message_dispatch.end()) {
+    auto fn = it->second;
+    fn();
   }
 }

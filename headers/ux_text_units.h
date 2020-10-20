@@ -169,7 +169,7 @@ public:
   void emit(cairo_t *cr);
   void emit(cairo_t *cr, coordinate_t *a);
 
-  // local property that returns the same object. Continuation syntax for inline
+  // local property that returns the same object. Continuation syntax for in-line
   // options.
   text_outline_t &width(double __width) {
     _width = __width;

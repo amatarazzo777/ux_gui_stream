@@ -60,6 +60,8 @@ namespace uxdevice {
   bool window_open = false;
 
  */
+// template void os_xcb_linux_t::Y<double>::mf();
+
 class os_xcb_linux_t : public window_manager_base_t {
 public:
   os_xcb_linux_t() {}
@@ -84,11 +86,7 @@ public:
   void close_window(void);
   void flush_window(void);
 
-  /** @internal
-   * @var message_translator
-   * @brief system domain translator. must be filled by inheriting
-   */
-  static const message_dispatch_t<xcb_generic_event_t *> message_dispatch;
+  void visit_dispatch(xcb_generic_event_t *e);
 
 private:
   void message_loop(void);
@@ -113,9 +111,9 @@ private:
   xcb_intern_atom_cookie_t cookie2 = {};
   xcb_intern_atom_reply_t *reply2 = {};
 
-  friend xcb_keyboard_device_t;
-  friend xcb_mouse_device_t;
-  friend xcb_window_service_t;
+  friend keyboard_device_xcb_t;
+  friend mouse_device_xcb_t;
+  friend window_service_xcb_t;
 };
 
 } // namespace uxdevice

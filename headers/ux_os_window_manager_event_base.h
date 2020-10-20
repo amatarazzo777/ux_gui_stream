@@ -27,32 +27,52 @@ message queue filters.
 */
 
 namespace uxdevice {
-class event_base_t {
-public:
-  std::type_index alias = std::type_index(typeid(this));
-  std::any i;
-};
 
 /**
- * @class evt_base_t
+ * @class device_event_base_t
  * @brief handles the xcb event memory with a free. This does not keep any
  * reference counting.
- * @tparam OS_MSG  The window base message type. This can be a pointer, which is
- * the best candidate for it perhaps. However a direct struct could also be
- * implemented such as window {hwnd, wp, lparam, user_data}. The template below
- * may need to change a little. The data cast of the message (T_MSG)(msg) in the
- * constructor parameters might need to change.
+ * @tparam T  The window base message type.
  * @tparam Args... The variant storage for the device.
  *
  */
-template <typename OS_MSG, typename... Args> class device_event_base_t {
+template <typename T, typename... Args> class device_event_base_t {
 public:
-  // template constructor accepts generic os event. The .
-  template <typename T_MSG>
-  device_event_base_t(OS_MSG _msg) : data((T_MSG)(_msg)), msg(_msg) {}
+  /**
+   * @internal
+   * @typedef generalized_msg_t
+   * @brief the os message pointer format (linux xcb) or tuple, struct, etc.
+   */
+  typedef T generalized_msg_t;
 
-  device_event_base_t(std::any _msg) : msg(std::any_cast<OS_MSG>(_msg)) {}
+  /**
+   * @internal
+   * @typedef data_storage_t
+   * @brief The message forms accepted by the device.
+   */
+  typedef std::variant<Args...> data_storage_t;
 
+  /**
+   * @internal
+   * @fn  device_event_base_t()
+   * @brief
+   *
+   */
+  device_event_base_t() {}
+
+  /**
+   * @fn  device_event_base_t(data_storage_t)
+   * @brief
+   *
+   * @param _msg
+   */
+  device_event_base_t(data_storage_t _msg) : data(_msg) {}
+
+  /**
+   * @fn  ~device_event_base_t()
+   * @brief
+   *
+   */
   virtual ~device_event_base_t() {}
 
   /// @brief copy assignment operator
@@ -83,22 +103,9 @@ public:
    * @tparam T
    * @return pointer to defined type
    */
-  template <typename T> T get(void) { return std::get<T>(data); }
+  template <typename T2> T2 get(void) { return std::get<T2>(data); }
 
-  /**
-   * @internal
-   * @overload
-   * @fn T get(void)
-   * @brief The get override for the event_t object type. When this object type
-   * is built, the data from the os layer is interpreted and the object can be
-   * used to manufacture an event that is designed for the system. The visit map
-   * within the ux_os_linux_xcb_event.cpp file performs this operation. After
-   * completion, the objects data members have the values in summary from the
-   * xcb event.
-   *
-   * @return
-   */
-  virtual device_event_base_t<OS_MSG, Args...> *get(void) = 0;
+
   /**
    * @internal
    * @var alias
@@ -107,16 +114,13 @@ public:
    * within the API such as listen_mousemove_t. The data is kept as unit along
    * with the alias.*/
   std::type_index alias = std::type_index(typeid(this));
+
   /**
    * @internal
    * @var data
    * @brief holds each of the message types to be processed as a visitor. */
-  std::variant<Args...> data = {};
-  /**
-   * @internal
-   * @var msg
-   * @brief The generic os message.*/
-  OS_MSG msg = {};
+  data_storage_t data = {};
+
   /**
    * @internal
    * @var bvideo_output
@@ -132,8 +136,11 @@ public:
 template <typename T> class keyboard_device_base_t : public T {
 public:
   using T::T;
-  keyboard_device_base_t(const std::type_index &_alias);
+  keyboard_device_base_t() : T() {}
+  // typedef typename T::data_storage_t data_storage_t;
+  // keyboard_device_base_t(data_storage_t msg) : T(msg) {}
   virtual ~keyboard_device_base_t() {}
+
   /// @brief copy assignment operator
   keyboard_device_base_t &operator=(const keyboard_device_base_t &other) {
     T::operator=(other);
@@ -147,7 +154,6 @@ public:
     T::operator=(other);
     sym = other.sym;
     c = other.c;
-
     return *this;
   }
 
@@ -169,7 +175,7 @@ public:
  * @brief
  *
  */
-template <typename T> class mouse_device_base_t : public T {
+template < typename T> class mouse_device_base_t : public T {
 public:
   using T::T;
   virtual ~mouse_device_base_t() {}

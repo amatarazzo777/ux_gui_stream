@@ -254,8 +254,7 @@ public:
   painter_brush_emitter_t(painter_brush_emitter_t &&other) noexcept
     : hash_members_t(other), system_error_t(other), system_base_t(other),
       display_unit_t(other),
-      painter_brush_t(other), typed_index_t<T>::typed_index_t(other),
-      system_base_t(other) {}
+      painter_brush_t(other), typed_index_t<T>::typed_index_t(other) {}
 
   /// @brief copy assignment operator
   painter_brush_emitter_t &operator=(const painter_brush_emitter_t &other) {
@@ -285,7 +284,6 @@ public:
    *
    */
   virtual ~painter_brush_emitter_t() {}
-
 
   /**
    * @fn std::size_t hash_code(void)const

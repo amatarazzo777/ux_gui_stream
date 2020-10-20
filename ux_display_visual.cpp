@@ -113,3 +113,6 @@ void uxdevice::display_visual_t::evaluate_cache(display_context_t *context) {
   }
   last_render_time = std::chrono::high_resolution_clock::now();
 }
+
+void uxdevice::display_visual_t::emit(display_context_t *context){}
+void uxdevice::display_visual_t::emit(cairo_t *cr){}

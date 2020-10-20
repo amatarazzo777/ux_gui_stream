@@ -29,51 +29,115 @@ namespace uxdevice {
 class os_xcb_linux_t;
 
 /**
- * @typedef xcb_keyboard_event_t
- * @brief accepted message pointer types. First is the generic input.
+ * @class xcb_ptr_wrapper
+ * @brief the class is used to hold aliased pointer types from xcb namespace.
+ * The reason this is needed is because the std::variant template expects that
+ * all items be unique. However the xcb_event_ptrs often use the same structure
+ * but call it a type using the typedef. The creates a problem where the
+ * std::variant thinks that all xcb_ptr types are of the same type. So by using
+ * the template class to minimize storage and move, assignment constructors, the
+ * xcb pointer types are held in a unique class type.
+ *
+ * @tparam T
  */
-typedef device_event_base_t<xcb_generic_event_t *,
-                            xcb_key_press_event_t *, xcb_key_release_event_t *>
-  xcb_keyboard_event_t;
+template <typename T> class ptr_type_class_alias {
+public:
+  ptr_type_class_alias() {}
+  ptr_type_class_alias(xcb_generic_event_t *_msg) : ptr((T)_msg) {}
+  ptr_type_class_alias &operator=(const ptr_type_class_alias &other) {
+    return *this;
+  }
+
+  T operator->() { return ptr; }
+  T get(void) { return ptr; }
+
+  /// @brief move assignment
+  ptr_type_class_alias &operator=(ptr_type_class_alias &&other) noexcept {
+    ptr = other.ptr;
+    return *this;
+  }
+
+  /// @brief move constructor
+  ptr_type_class_alias(ptr_type_class_alias &&other) noexcept
+    : ptr(other.ptr) {}
+
+  /// @brief copy constructor
+  ptr_type_class_alias(const ptr_type_class_alias &other) { ptr = other.ptr; }
+  T ptr = {};
+};
+
+// @brief pointer wrappers
+class key_press_xcb_t : public ptr_type_class_alias<xcb_key_press_event_t *> {};
+
+class key_release_xcb_t
+  : public ptr_type_class_alias<xcb_key_release_event_t *> {};
+
+class button_press_xcb_t
+  : public ptr_type_class_alias<xcb_button_press_event_t *> {};
+
+class button_release_xcb_t
+  : public ptr_type_class_alias<xcb_button_release_event_t *> {};
+
+class motion_notify_xcb_t
+  : public ptr_type_class_alias<xcb_motion_notify_event_t *> {};
+
+class surface_expose_xcb_t : public ptr_type_class_alias<xcb_expose_event_t *> {
+};
+
+class configure_notify_xcb_t
+  : public ptr_type_class_alias<xcb_configure_notify_event_t *> {};
+
+class client_message_xcb_t
+  : public ptr_type_class_alias<xcb_client_message_event_t *> {};
+
+/// @brief the keyboard event types
+using keyboard_event_xcb_t =
+  device_event_base_t<xcb_generic_event_t *, std::monostate, key_press_xcb_t,
+                      key_release_xcb_t>;
 
 /**
  * @class xcb_keyboard_device_t
  * @brief holds and processes keyboard messages.
  *
  */
-class xcb_keyboard_device_t
-  : public keyboard_device_base_t<xcb_keyboard_event_t> {
+class keyboard_device_xcb_t
+  : public keyboard_device_base_t<keyboard_event_xcb_t> {
 public:
   using keyboard_device_base_t::keyboard_device_base_t;
-  xcb_keyboard_device_t() = delete;
-  xcb_keyboard_device_t(std::type_index ti);
-  ~xcb_keyboard_device_t();
+  using data_storage_t = typename keyboard_event_xcb_t::data_storage_t;
+  using generalized_msg_t = typename keyboard_event_xcb_t::generalized_msg_t;
+
+  keyboard_device_xcb_t();
+  keyboard_device_xcb_t(typename keyboard_event_xcb_t::data_storage_t _msg)
+    : keyboard_device_base_t(_msg) {}
+
+  ~keyboard_device_xcb_t();
   void initialize();
 
   /// @brief copy assignment operator
-  xcb_keyboard_device_t &operator=(const xcb_keyboard_device_t &other) {
+  keyboard_device_xcb_t &operator=(const keyboard_device_xcb_t &other) {
     keyboard_device_base_t::operator=(other);
     return *this;
   }
 
   /// @brief move assignment
-  xcb_keyboard_device_t &operator=(xcb_keyboard_device_t &&other) noexcept {
+  keyboard_device_xcb_t &operator=(keyboard_device_xcb_t &&other) noexcept {
     keyboard_device_base_t::operator=(other);
     return *this;
   }
 
   /// @brief move constructor
-  xcb_keyboard_device_t(xcb_keyboard_device_t &&other) noexcept
+  keyboard_device_xcb_t(keyboard_device_xcb_t &&other) noexcept
     : keyboard_device_base_t(other) {}
 
   /// @brief copy constructor
-  xcb_keyboard_device_t(const xcb_keyboard_device_t &other)
+  keyboard_device_xcb_t(const keyboard_device_xcb_t &other)
     : keyboard_device_base_t(other) {}
 
   /**@brief must specialize this for interface.
    * interface abstract returns the visitor map. see the
    * ux_os_linux_event.cpp file for details.*/
-  xcb_keyboard_device_t *get(void);
+  keyboard_device_xcb_t *get(void);
 
 private:
   xcb_key_symbols_t *syms = {};
@@ -85,45 +149,53 @@ private:
  * @brief
  *
  */
-typedef device_event_base_t<
-  xcb_generic_event_t *,  xcb_button_press_event_t *,
-  xcb_button_release_event_t *, xcb_motion_notify_event_t *>
-  xcb_mouse_event_t;
+typedef device_event_base_t<xcb_generic_event_t *, std::monostate,
+                            button_press_xcb_t, button_release_xcb_t,
+                            motion_notify_xcb_t>
+  mouse_event_xcb_t;
 
 /**
  * @class xcb_mouse_device_t
  * @brief
  *
  */
-class xcb_mouse_device_t : public mouse_device_base_t<xcb_mouse_event_t> {
+class mouse_device_xcb_t : public mouse_device_base_t<mouse_event_xcb_t> {
+public:
   using mouse_device_base_t::mouse_device_base_t;
 
-  ~xcb_mouse_device_t() {}
+  ~mouse_device_xcb_t() {}
 
   /// @brief copy assignment operator
-  xcb_mouse_device_t &operator=(const xcb_mouse_device_t &other) {
+  mouse_device_xcb_t &operator=(const mouse_device_xcb_t &other) {
     mouse_device_base_t::operator=(other);
     return *this;
   }
 
   /// @brief move assignment
-  xcb_mouse_device_t &operator=(xcb_mouse_device_t &&other) noexcept {
+  mouse_device_xcb_t &operator=(mouse_device_xcb_t &&other) noexcept {
     mouse_device_base_t::operator=(other);
     return *this;
   }
 
   /// @brief move constructor
-  xcb_mouse_device_t(xcb_mouse_device_t &&other) noexcept
+  mouse_device_xcb_t(mouse_device_xcb_t &&other) noexcept
     : mouse_device_base_t(other) {}
 
   /// @brief copy constructor
-  xcb_mouse_device_t(const xcb_mouse_device_t &other)
+  mouse_device_xcb_t(const mouse_device_xcb_t &other)
     : mouse_device_base_t(other) {}
 
-  /**@brief must specialize this for interface.
+  /**
+   * @internal
+   * @fn mouse_device_xcb_t get*(void)
+   * @brief must specialize this for interface.
    * interface abstract returns the visitor map. see the
-   * ux_os_linux_event.cpp file for details.*/
-  xcb_mouse_device_t *get(void);
+   * ux_os_linux_event.cpp file for details.
+   *
+   * @return
+   */
+  mouse_device_xcb_t *get(void);
+
   std::shared_ptr<os_xcb_linux_t> window_manager = {};
 };
 
@@ -131,10 +203,10 @@ class xcb_mouse_device_t : public mouse_device_base_t<xcb_mouse_event_t> {
  * @typedef xcb_window_service_event_t
  * @brief
  */
-typedef device_event_base_t<
-  xcb_generic_event_t *, xcb_button_press_event_t *,
-  xcb_button_release_event_t *, xcb_motion_notify_event_t *>
-  xcb_window_service_event_t;
+typedef device_event_base_t<xcb_generic_event_t *, std::monostate,
+                            surface_expose_xcb_t, configure_notify_xcb_t,
+                            client_message_xcb_t>
+  window_service_event_xcb_t;
 
 /**
  * @class window_service_event_t
@@ -145,35 +217,38 @@ typedef device_event_base_t<
  * system.
  *
  */
-class xcb_window_service_t : window_service_base_t<xcb_window_service_event_t> {
+class window_service_xcb_t : window_service_base_t<window_service_event_xcb_t> {
 public:
   using window_service_base_t::window_service_base_t;
+  using data_storage_t = typename window_service_event_xcb_t::data_storage_t;
+  using generalized_msg_t =
+    typename window_service_event_xcb_t::generalized_msg_t;
 
-  virtual ~xcb_window_service_t() {}
+  virtual ~window_service_xcb_t() {}
   /// @brief copy assignment operator
-  xcb_window_service_t &operator=(const xcb_window_service_t &other) {
+  window_service_xcb_t &operator=(const window_service_xcb_t &other) {
     window_service_base_t::operator=(other);
     return *this;
   }
 
   /// @brief move assignment
-  xcb_window_service_t &operator=(xcb_window_service_t &&other) noexcept {
+  window_service_xcb_t &operator=(window_service_xcb_t &&other) noexcept {
     window_service_base_t::operator=(other);
     return *this;
   }
 
   /// @brief move constructor
-  xcb_window_service_t(xcb_window_service_t &&other) noexcept
+  window_service_xcb_t(window_service_xcb_t &&other) noexcept
     : window_service_base_t(other) {}
 
   /// @brief copy constructor
-  xcb_window_service_t(const xcb_window_service_t &other)
+  window_service_xcb_t(const window_service_xcb_t &other)
     : window_service_base_t(other) {}
 
   /**@brief must specialize this for interface.
    * interface abstract returns the visitor map. see the
    * ux_os_linux_event.cpp file for details.*/
-  xcb_window_service_t *get(void);
+  window_service_xcb_t *get(void);
 
   std::shared_ptr<os_xcb_linux_t> window_manager = {};
 };

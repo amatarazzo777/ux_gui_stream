@@ -40,10 +40,8 @@ typedef std::list<short int> coordinate_list_t;
  * @typedef
  * @brief system domain translator.
  */
-template <typename... Args>
 using message_dispatch_t =
-  std::unordered_map<std::size_t,
-                     std::function<void(window_manager_base_t *, ...)>>;
+  std::unordered_map<std::size_t, std::function<void()>>;
 
 /**
  * @class window_manager_abstract_t
@@ -105,33 +103,20 @@ public:
   void surface_fn(const std::function<void(cairo_surface_t *)> &fn);
   void video_flush(void);
 
-  /**
-   * @fn void event(generic_os_event_queue_message_t_*)
-   * @brief dispatches the event using the generalized event handler for a
-   * device. such as mouse, keyboard or system. The objects internally create an
-   * event_t object that the system interprets which is generic.
-   *
-   *The
-   * @tparam DEVICE
-   * @tparam CAST
-   * @param msg
-   */
-  template <typename DEVICE, typename CAST> void dispatch(std::any msg) {
-    // first template parameter must be a base of event_base_t
-    // which is an object that handles creation/transform
-    // static_assert(std::is_base_of<event_base_t, DEVICE>::value);
-
-    // this creates the
-    auto o = DEVICE(msg);
+  template <typename DEVICE, typename MSG_CLASS>
+  void dispatch(typename DEVICE::generalized_msg_t _msg) {
+    auto o = DEVICE{MSG_CLASS{_msg}};
     auto evt = o.get();
     dispatch_event(evt);
   }
 
+  template <typename T> void dispatch_event(const T evt) {}
+
   /** @internal
-   * @brief these variables are common across instances yet they are managed by
-   * the inheriting object as part of base OS. However the cairo_t represents
-   * across platforms so it can be used like this. Minimizes and simplifies
-   * code.
+   * @brief these variables are common across instances yet they are managed
+   * by the inheriting object as part of base OS. However the cairo_t
+   * represents across platforms so it can be used like this. Minimizes and
+   * simplifies code.
    */
   std::mutex surface_mutex = {};
   cairo_surface_t *surface = {};
