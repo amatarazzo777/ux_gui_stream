@@ -22,10 +22,7 @@
  * @date 9/7/20
  * @version 1.0
  * @brief The file contains template implementations of functions associated
- * with the pipeline_memory_t template. The file has a list of explicit template
- * instantiations for visitors that should be maintained if new visitors are
- * added. This provides the functionality that only units associated with the
- * visitor attribute are copied.
+ * with the pipeline_memory_t template.
  */
 
 #include <ux_compile_options.h>
@@ -130,26 +127,26 @@ void uxdevice::pipeline_memory_t::pipeline_visit(display_context_t *context) {
     [&](const fn_emit_context_t &fn) { fn(context); },
 
     [&](const fn_emit_cr_a_t &fn) {
-      std::lock_guard(pipeline_memory_mutex<coordinate_t>());
+      std::lock_guard lock(pipeline_memory_mutex<coordinate_t>());
       context->window_manager->draw_fn([&](auto cr) {
         fn(cr, context->pipeline_memory_access<coordinate_t>().get());
       });
     },
 
     [&](const fn_emit_layout_t &fn) {
-      std::lock_guard(pipeline_memory_mutex<PangoLayout *>());
+      std::lock_guard lock(pipeline_memory_mutex<PangoLayout *>());
       fn(context->pipeline_memory_access<PangoLayout *>());
     },
 
     [&](const fn_emit_layout_a_t &fn) {
-      std::scoped_lock(pipeline_memory_mutex<PangoLayout *>(),
+      std::scoped_lock lock(pipeline_memory_mutex<PangoLayout *>(),
                        pipeline_memory_mutex<coordinate_t>());
       fn(context->pipeline_memory_access<PangoLayout *>(),
          context->pipeline_memory_access<coordinate_t>().get());
     },
 
     [&](const fn_emit_cr_layout_t &fn) {
-      std::lock_guard(pipeline_memory_mutex<PangoLayout *>());
+      std::lock_guard lock(pipeline_memory_mutex<PangoLayout *>());
       context->window_manager->draw_fn([&](auto cr) {
         fn(cr, context->pipeline_memory_access<PangoLayout *>());
       });
