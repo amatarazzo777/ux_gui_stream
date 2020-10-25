@@ -7,33 +7,101 @@
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
-					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
-					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.1509027129" name="Default" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=" parent="org.eclipse.cdt.build.core.emptycfg">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.1509027129" name="Default" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="org.eclipse.cdt.build.core.emptycfg">
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.cross.base.1509027129.1317674627" name="/" resourcePath="">
-						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.base.1688973365" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.base">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.base.1688973365" name="Cross GCC" nonInternalBuilderId="cdt.managedbuild.builder.gnu.cross" superClass="cdt.managedbuild.toolchain.gnu.cross.base">
 							<option id="cdt.managedbuild.option.gnu.cross.prefix.2050255057" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix"/>
 							<option id="cdt.managedbuild.option.gnu.cross.path.1280808136" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.1433419140" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
-							<builder id="cdt.managedbuild.builder.gnu.cross.193749348" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross"/>
+							<builder autoBuildTarget="all" buildPath="${workspace_loc:/ux_gui_stream}/Default" cleanBuildTarget="clean" id="org.eclipse.cdt.build.core.internal.builder.227497386" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="CDT Internal Builder" superClass="org.eclipse.cdt.build.core.internal.builder"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.677071099" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.692355087" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="/usr/include/librsvg-2.0"/>
+									<listOptionValue builtIn="false" value="/usr/include/gtk-3.0"/>
+									<listOptionValue builtIn="false" value="/usr/include/gio-unix-2.0"/>
+									<listOptionValue builtIn="false" value="/usr/include/gdk-pixbuf-2.0"/>
+									<listOptionValue builtIn="false" value="/usr/include/libmount"/>
+									<listOptionValue builtIn="false" value="/usr/include/blkid"/>
+									<listOptionValue builtIn="false" value="/usr/include/pango-1.0"/>
+									<listOptionValue builtIn="false" value="/usr/include/fribidi"/>
+									<listOptionValue builtIn="false" value="/usr/include/harfbuzz"/>
+									<listOptionValue builtIn="false" value="/usr/include/cairo"/>
+									<listOptionValue builtIn="false" value="/usr/include/glib-2.0"/>
+									<listOptionValue builtIn="false" value="/usr/lib/x86_64-linux-gnu/glib-2.0/include"/>
+									<listOptionValue builtIn="false" value="/usr/include/pixman-1"/>
+									<listOptionValue builtIn="false" value="/usr/include/uuid"/>
+									<listOptionValue builtIn="false" value="/usr/include/freetype2"/>
+									<listOptionValue builtIn="false" value="/usr/include/libpng16"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1703732126" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.1476387839" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.671567686" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="/usr/include/gtk-3.0"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/os/headers}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/include/gio-unix-2.0"/>
+									<listOptionValue builtIn="false" value="/usr/include/gdk-pixbuf-2.0"/>
+									<listOptionValue builtIn="false" value="/usr/include/libmount"/>
+									<listOptionValue builtIn="false" value="/usr/include/blkid"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/headers}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/headers/api}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/headers/api/units}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/headers/base}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/headers/base/api}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/headers/base/api/units}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include/pango-1.0"/>
-									<listOptionValue builtIn="false" value="/usr/include/librsvg-2.0"/>
+									<listOptionValue builtIn="false" value="/usr/include/fribidi"/>
+									<listOptionValue builtIn="false" value="/usr/include/harfbuzz"/>
 									<listOptionValue builtIn="false" value="/usr/include/cairo"/>
+									<listOptionValue builtIn="false" value="/usr/include/glib-2.0"/>
+									<listOptionValue builtIn="false" value="/usr/lib/x86_64-linux-gnu/glib-2.0/include"/>
+									<listOptionValue builtIn="false" value="/usr/include/pixman-1"/>
+									<listOptionValue builtIn="false" value="/usr/include/uuid"/>
+									<listOptionValue builtIn="false" value="/usr/include/freetype2"/>
+									<listOptionValue builtIn="false" value="/usr/include/libpng16"/>
+									<listOptionValue builtIn="false" value="/usr/include/librsvg-2.0"/>
 								</option>
+								<option id="gnu.cpp.compiler.option.dialect.std.1016538461" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.c++17" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.other.other.1610623286" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -pthread" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.other.pic.1342019101" name="Position Independent Code (-fPIC)" superClass="gnu.cpp.compiler.option.other.pic" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.55034807" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.548651612" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.1940726604" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.link.option.libs.1338994611" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" useByScannerDiscovery="false" valueType="libs">
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="rsvg-2"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="m"/>
+									<listOptionValue builtIn="false" value="pixman-1"/>
+									<listOptionValue builtIn="false" value="pthread"/>
+									<listOptionValue builtIn="false" value="GLU"/>
+									<listOptionValue builtIn="false" value="GL"/>
+									<listOptionValue builtIn="false" value="GLX"/>
+									<listOptionValue builtIn="false" value="gio-2.0"/>
+									<listOptionValue builtIn="false" value="gdk-3"/>
+									<listOptionValue builtIn="false" value="cairo-gobject"/>
+									<listOptionValue builtIn="false" value="gdk_pixbuf_xlib-2.0"/>
+									<listOptionValue builtIn="false" value="gdk_pixbuf-2.0"/>
+									<listOptionValue builtIn="false" value="X11-xcb"/>
+									<listOptionValue builtIn="false" value="X11"/>
+									<listOptionValue builtIn="false" value="xcb-render"/>
+									<listOptionValue builtIn="false" value="xcb-image"/>
+									<listOptionValue builtIn="false" value="xcb-shm"/>
+									<listOptionValue builtIn="false" value="xcb-keysyms"/>
+									<listOptionValue builtIn="false" value="xcb"/>
+									<listOptionValue builtIn="false" value="pangocairo-1.0"/>
+									<listOptionValue builtIn="false" value="cairo"/>
+									<listOptionValue builtIn="false" value="pango-1.0"/>
+									<listOptionValue builtIn="false" value="gobject-2.0"/>
+									<listOptionValue builtIn="false" value="glib-2.0"/>
+									<listOptionValue builtIn="false" value="harfbuzz"/>
+								</option>
+								<option id="gnu.cpp.link.option.shared.1388184080" name="Shared (-shared)" superClass="gnu.cpp.link.option.shared" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.200760839" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -47,7 +115,67 @@
 					</folderInfo>
 				</configuration>
 			</storageModule>
-			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings">
+				<externalSettings containerId="org.eclipse.cdt.managedbuilder.pkgconfig.extSettings" factoryId="org.eclipse.cdt.core.extension.container.factory">
+					<externalSetting contentTypes="org.eclipse.cdt.managedbuilder.core.compiledObjectFile">
+						<entry flags="UNDEFINED" kind="libraryFile" name="cairo" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="gdk_pixbuf-2.0" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="gobject-2.0" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="glib-2.0" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="gdk_pixbuf_xlib-2.0" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="gdk-3" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="pangocairo-1.0" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="pango-1.0" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="harfbuzz" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="cairo-gobject" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="gio-2.0" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="rsvg-2" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="m" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="pixman-1" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="X11" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="X11-xcb" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="xcb" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="xcb-image" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="xcb-shm" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="UNDEFINED" kind="libraryFile" name="xcb-keysyms" srcPrefixMapping="" srcRootPath=""/>
+					</externalSetting>
+					<externalSetting contentTypes="org.eclipse.cdt.core.cSource:org.eclipse.cdt.core.cxxSource">
+						<entry flags="NONE" kind="includePath" name="/usr/include/librsvg-2.0"/>
+						<entry flags="NONE" kind="includePath" name="/usr/include/gtk-3.0"/>
+						<entry flags="NONE" kind="includePath" name="/usr/include/gio-unix-2.0"/>
+						<entry flags="NONE" kind="includePath" name="/usr/include/gdk-pixbuf-2.0"/>
+						<entry flags="NONE" kind="includePath" name="/usr/include/libmount"/>
+						<entry flags="NONE" kind="includePath" name="/usr/include/blkid"/>
+						<entry flags="NONE" kind="includePath" name="/usr/include/pango-1.0"/>
+						<entry flags="NONE" kind="includePath" name="/usr/include/fribidi"/>
+						<entry flags="NONE" kind="includePath" name="/usr/include/harfbuzz"/>
+						<entry flags="NONE" kind="includePath" name="/usr/include/cairo"/>
+						<entry flags="NONE" kind="includePath" name="/usr/include/glib-2.0"/>
+						<entry flags="NONE" kind="includePath" name="/usr/lib/x86_64-linux-gnu/glib-2.0/include"/>
+						<entry flags="NONE" kind="includePath" name="/usr/include/pixman-1"/>
+						<entry flags="NONE" kind="includePath" name="/usr/include/uuid"/>
+						<entry flags="NONE" kind="includePath" name="/usr/include/freetype2"/>
+						<entry flags="NONE" kind="includePath" name="/usr/include/libpng16"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/cairo"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/glib-2.0"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/lib/x86_64-linux-gnu/glib-2.0/include"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/pixman-1"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/uuid"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/freetype2"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/libpng16"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/gdk-pixbuf-2.0"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/libmount"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/blkid"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/gtk-3.0"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/gio-unix-2.0"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/pango-1.0"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/fribidi"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/harfbuzz"/>
+						<entry flags="BUILTIN" kind="includePath" name="/usr/include/librsvg-2.0"/>
+					</externalSetting>
+				</externalSettings>
+			</storageModule>
+			<storageModule adwaita-icon-theme="false" applewmproto="false" atk="false" atk-bridge-2.0="false" atspi-2="false" bash-completion="false" bigreqsproto="false" blkid="false" cairo="true" cairo-fc="false" cairo-ft="false" cairo-gobject="false" cairo-pdf="false" cairo-png="false" cairo-ps="false" cairo-script="false" cairo-svg="false" cairo-tee="false" cairo-xcb="false" cairo-xcb-shm="false" cairo-xlib="false" cairo-xlib-xrender="false" compositeproto="false" damageproto="false" datrie-0.2="false" dbus-1="false" dmxproto="false" dri="false" dri2proto="false" dri3proto="false" egl="false" epoxy="false" expat="false" fixesproto="false" fontconfig="false" fontsproto="false" fontutil="false" form="false" formw="false" freetype2="false" fribidi="false" gdk-3.0="false" gdk-broadway-3.0="false" gdk-pixbuf-2.0="true" gdk-pixbuf-xlib-2.0="true" gdk-wayland-3.0="false" gdk-x11-3.0="true" gio-2.0="true" gio-unix-2.0="false" gl="false" glesv1_cm="false" glesv2="false" glib-2.0="true" glproto="false" glu="false" glx="false" gmodule-2.0="false" gmodule-export-2.0="false" gmodule-no-export-2.0="false" gnome-system-tools="false" gobject-2.0="true" graphite2="false" gthread-2.0="false" gtkplus-3.0="false" gtkplus-broadway-3.0="false" gtkplus-unix-print-3.0="false" gtkplus-wayland-3.0="false" gtkplus-x11-3.0="false" harfbuzz="false" harfbuzz-gobject="false" harfbuzz-icu="false" ice="false" icu-i18n="false" icu-io="false" icu-uc="false" inputproto="false" iso-codes="false" kbproto="false" libcrypt="false" libdrm="false" libdrm_amdgpu="false" libdrm_intel="false" libdrm_nouveau="false" libdrm_radeon="false" libffi="false" libglvnd="false" libpcre="false" libpcre16="false" libpcre2-16="false" libpcre2-32="false" libpcre2-8="false" libpcre2-posix="false" libpcre32="false" libpcrecpp="false" libpcreposix="false" libpng="false" libpng16="false" librsvg-2.0="true" libselinux="false" libsepol="false" libthai="false" libxcrypt="false" menu="false" menuw="false" mobile-broadband-provider-info="false" moduleId="packages" mount="false" ncurses="false" ncursesplusplus="false" ncursesplusplusw="false" ncursesw="false" opengl="false" panel="false" panelw="false" pango="true" pangocairo="true" pangoft2="false" pangoxft="false" pixman-1="true" poppler-data="false" presentproto="false" pthread-stubs="false" randrproto="false" recordproto="false" renderproto="false" resourceproto="false" scrnsaverproto="false" shared-mime-info="false" sm="false" systemd="false" tic="false" tinfo="false" udev="false" uuid="false" videoproto="false" wayland-client="false" wayland-cursor="false" wayland-egl="false" wayland-protocols="false" wayland-scanner="false" wayland-server="false" x11="true" x11-xcb="true" xau="false" xbitmaps="false" xcb="true" xcb-atom="false" xcb-aux="false" xcb-composite="false" xcb-cursor="false" xcb-dri2="false" xcb-dri3="false" xcb-event="false" xcb-ewmh="false" xcb-glx="false" xcb-icccm="false" xcb-image="true" xcb-keysyms="true" xcb-randr="false" xcb-render="false" xcb-renderutil="false" xcb-shape="false" xcb-shm="true" xcb-util="false" xcb-xf86dri="false" xcb-xfixes="false" xcb-xinput="false" xcb-xkb="false" xcb-xrm="false" xcmiscproto="false" xcomposite="false" xcursor="false" xdamage="false" xdmcp="false" xext="false" xextproto="false" xf86bigfontproto="false" xf86dgaproto="false" xf86driproto="false" xf86vidmodeproto="false" xfixes="false" xft="false" xi="false" xinerama="false" xineramaproto="false" xkbcommon="false" xkbcomp="false" xkeyboard-config="false" xorg-sgml-doctools="false" xorg-wacom="false" xproto="false" xrandr="false" xrender="false" xtrans="false" xtst="false" yelp-xsl="false" zlib="false"/>
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
@@ -63,5 +191,10 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>
-	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Default">
+			<resource resourceType="PROJECT" workspacePath="/ux_gui_stream"/>
+		</configuration>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>
